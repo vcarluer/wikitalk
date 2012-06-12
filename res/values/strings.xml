@@ -12,4 +12,5 @@
 <string name="title">Albert Einstein</string>
 <string name="imgleft">&lt;</string>
 <string name="imgright">&gt;</string>
+<string name="search_hint">Rechercher</string>
 </resources>

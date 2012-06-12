@@ -69,18 +69,23 @@ public class RetrievePageTask extends AsyncTask<String, Void, String> {
 		Document doc = XmlHelper.xmlfromString(result);
 		NodeList nodes = doc.getElementsByTagName("page");
 		for (int i = 0; i < nodes.getLength(); i++) {
-			 this.pageId = nodes.item(i).getAttributes().getNamedItem("pageid").getNodeValue();
-			 // Only first one for now
-			 break;
+			Node node = nodes.item(i).getAttributes().getNamedItem("pageid");
+			if(node != null) {
+				this.pageId = nodes.item(i).getAttributes().getNamedItem("pageid").getNodeValue();
+				 // Only first one for now
+				 break;
+			}
 		}
-		
+				
 		nodes = doc.getElementsByTagName("rev"); 
 		 for (int i = 0; i < nodes.getLength(); i++) {
 			 String line = nodes.item(i).getTextContent();
 			 this.mainActivity.addTextToRead(line);			 
 		}
 		 
-		 this.retrieveImage.execute(pageId);
+		 if (this.pageId != null) {
+			 this.retrieveImage.execute(pageId);
+		 }
 						
 		super.onPostExecute(result);
 	}
