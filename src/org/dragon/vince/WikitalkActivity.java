@@ -47,7 +47,6 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	static final String WIKITALK = "wikitalk";
 	private static final String TAG = "TextToSpeechDemo";
     private TextToSpeech mTts;
-    private Button mAgainButton;
     private Button mGetWP;
     private Button mReadIt;
     private Button mStopRead;
@@ -204,7 +203,6 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
                 // but not for the specified country and variant.
                 // The TTS engine has been successfully initialized.
                 // Allow the user to press the button for the app to speak again.
-                mAgainButton.setEnabled(true);
                 // Greet the user.
                 sayHello();
             }
