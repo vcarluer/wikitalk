@@ -168,8 +168,13 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	public void readText() {
 		String[] splitSentence = this.textToRead.split("\\.");
 		for(String sentence : splitSentence) {
-			sentence.replaceAll("[", "");
-			sentence.replaceAll("]", "");
+			// Parse wikimedia tag here
+			sentence = sentence.replaceAll("[\\[\\]]", "");
+			// sentence = sentence.replaceAll("<br />", "");
+			// sentence = sentence.replaceAll("<ref>", "");
+			// sentence = sentence.replaceAll("</ref>", "");
+			// sentence = sentence.replaceAll("/>", "");
+			// sentence = sentence.replaceAll("<ref ", "");
 			if (sentence.trim().length() > 0 && 
 					!sentence.contains("{") && 
 					!sentence.contains("}") &&
