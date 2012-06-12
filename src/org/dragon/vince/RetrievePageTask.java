@@ -66,7 +66,7 @@ public class RetrievePageTask extends AsyncTask<String, Void, String> {
 
 	@Override
 	protected void onPostExecute(String result) {
-		Document doc = this.mainActivity.XMLfromString(result);
+		Document doc = XmlHelper.xmlfromString(result);
 		NodeList nodes = doc.getElementsByTagName("page");
 		for (int i = 0; i < nodes.getLength(); i++) {
 			 this.pageId = nodes.item(i).getAttributes().getNamedItem("pageid").getNodeValue();

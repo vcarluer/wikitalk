@@ -133,33 +133,6 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
             TextToSpeech.QUEUE_FLUSH,  // Drop allpending entries in the playback queue.
             null);
     }
-	
-	public Document XMLfromString(String xml){
-
-	Document doc = null;
-
-	DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        try {
-
-		DocumentBuilder db = dbf.newDocumentBuilder();
-
-		InputSource is = new InputSource();
-	        is.setCharacterStream(new StringReader(xml));
-	        doc = db.parse(is); 
-
-		} catch (ParserConfigurationException e) {
-			System.out.println("XML parse error: " + e.getMessage());
-			return null;
-		} catch (SAXException e) {
-			System.out.println("Wrong XML file structure: " + e.getMessage());
-            return null;
-		} catch (IOException e) {
-			System.out.println("I/O exeption: " + e.getMessage());
-			return null;
-		}
-
-        return doc;
-	}
 
 	private String textToRead;
 	
