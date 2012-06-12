@@ -17,6 +17,18 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/getwikipedia" />
+
+    <Button
+        android:id="@+id/readIt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/readit" />
+
+    <Button
+        android:id="@+id/stopRead"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/stopread" />
 
     <TextView
         android:id="@+id/editWP"

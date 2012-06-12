@@ -30,6 +30,7 @@ public class RetrievePageTask extends AsyncTask<String, Void, String> {
 		String line = null;
     	String search = params[0];
     	HttpGet uri = new HttpGet("http://fr.wikipedia.org/w/api.php?format=xml&action=query&titles=" + search + "&prop=revisions&rvprop=content");
+    	// close client request?
     	DefaultHttpClient client = new DefaultHttpClient();
     	HttpResponse response = null;
 		try {
@@ -65,7 +66,7 @@ public class RetrievePageTask extends AsyncTask<String, Void, String> {
 		NodeList nodes = doc.getElementsByTagName("rev"); 
 		 for (int i = 0; i < nodes.getLength(); i++) {
 			 String line = nodes.item(i).getTextContent();
-			 this.mainActivity.showWikiText(line);
+			 this.mainActivity.addTextToRead(line);			 
 		}
 						
 		super.onPostExecute(result);

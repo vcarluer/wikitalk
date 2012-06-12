@@ -27,6 +27,8 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
     private TextToSpeech mTts;
     private Button mAgainButton;
     private Button mGetWP;
+    private Button mReadIt;
+    private Button mStopRead;
     private TextView mTxt;
     private RetrievePageTask pageTask;
 	
@@ -56,7 +58,26 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
         mGetWP.setOnClickListener(new View.OnClickListener() {
 			
 			public void onClick(View v) {
+				initTxt();
 				pageTask.execute("Albert%20Einstein");				
+			}
+		});
+        
+        mReadIt = (Button) findViewById(R.id.readIt);
+        mReadIt.setOnClickListener(new View.OnClickListener() {
+			
+			public void onClick(View v) {
+				readText();
+			}
+		});
+        
+        mStopRead = (Button) findViewById(R.id.stopRead);
+        mStopRead.setOnClickListener(new View.OnClickListener() {
+			
+			public void onClick(View v) {
+				if (mTts.isSpeaking()) {
+					mTts.stop();
+				}
 			}
 		});
     }
@@ -64,7 +85,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	public void onInit(int status) {
 		// status can be either TextToSpeech.SUCCESS or TextToSpeech.ERROR.
         if (status == TextToSpeech.SUCCESS) {
-                       int result = mTts.setLanguage(Locale.US);
+                       int result = mTts.setLanguage(Locale.FRANCE);
            
             if (result == TextToSpeech.LANG_MISSING_DATA ||
                 result == TextToSpeech.LANG_NOT_SUPPORTED) {
@@ -88,9 +109,9 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	
 	private static final Random RANDOM = new Random();
     private static final String[] HELLOS = {
-      "Hello guys",
-      "Get From wikipedia button will retrieve a default search on Albert Einstein",
-      "It will then read it"
+      "Salut",
+      "Le bouton ci-dessous récupérera les informations d'une recherche sur Albert Einstein",
+      "Le bouton suivant lira l'article wikipedia"
       
     };
     int i =0;
@@ -104,10 +125,6 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
             TextToSpeech.QUEUE_FLUSH,  // Drop allpending entries in the playback queue.
             null);
     }
-
-	public void showWikiText(String result) {
-		this.mTxt.setText(result);
-	}
 	
 	public Document XMLfromString(String xml){
 
@@ -134,5 +151,41 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 		}
 
         return doc;
+	}
+
+	private String textToRead;
+	
+	private void initTxt() {
+		textToRead = "";
+		mTxt.setText(textToRead);
+	}
+	
+	public void addTextToRead(String line) {
+		this.textToRead += line;
+		this.mTxt.setText(this.textToRead);
+	}
+	
+	public void readText() {
+		String[] splitSentence = this.textToRead.split("\\.");
+		for(String sentence : splitSentence) {
+			sentence.replaceAll("[", "");
+			sentence.replaceAll("]", "");
+			if (sentence.trim().length() > 0 && 
+					!sentence.contains("{") && 
+					!sentence.contains("}") &&
+					!sentence.contains("|") && 
+					!sentence.contains("[") && 
+					!sentence.contains("]") &&
+					!sentence.contains("<a") &&
+					!sentence.contains("_")) {
+				mTts.speak(sentence,
+			            TextToSpeech.QUEUE_ADD,  // Drop allpending entries in the playback queue.
+			            null);
+			}			
+		}
+		
+//		mTts.speak(this.textToRead,
+//	            TextToSpeech.QUEUE_ADD,  // Drop allpending entries in the playback queue.
+//	            null);
 	}
 }

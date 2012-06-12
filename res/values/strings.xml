@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="hello">hi world</string>
+    <string name="hello">salut le monde</string>
     <string name="app_name">wiki talk</string>
-<string name="again">Again</string>
+<string name="again">Instructions</string>
 <string name="red">red</string>
 
 <string name="white">#FF00FF</string>
-<string name="getwikipedia">Get from wikipedia</string>
+<string name="getwikipedia">récupérer de wikipedia</string>
+<string name="readit">Lire!</string>
+<string name="stopread">Arrêter</string>
 </resources>
