@@ -10,6 +10,9 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import android.app.Activity;
 import android.os.AsyncTask;
@@ -44,21 +47,27 @@ public class RetrievePageTask extends AsyncTask<String, Void, String> {
 	    	} else {
 	    		HttpEntity entity = response.getEntity();
 	    		try {
-					line = EntityUtils.toString(entity);
+					line = EntityUtils.toString(entity);															
 				} catch (ParseException e) {
 					e.printStackTrace();
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
 	    	}
-		}    	
-    	
+		}
+		
     	return line;
 	}
 
 	@Override
 	protected void onPostExecute(String result) {
-		this.mainActivity.showWikiText(result);
+		Document doc = this.mainActivity.XMLfromString(result);
+		NodeList nodes = doc.getElementsByTagName("rev"); 
+		 for (int i = 0; i < nodes.getLength(); i++) {
+			 String line = nodes.item(i).getTextContent();
+			 this.mainActivity.showWikiText(line);
+		}
+						
 		super.onPostExecute(result);
 	}
 }
