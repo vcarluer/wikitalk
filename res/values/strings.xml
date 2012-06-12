@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="hello">hi world</string>
+    <string name="app_name">test</string>
+<string name="again">Again</string>
+<string name="red">red</string>
+
+<string name="white">#FF00FF</string>
+</resources>
