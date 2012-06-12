@@ -88,8 +88,9 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	
 	private static final Random RANDOM = new Random();
     private static final String[] HELLOS = {
-      "Hello Ortems guys",
-      "PlannerOne is the best software i know, but i don't know much"
+      "Hello guys",
+      "Get From wikipedia button will retrieve a default search on Albert Einstein",
+      "It will then read it"
       
     };
     int i =0;
