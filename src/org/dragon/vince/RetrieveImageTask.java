@@ -85,7 +85,7 @@ public class RetrieveImageTask extends AsyncTask<String, Void, Bitmap> {
 
 	@Override
 	protected void onPostExecute(Bitmap result) {
-		this.mainActivity.addPageImage(result);
+		this.mainActivity.showImage(result);
 		super.onPostExecute(result);
 	}
 }

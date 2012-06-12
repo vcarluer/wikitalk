@@ -19,19 +19,16 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
 
-public class RetrieveImagesTask extends AsyncTask<String, Void, Void> {
+public class RetrieveImagesTask extends AsyncTask<String, Void, List<ImageInfo>> {
 	private WikitalkActivity mainActivity;
-	private RetrieveImageTask retrieveImage;
-	private List<ImageInfo> images;
 	
 	public RetrieveImagesTask(WikitalkActivity activity) {
 		this.mainActivity = activity;
-		this.retrieveImage = new RetrieveImageTask(this.mainActivity);
-		this.images = new ArrayList<ImageInfo>();
 	}
 	
 	@Override
-	protected Void doInBackground(String... params) {
+	protected List<ImageInfo> doInBackground(String... params) {
+		List<ImageInfo> images = new ArrayList<ImageInfo>();
 		String line = null;
     	String pageId = params[0];
     	HttpGet uri = new HttpGet("http://fr.wikipedia.org/w/api.php?format=xml&action=query&pageids=" + pageId + "&prop=images");
@@ -91,15 +88,14 @@ public class RetrieveImagesTask extends AsyncTask<String, Void, Void> {
 							if (line != null) {
 								uri = null;
 								
-								this.images.clear();
-								doc = XmlHelper.xmlfromString(line);
-								nodes = doc.getElementsByTagName("ii"); 
-								 for (int j = 0; j < nodes.getLength(); j++) {
+								Document doc2 = XmlHelper.xmlfromString(line);
+								NodeList nodes2 = doc2.getElementsByTagName("ii"); 
+								 for (int j = 0; j < nodes2.getLength(); j++) {
 									 ImageInfo ii = new ImageInfo();
-									 ii.url = nodes.item(j).getAttributes().getNamedItem("url").getNodeValue();
-									 ii.thumbUrl = nodes.item(j).getAttributes().getNamedItem("thumburl").getNodeValue();
+									 ii.url = nodes2.item(j).getAttributes().getNamedItem("url").getNodeValue();
+									 ii.thumbUrl = nodes2.item(j).getAttributes().getNamedItem("thumburl").getNodeValue();
 									 
-									 this.images.add(ii);
+									 images.add(ii);
 								 }
 							}
 						} catch (ParseException e) {
@@ -112,19 +108,13 @@ public class RetrieveImagesTask extends AsyncTask<String, Void, Void> {
 			}
 		}
 		
-		return null;
+		return images;
 	}
 
 	@Override
-	protected void onPostExecute(Void result) {
-		for(ImageInfo ii : this.images)
-		{
-			 this.retrieveImage.execute(ii.thumbUrl);
-			 // Only first one for now
-			 break;
-		}
-		
+	protected void onPostExecute(List<ImageInfo> result) {
 		super.onPostExecute(result);
+		this.mainActivity.setImages(result);
 	}
 
 }

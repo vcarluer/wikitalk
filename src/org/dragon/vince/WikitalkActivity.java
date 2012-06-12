@@ -2,6 +2,7 @@ package org.dragon.vince;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 
@@ -33,17 +34,15 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
     private Button mReadIt;
     private Button mStopRead;
     private TextView mTxt;
-    private RetrievePageTask pageTask;
-    private Gallery mGallery;
     private ImageView mImage;
+    private Button mImgNext;
+    private Button mImgPrev;
 	
 	/** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
-        
-        this.pageTask = new RetrievePageTask(this);
         
      // Initialize text-to-speech. This is an asynchronous operation.
         // The OnInitListener (second argument) is called after initialization completes.
@@ -60,6 +59,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
         
         mTxt = (TextView) findViewById(R.id.editWP);
         mGetWP = (Button) findViewById(R.id.getWikiPedia);
+        final RetrievePageTask pageTask = new RetrievePageTask(this);
         mGetWP.setOnClickListener(new View.OnClickListener() {
 			
 			public void onClick(View v) {
@@ -86,8 +86,30 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 			}
 		});
         
-        this.mGallery = (Gallery) findViewById(R.id.wikigallery);
+
         this.mImage = (ImageView) findViewById(R.id.wikiImage);
+        this.mImage.setOnClickListener(new View.OnClickListener() {
+			
+			public void onClick(View v) {
+				showFullImage();
+			}
+		});
+        
+        this.mImgPrev = (Button) findViewById(R.id.imgPrevious);
+        this.mImgPrev.setOnClickListener(new View.OnClickListener() {
+			
+			public void onClick(View v) {
+				previousImage();
+			}
+		});
+        
+        this.mImgNext = (Button) findViewById(R.id.imgNext);
+        this.mImgNext.setOnClickListener(new View.OnClickListener() {
+			
+			public void onClick(View v) {
+				nextImage();				
+			}
+		});
     }
 
 	public void onInit(int status) {
@@ -135,6 +157,8 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
     }
 
 	private String textToRead;
+	private List<ImageInfo> images;
+	private int imageCursor;
 	
 	private void initTxt() {
 		textToRead = "";
@@ -175,7 +199,50 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 //	            null);
 	}
 	
-	public void addPageImage(Bitmap bitmap) {
+	public void setImages(List<ImageInfo> images) {
+		this.images = images;
+		this.showFirstImage();
+	}
+	
+	private void showFirstImage() {
+		this.imageCursor = 0;
+		this.showImage();
+	}
+
+	private void showImage() {
+		if (this.images.size() > this.imageCursor) {
+			RetrieveImageTask retrieveImage = new RetrieveImageTask(this);
+			retrieveImage.execute(this.images.get(this.imageCursor).thumbUrl);
+		}
+	}
+	
+	private void showFullImage() {
+		if (this.images.size() > this.imageCursor) {
+			RetrieveImageTask retrieveImage = new RetrieveImageTask(this);
+			retrieveImage.execute(this.images.get(this.imageCursor).url);
+		}
+	}
+	
+	public void showImage(Bitmap bitmap) {
 		this.mImage.setImageBitmap(bitmap);
 	}
+	
+	public void previousImage() {
+		this.imageCursor--;
+		if (this.imageCursor < 0) {
+			this.imageCursor = this.images.size() - 1;
+		}
+		
+		this.showImage();
+	}
+	
+	public void nextImage() {
+		this.imageCursor++;
+		if (this.imageCursor >= this.images.size()) {
+			this.imageCursor = 0;
+		}
+		
+		this.showImage();
+	}
+	
 }
