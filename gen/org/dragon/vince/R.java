@@ -15,15 +15,21 @@ public final class R {
     }
     public static final class id {
         public static final int again_button=0x7f050000;
-        public static final int editWP=0x7f050006;
+        public static final int bottom_footer=0x7f050009;
+        public static final int editWP=0x7f050005;
         public static final int getWikiPedia=0x7f050001;
         public static final int readIt=0x7f050002;
         public static final int stopRead=0x7f050003;
-        public static final int wikiImage=0x7f050004;
-        public static final int wikigallery=0x7f050005;
+        public static final int top_header=0x7f050008;
+        public static final int txtTitle=0x7f050006;
+        public static final int wikiImage=0x7f050007;
+        public static final int wikigallery=0x7f050004;
     }
     public static final class layout {
-        public static final int main=0x7f030000;
+        public static final int layout_footer=0x7f030000;
+        public static final int layout_header=0x7f030001;
+        public static final int layout_main=0x7f030002;
+        public static final int main=0x7f030003;
     }
     public static final class string {
         public static final int again=0x7f040002;
@@ -33,6 +39,7 @@ public final class R {
         public static final int readit=0x7f040006;
         public static final int red=0x7f040003;
         public static final int stopread=0x7f040007;
+        public static final int title=0x7f040008;
         public static final int white=0x7f040004;
     }
 }

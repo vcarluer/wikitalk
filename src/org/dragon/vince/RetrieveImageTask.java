@@ -41,7 +41,7 @@ public class RetrieveImageTask extends AsyncTask<String, Void, Bitmap> {
 				e.printStackTrace();
 			}
 			
-			// Handle 2 redirections
+			// Handle 2 redirections (in case of use of special:filepath
 			if (response != null) {
 				StatusLine status = response.getStatusLine();
 				if (status.getStatusCode() == 302 || status.getStatusCode() == 301) {

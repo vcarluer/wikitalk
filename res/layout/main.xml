@@ -1,51 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:background="#000000"
-    android:orientation="vertical" >
+    android:gravity="center">
 
-    <Button
-        android:id="@+id/again_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:enabled="false"
-        android:text="@string/again" />
+    <!-- HEADER -->
+    <RelativeLayout 
+        android:id="@+id/top_header"
+        android:layout_alignParentTop="true"
+        android:layout_width="fill_parent"
+		android:layout_height="wrap_content" >
 
-    <Button
-        android:id="@+id/getWikiPedia"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/getwikipedia" />
+    	<include layout="@layout/layout_header" />
 
-    <Button
-        android:id="@+id/readIt"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/readit" />
+    </RelativeLayout>
+    
+    <!-- FOOTER -->
+    <LinearLayout android:id="@+id/bottom_footer"
+        android:layout_width="fill_parent" android:layout_height="wrap_content"         
+        android:orientation="vertical" android:layout_alignParentBottom="true">
+        <!-- menu bar -->
+        <include layout="@layout/layout_footer" />
+    </LinearLayout>
+    
+    <!-- MAIN PART -->
+    <include
+            layout="@layout/layout_main"
+            android:layout_below="@id/top_header" android:layout_above="@id/bottom_footer"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"/>
 
-    <Button
-        android:id="@+id/stopRead"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/stopread" />
-
-    <ImageView
-        android:id="@+id/wikiImage"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-         />
-
-    <Gallery
-        android:id="@+id/wikigallery"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
-
-    <TextView
-        android:id="@+id/editWP"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="0.70"
-        android:inputType="textMultiLine" />
-
-</LinearLayout>
+</RelativeLayout>

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_horizontal"
+    android:orientation="vertical" >
+    
+	<Button
+        android:id="@+id/again_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:enabled="false"
+        android:text="@string/again" />
+
+    <Button
+        android:id="@+id/getWikiPedia"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/getwikipedia" />
+
+    <Button
+        android:id="@+id/readIt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/readit" />
+
+    <Button
+        android:id="@+id/stopRead"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/stopread" />
+
+    <Gallery
+        android:id="@+id/wikigallery"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+
+    <TextView
+        android:id="@+id/editWP"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="0.70"
+        android:visibility="gone"
+        android:inputType="textMultiLine" />
+</LinearLayout>
