@@ -1,15 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout 
-    android:background="#ff00ff" 
-    android:layout_height="fill_parent" 
-    android:layout_width="fill_parent" 
-    android:orientation="vertical" 
-    xmlns:android="http://schemas.android.com/apk/res/android">
-    	<Button 
-    	    android:enabled="false" 
-    	    android:id="@+id/again_button" 
-    	    android:layout_height="wrap_content" 
-    	    android:layout_width="wrap_content" 
-    	    android:text="@string/again" />
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="#000000"
+    android:orientation="vertical" >
+
+    <Button
+        android:id="@+id/again_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:enabled="false"
+        android:text="@string/again" />
+
+    <Button
+        android:id="@+id/getWikiPedia"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/getwikipedia" />
+
+    <TextView
+        android:id="@+id/editWP"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="0.70"
+        android:inputType="textMultiLine" />
 
 </LinearLayout>
