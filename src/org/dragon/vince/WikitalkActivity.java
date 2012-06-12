@@ -14,11 +14,14 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import android.app.Activity;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Gallery;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 public class WikitalkActivity extends Activity implements TextToSpeech.OnInitListener {
@@ -31,6 +34,8 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
     private Button mStopRead;
     private TextView mTxt;
     private RetrievePageTask pageTask;
+    private Gallery mGallery;
+    private ImageView mImage;
 	
 	/** Called when the activity is first created. */
     @Override
@@ -80,6 +85,9 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 				}
 			}
 		});
+        
+        this.mGallery = (Gallery) findViewById(R.id.wikigallery);
+        this.mImage = (ImageView) findViewById(R.id.wikiImage);
     }
 
 	public void onInit(int status) {
@@ -192,5 +200,9 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 //		mTts.speak(this.textToRead,
 //	            TextToSpeech.QUEUE_ADD,  // Drop allpending entries in the playback queue.
 //	            null);
+	}
+	
+	public void addPageImage(Bitmap bitmap) {
+		this.mImage.setImageBitmap(bitmap);
 	}
 }

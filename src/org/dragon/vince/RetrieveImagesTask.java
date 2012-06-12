@@ -11,29 +11,26 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.w3c.dom.Document;
-import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import android.app.Activity;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
 
-public class RetrievePageTask extends AsyncTask<String, Void, String> {
+public class RetrieveImagesTask extends AsyncTask<String, Void, String> {
 	private WikitalkActivity mainActivity;
-	private RetrieveImagesTask retrieveImage;
-	private String search;
-	private String pageId;
+	private RetrieveImageTask retrieveImage;
 	
-	public RetrievePageTask(WikitalkActivity activity) {
+	public RetrieveImagesTask(WikitalkActivity activity) {
 		this.mainActivity = activity;
-		this.retrieveImage = new RetrieveImagesTask(this.mainActivity);
+		this.retrieveImage = new RetrieveImageTask(this.mainActivity);
 	}
 	
-	@Override	
+	@Override
 	protected String doInBackground(String... params) {
 		String line = null;
-    	search = params[0];
-    	HttpGet uri = new HttpGet("http://fr.wikipedia.org/w/api.php?format=xml&action=query&titles=" + search + "&prop=revisions&rvprop=content");
+    	String pageId = params[0];
+    	HttpGet uri = new HttpGet("http://fr.wikipedia.org/w/api.php?format=xml&action=query&pageids=" + pageId + "&prop=images");
     	// close client request?
     	DefaultHttpClient client = new DefaultHttpClient();
     	HttpResponse response = null;
@@ -61,27 +58,25 @@ public class RetrievePageTask extends AsyncTask<String, Void, String> {
 	    	}
 		}
 		
-    	return line;
+    	return line;		
 	}
 
 	@Override
 	protected void onPostExecute(String result) {
 		Document doc = this.mainActivity.XMLfromString(result);
-		NodeList nodes = doc.getElementsByTagName("page");
-		for (int i = 0; i < nodes.getLength(); i++) {
-			 this.pageId = nodes.item(i).getAttributes().getNamedItem("pageid").getNodeValue();
+		
+		NodeList nodes = doc.getElementsByTagName("im"); 
+		 for (int i = 0; i < nodes.getLength(); i++) {
+			 String title = nodes.item(i).getAttributes().getNamedItem("title").getNodeValue();
+			 
+			 title = title.replace("Fichier:", "");
+			 String imageUrl = "http://fr.wikipedia.org/wiki/Special:Filepath?file=" + Uri.encode(title);			 
+			 this.retrieveImage.execute(imageUrl);
 			 // Only first one for now
 			 break;
 		}
 		
-		nodes = doc.getElementsByTagName("rev"); 
-		 for (int i = 0; i < nodes.getLength(); i++) {
-			 String line = nodes.item(i).getTextContent();
-			 this.mainActivity.addTextToRead(line);			 
-		}
-		 
-		 this.retrieveImage.execute(pageId);
-						
 		super.onPostExecute(result);
 	}
+
 }
