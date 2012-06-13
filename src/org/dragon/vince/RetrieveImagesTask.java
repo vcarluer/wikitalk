@@ -35,7 +35,7 @@ public class RetrieveImagesTask extends AsyncTask<String, Void, List<ImageInfo>>
 		List<ImageInfo> images = new ArrayList<ImageInfo>();
 		String line = null;
     	String pageId = params[0];
-    	HttpGet uri = new HttpGet("http://fr.wikipedia.org/w/api.php?format=xml&action=query&pageids=" + pageId + "&prop=images");
+    	HttpGet uri = new HttpGet("http://" + this.mainActivity.getCountryLc() + ".wikipedia.org/w/api.php?format=xml&action=query&pageids=" + pageId + "&prop=images");
     	// close client request?
     	DefaultHttpClient client = new DefaultHttpClient();
     	HttpResponse response = null;
@@ -77,7 +77,7 @@ public class RetrieveImagesTask extends AsyncTask<String, Void, List<ImageInfo>>
 				int height = size.y;
 								
 				int imgFormat = width; // Always width?
-				String imageUrl = "http://fr.wikipedia.org/w/api.php?action=query&titles=Image:" + title +"&prop=imageinfo&iiprop=url&iiurlwidth=" + String.valueOf(imgFormat) + "&format=xml";
+				String imageUrl = "http://" + this.mainActivity.getCountryLc() + ".wikipedia.org/w/api.php?action=query&titles=Image:" + title +"&prop=imageinfo&iiprop=url&iiurlwidth=" + String.valueOf(imgFormat) + "&format=xml";
 				uri = new HttpGet(imageUrl);
 				
 				try {

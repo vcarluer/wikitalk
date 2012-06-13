@@ -39,7 +39,9 @@ import android.widget.Toast;
 
 public class WikitalkActivity extends Activity implements TextToSpeech.OnInitListener, OnUtteranceCompletedListener{
 
-    private static final String LINK_LABEL = "LinkLabel";
+    private static final String DEFAULT_LANG = "Default";
+
+	private static final String LINK_LABEL = "LinkLabel";
 
 	private static final int VOICE_RECOGNITION_REQUEST_CODE = 1234;
     
@@ -208,6 +210,8 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
             nextImage();
        }
   };
+
+  private Locale currentLang;
     
     /**
      * Fire an intent to start the speech recognition activity.
@@ -232,7 +236,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
         // Specify the recognition language. This parameter has to be specified only if the
         // recognition has to be done in a specific language and not the default one (i.e., the
         // system locale). Most of the applications do not have to set this parameter.
-        if (!mSupportedLanguageView.getSelectedItem().toString().equals("Default")) {
+        if (!mSupportedLanguageView.getSelectedItem().toString().equals(DEFAULT_LANG)) {
             String extraLang = mSupportedLanguageView.getSelectedItem().toString();
         	intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE,
                     extraLang);
@@ -371,14 +375,8 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 //	            null);
 	}		
 	
-	private void initLanguage() {		
-		Locale loc = Locale.US;
-		if (!mSupportedLanguageView.getSelectedItem().toString().equals("Default")) {
-            String lang = mSupportedLanguageView.getSelectedItem().toString();
-            loc = new Locale(lang);            
-		}
-		
-		int result = mTts.setLanguage(loc);
+	private void initLanguage() {						
+		int result = mTts.setLanguage(this.currentLang);
         
         if (result == TextToSpeech.LANG_MISSING_DATA ||
             result == TextToSpeech.LANG_NOT_SUPPORTED) {
@@ -472,7 +470,16 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 			this.pauseRead();
 			this.initData();
 			initWidgets();
-			this.currentSearch = toSearch;									
+			this.currentSearch = toSearch;
+			this.currentLang = Locale.US;
+			String selected = mSupportedLanguageView.getSelectedItem().toString();
+			if (!selected.equals(DEFAULT_LANG)) {            	            
+				String[] locales = selected.split("-");
+				if (locales.length == 2) {
+					this.currentLang = new Locale(locales[0], locales[1]);
+				}				
+			}
+			
 			RetrievePageTask pageTask = new RetrievePageTask(this);			
 			pageTask.execute(toSearch);
 			this.status = Status.Working;
@@ -504,7 +511,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 
 	    private void updateSupportedLanguages(List<String> languages) {
 	        // We add "Default" at the beginning of the list to simulate default language.
-	        languages.add(0, "Default");
+	        languages.add(0, DEFAULT_LANG);
 	        int lgIdx = 0;	        
 	        if (this.langPref != null && this.langPref.length() > 0) {
 	        	int i = 0;
@@ -713,5 +720,9 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 		public void callNextImage() {
 			Message message = new Message();
 			this.handlerNextImage.sendMessage(message);
+		}
+		
+		public String getCountryLc() {
+			return this.currentLang.getCountry().toLowerCase();
 		}
 }
