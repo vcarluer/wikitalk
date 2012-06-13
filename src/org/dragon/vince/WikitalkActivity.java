@@ -66,9 +66,11 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
         
      // Initialize text-to-speech. This is an asynchronous operation.
         // The OnInitListener (second argument) is called after initialization completes.
-        mTts = new TextToSpeech(this,
-            this  //TextToSpeech.OnInitListener
-            );
+        if (this.mTts == null) {
+        	mTts = new TextToSpeech(this,
+                    this  //TextToSpeech.OnInitListener
+                    );
+        }
                 
         mTxt = (TextView) findViewById(R.id.editWP);
         mGetWP = (Button) findViewById(R.id.getWikiPedia);
@@ -130,6 +132,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
         }
         
         this.mTitle = (TextView) findViewById(R.id.txtTitle);
+        this.mLangPref = (TextView) findViewById(R.id.language_preference);
         mSupportedLanguageView = (Spinner) findViewById(R.id.supported_languages);
         mHandler = new Handler();
      // Check to see if a recognition activity is present
@@ -181,9 +184,10 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
             String extraLang = mSupportedLanguageView.getSelectedItem().toString();
         	intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE,
                     extraLang);
+        	// other props
+        	intent.putExtra(RecognizerIntent.EXTRA_ONLY_RETURN_LANGUAGE_PREFERENCE,
+                    extraLang);
         }
-        
-        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "French");
 
         startActivityForResult(intent, VOICE_RECOGNITION_REQUEST_CODE);
     }
@@ -234,10 +238,12 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	private String textToRead;
 	private List<ImageInfo> images;
 	private int imageCursor;
+
+	private TextView mLangPref;
 	
-	private void initTxt(String txt) {
-		textToRead = txt;
-		mTxt.setText(textToRead);
+	private void initTxt() {
+		textToRead = "";
+		mTxt.setText(textToRead);		
 	}
 	
 	public void addTextToRead(String line) {
@@ -321,9 +327,13 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	}
 	
 	public void search(String toSearch) {
-		RetrievePageTask pageTask = new RetrievePageTask(this);
-		initTxt(toSearch);
-		pageTask.execute(toSearch);
+		if (toSearch != null) {
+			String searchStr = capitalizeFirstLetters(toSearch);
+			this.mTitle.setText(searchStr);
+			RetrievePageTask pageTask = new RetrievePageTask(this);		
+			initTxt();
+			pageTask.execute(searchStr);
+		}
 	}
 	
 	// voice reco
@@ -359,8 +369,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	    }
 
 	    private void updateLanguagePreference(String language) {
-	        TextView textView = (TextView) findViewById(R.id.language_preference);
-	        textView.setText(language);
+	        this.mLangPref.setText(language);
 	    }
 
 	    /**
@@ -417,4 +426,34 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	            Toast.makeText(WikitalkActivity.this, text, 1000).show();
 	        }
 	    }
+	    
+	    public static String capitalizeFirstLetters ( String s ) {
+
+	        for (int i = 0; i < s.length(); i++) {
+
+	            if (i == 0) {
+	                // Capitalize the first letter of the string.
+	                s = String.format( "%s%s",
+	                             Character.toUpperCase(s.charAt(0)),
+	                             s.substring(1) );
+	            }
+
+	            // Is this character a non-letter or non-digit?  If so
+	            // then this is probably a word boundary so let's capitalize
+	            // the next character in the sequence.
+	            if (!Character.isLetterOrDigit(s.charAt(i))) {
+	                if (i + 1 < s.length()) {
+	                    s = String.format( "%s%s%s",
+	                                 s.subSequence(0, i+1),
+	                                 Character.toUpperCase(s.charAt(i + 1)),
+	                                 s.substring(i+2) );
+	                }
+	            }
+
+	        }
+
+	        return s;
+
+	    }
+
 }

@@ -15,6 +15,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import android.app.Activity;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
 
@@ -32,7 +33,7 @@ public class RetrievePageTask extends AsyncTask<String, Void, String> {
 	@Override	
 	protected String doInBackground(String... params) {
 		String line = null;
-    	search = params[0];
+    	search = Uri.encode(params[0]);
     	HttpGet uri = new HttpGet("http://fr.wikipedia.org/w/api.php?format=xml&action=query&titles=" + search + "&prop=revisions&rvprop=content");
     	// close client request?
     	DefaultHttpClient client = new DefaultHttpClient();
@@ -70,6 +71,7 @@ public class RetrievePageTask extends AsyncTask<String, Void, String> {
 		NodeList nodes = doc.getElementsByTagName("page");
 		for (int i = 0; i < nodes.getLength(); i++) {
 			Node node = nodes.item(i).getAttributes().getNamedItem("pageid");
+			// Handle here multiple results (take first or propose)
 			if(node != null) {
 				this.pageId = nodes.item(i).getAttributes().getNamedItem("pageid").getNodeValue();
 				 // Only first one for now
