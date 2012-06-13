@@ -16,6 +16,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
@@ -228,6 +229,12 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 
         startActivityForResult(intent, VOICE_RECOGNITION_REQUEST_CODE);
     }
+
+	@Override
+	public void onConfigurationChanged(Configuration newConfig) {
+		// TODO Auto-generated method stub
+		super.onConfigurationChanged(newConfig);
+	}
 
 	public void onInit(int status) {
 		// status can be either TextToSpeech.SUCCESS or TextToSpeech.ERROR.
