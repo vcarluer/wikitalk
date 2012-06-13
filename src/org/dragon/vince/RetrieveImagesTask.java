@@ -35,7 +35,8 @@ public class RetrieveImagesTask extends AsyncTask<String, Void, List<ImageInfo>>
 		List<ImageInfo> images = new ArrayList<ImageInfo>();
 		String line = null;
     	String pageId = params[0];
-    	HttpGet uri = new HttpGet("http://" + this.mainActivity.getLanguageLc() + ".wikipedia.org/w/api.php?format=xml&action=query&pageids=" + pageId + "&prop=images");
+    	// imlimit=500 for regular users
+    	HttpGet uri = new HttpGet("http://" + this.mainActivity.getLanguageLc() + ".wikipedia.org/w/api.php?format=xml&action=query&pageids=" + pageId + "&prop=images&imlimit=max");
     	// close client request?
     	DefaultHttpClient client = new DefaultHttpClient();
     	HttpResponse response = null;
@@ -106,9 +107,11 @@ public class RetrieveImagesTask extends AsyncTask<String, Void, List<ImageInfo>>
 									 ImageInfo ii = new ImageInfo();
 									 ii.name = title;
 									 ii.url = nodes2.item(j).getAttributes().getNamedItem("url").getNodeValue();
-									 ii.thumbUrl = nodes2.item(j).getAttributes().getNamedItem("thumburl").getNodeValue();
+									 ii.thumbUrl = nodes2.item(j).getAttributes().getNamedItem("thumburl").getNodeValue();									 
 									 
 									 images.add(ii);
+									 // To link with ditcionnary
+									 ii.idx = images.size() - 1;
 								 }
 							}
 						} catch (ParseException e) {

@@ -57,6 +57,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
     private Spinner mSupportedLanguageView;
 	private String textToRead;
 	private List<ImageInfo> images;
+	private Map<Integer, List<ImageInfo>> imagesIndexed;
 	private int imageCursor;
 	private Status status;
 	private StatusImage statusImage;
@@ -76,17 +77,19 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	private TextView mImgInfo;
 	private int textSize;	
 	private String currentSearch;
-	private ImageChanger imageChanger;
 	private long imageShown;
 	private String langPref;
 	
 	private GestureDetector gestureDetector;
     private View.OnTouchListener gestureListener;
+    
+    private String[] splitSentence;
 	
 	public WikitalkActivity() {
 		this.sentences = new HashMap<Integer, String>();
 		this.hashAudio = new HashMap<String, String>();
 		this.links = new HashMap<Integer, List<Link>>();
+		this.imagesIndexed = new HashMap<Integer, List<ImageInfo>>(); 
 	}
 	
 	/** Called when the activity is first created. */
@@ -320,9 +323,11 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
     	this.currentSentence = "";
     	this.readCursor = 0;
     	this.imageCursor = 0;
-    	if (this.imageChanger != null) {
-    		this.imageChanger.cancel(true);
-    	}    	
+    	
+    	this.splitSentence = null;
+    	this.imagesIndexed.clear();
+    	this.links.clear();
+    	this.sentences.clear();
     }
 	
 	private void initWidgets() {
@@ -347,7 +352,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 		this.mTitle.setText(this.currentSearch);
 		this.initLanguage();
 		
-		String[] splitSentence = this.textToRead.split("\\.");
+		splitSentence = this.textToRead.split("\\. ");
 		
 		int idx = 0;
 		for(String sentence : splitSentence) {
@@ -404,6 +409,31 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 
 	public void setImages(List<ImageInfo> images) {
 		this.images = images;
+		int idx = 0;
+		int imageIdx = 0;
+		for(String sentence : this.splitSentence) {
+			if (imageIdx >= this.images.size()) {
+				break;
+			}
+			
+			boolean found = true;
+			List<ImageInfo> iis = new ArrayList<ImageInfo>();
+			while (found) {
+				if (sentence.toUpperCase().contains(this.images.get(imageIdx).name.toUpperCase())) {
+					iis.add(this.images.get(imageIdx));					
+					imageIdx++;
+				} else {
+					found = false;
+				}
+			}
+			
+			if (iis.size() > 0) {
+				this.imagesIndexed.put(idx, iis);
+			}
+			
+			idx++;
+		}
+		
 		this.showFirstImage();
 //		this.imageChanger = new ImageChanger(this);
 //		this.imageChanger.execute();
@@ -668,7 +698,16 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	    				// this.mLinkInfo.setText(this.currentLink.label);
 	    			}
 	    		}	    	
-	    		    	
+	    		
+	    		if (this.imagesIndexed != null && this.imagesIndexed.size() > 0) {
+	    			if (this.imagesIndexed.containsKey(this.readCursor)) {
+		    			// only first one
+	    				ImageInfo ii = this.imagesIndexed.get(this.readCursor).get(0);
+		    			this.imageCursor = ii.idx;
+		    			this.showImage();
+		    		}
+	    		}
+	    		
 		    	if (this.sentences.containsKey(this.readCursor)) {
 		    		String sentence = this.sentences.get(this.readCursor);		    	
 			    	this.reading = true;
