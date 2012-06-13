@@ -585,7 +585,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	    			if (currentLinks.size() > 0) {
 	    				this.currentLink = currentLinks.get(0);
 	    				Bundle bundle = new Bundle();
-	    				bundle.putString(LINK_LABEL, this.currentLink.link);
+	    				bundle.putString(LINK_LABEL, this.currentLink.label);
 	    				Message message = new Message();
 	    				message.setData(bundle);
 	    				this.handler.sendMessage(message);
