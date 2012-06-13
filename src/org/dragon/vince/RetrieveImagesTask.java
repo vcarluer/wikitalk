@@ -68,7 +68,8 @@ public class RetrieveImagesTask extends AsyncTask<String, Void, List<ImageInfo>>
 			NodeList nodes = doc.getElementsByTagName("im");
 			for (int i = 0; i < nodes.getLength(); i++) {
 				String title = nodes.item(i).getAttributes().getNamedItem("title").getNodeValue();
-				title = Uri.encode(title.replace("Fichier:", ""));
+				int pos = title.indexOf(":");				
+				title = Uri.encode(title.substring(pos + 1));
 				WindowManager wm = (WindowManager) this.mainActivity.getSystemService(Context.WINDOW_SERVICE);
 				Display display = wm.getDefaultDisplay();
 				Point size = new Point();
