@@ -14,9 +14,9 @@ public class ImageChanger extends Thread {
 		while (run) {
 			try {
 				Thread.sleep(10000);
-				if (System.currentTimeMillis() - this.activity.getImageShown() > 10000) {
-					this.activity.nextImage();
-				}				
+//				if (System.currentTimeMillis() - this.activity.getImageShown() > 10000) {
+//					this.activity.nextImage();
+//				}				
 			} catch (InterruptedException e) {				
 				e.printStackTrace();
 			}
