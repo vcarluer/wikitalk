@@ -372,11 +372,10 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	}		
 	
 	private void initLanguage() {		
-		Locale loc = Locale.ENGLISH;
+		Locale loc = Locale.US;
 		if (!mSupportedLanguageView.getSelectedItem().toString().equals("Default")) {
             String lang = mSupportedLanguageView.getSelectedItem().toString();
-            
-            if (lang == "fr-FR") loc = Locale.FRANCE;
+            loc = new Locale(lang);            
 		}
 		
 		int result = mTts.setLanguage(loc);
