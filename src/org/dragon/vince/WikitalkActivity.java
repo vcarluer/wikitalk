@@ -26,6 +26,8 @@ import android.speech.RecognizerIntent;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.TextToSpeech.OnUtteranceCompletedListener;
 import android.util.Log;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ArrayAdapter;
@@ -77,6 +79,9 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	private ImageChanger imageChanger;
 	private long imageShown;
 	private String langPref;
+	
+	private GestureDetector gestureDetector;
+    private View.OnTouchListener gestureListener;
 	
 	public WikitalkActivity() {
 		this.sentences = new HashMap<Integer, String>();
@@ -197,6 +202,17 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 				}
 			}
 		});
+        
+     // Gesture detection
+        gestureDetector = new GestureDetector(new MyGestureDetector(this));
+        gestureListener = new View.OnTouchListener() {
+            public boolean onTouch(View v, MotionEvent event) {
+                return gestureDetector.onTouchEvent(event);
+            }
+        };
+        
+        this.mImage.setOnTouchListener(this.gestureListener);
+        this.mainLayout.setOnTouchListener(this.gestureListener);
     }
     
     final Handler handler = new Handler() {
@@ -369,6 +385,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 		
 		this.readCursor = 0;
 		this.readAtPosition();
+		Toast.makeText(this, "Play", Toast.LENGTH_SHORT).show();
 		
 //		mTts.speak(this.textToRead,
 //	            TextToSpeech.QUEUE_ADD,  // Drop allpending entries in the playback queue.
@@ -427,6 +444,8 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 			ImageInfo ii = this.images.get(this.imageCursor);
 			this.showImageInfo(ii);
 		}
+		
+		Toast.makeText(this, String.valueOf(this.imageCursor + 1) + "/" + String.valueOf(this.images.size()), Toast.LENGTH_SHORT).show();
 	}
 
 	private void showImageInfo(ImageInfo imageInfo) {
@@ -454,7 +473,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 		}
 	}
 	
-	private void nextImage() {
+	public void nextImage() {
 		if (this.images != null && this.statusImage == StatusImage.Ready) {
 			this.imageCursor++;
 			if (this.imageCursor >= this.images.size()) {
@@ -626,10 +645,13 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	    	}
 	    	
 	    	this.reading = false;
+	    	
+	    	Toast.makeText(this, "Pause", Toast.LENGTH_SHORT).show();
 	    }
 	    
 	    public void resumeRead() {
-	    	this.readAtPosition();   		    
+	    	this.readAtPosition();   		
+	    	Toast.makeText(this, "Play", Toast.LENGTH_SHORT).show();
 	    }
 	    
 	    private void readAtPosition() {
@@ -724,5 +746,15 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 		
 		public String getLanguageLc() {
 			return this.currentLang.getLanguage().toLowerCase();
+		}
+		
+		public void swithReading() {
+			if (status == Status.Ready) {
+				if (mTts.isSpeaking()) {
+					pauseRead();
+				} else {
+					resumeRead();
+				}					
+			}
 		}
 }
