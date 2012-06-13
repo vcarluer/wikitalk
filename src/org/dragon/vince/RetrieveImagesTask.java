@@ -103,6 +103,7 @@ public class RetrieveImagesTask extends AsyncTask<String, Void, List<ImageInfo>>
 								NodeList nodes2 = doc2.getElementsByTagName("ii"); 
 								 for (int j = 0; j < nodes2.getLength(); j++) {
 									 ImageInfo ii = new ImageInfo();
+									 ii.name = title;
 									 ii.url = nodes2.item(j).getAttributes().getNamedItem("url").getNodeValue();
 									 ii.thumbUrl = nodes2.item(j).getAttributes().getNamedItem("thumburl").getNodeValue();
 									 

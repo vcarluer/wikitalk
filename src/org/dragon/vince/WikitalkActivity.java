@@ -18,6 +18,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -68,6 +69,8 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	private String currentSentence;
 	private Link currentLink;
 	
+	private TextView mImgInfo;
+	
 	public WikitalkActivity() {
 		this.sentences = new HashMap<Integer, String>();
 		this.hashAudio = new HashMap<String, String>();
@@ -112,6 +115,8 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 				}
 			}
 		});
+        
+        this.mImgInfo = (TextView) findViewById(R.id.imgText);
         
         this.mainLayout = (RelativeLayout) findViewById(R.id.mainLayout);
         this.mainLayout.setOnClickListener(new View.OnClickListener() {
@@ -293,7 +298,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 		Log.d(WIKITALK, line);
 	}
 	
-	public void readText() {
+	public void readText() {				
 		this.sentences.clear();
 		this.links.clear();
 		
@@ -352,19 +357,39 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	private void showImage() {
 		if (this.images.size() > this.imageCursor) {
 			RetrieveImageTask retrieveImage = new RetrieveImageTask(this);
-			retrieveImage.execute(this.images.get(this.imageCursor).thumbUrl);
+			ImageInfo ii = this.images.get(this.imageCursor);
+			retrieveImage.execute(ii.thumbUrl);			
 		}
 	}
 	
+	private void showImageInfo(ImageInfo imageInfo) {
+		String info = "";
+		if (imageInfo != null && imageInfo.name != null) {
+			info = imageInfo.name;
+			int pos = info.lastIndexOf(".");
+			if (pos > -1) {
+				info = info.substring(0, pos);
+			}
+		}
+		
+		info = Uri.decode(info);
+		this.mImgInfo.setText(info);
+	}
+
 	private void showFullImage() {
 		if (this.images.size() > 0 && this.images.size() > this.imageCursor) {
 			RetrieveImageTask retrieveImage = new RetrieveImageTask(this);
-			retrieveImage.execute(this.images.get(this.imageCursor).url);
+			ImageInfo ii = this.images.get(this.imageCursor);
+			retrieveImage.execute(ii.url);			
 		}
 	}
 	
 	public void showImage(Bitmap bitmap) {
 		this.mImage.setImageBitmap(bitmap);
+		if (this.images.size() > 0 && this.images.size() > this.imageCursor) {			
+			ImageInfo ii = this.images.get(this.imageCursor);
+			this.showImageInfo(ii);
+		}
 	}
 	
 	public void previousImage() {
