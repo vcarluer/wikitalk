@@ -19,6 +19,7 @@ import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Message;
 import android.speech.RecognizerIntent;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.TextToSpeech.OnUtteranceCompletedListener;
@@ -36,7 +37,9 @@ import android.widget.Toast;
 
 public class WikitalkActivity extends Activity implements TextToSpeech.OnInitListener, OnUtteranceCompletedListener{
 
-    private static final int VOICE_RECOGNITION_REQUEST_CODE = 1234;
+    private static final String LINK_LABEL = "LinkLabel";
+
+	private static final int VOICE_RECOGNITION_REQUEST_CODE = 1234;
     
 	static final String WIKITALK = "wikitalk";
     private TextToSpeech mTts;    
@@ -54,12 +57,15 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	private Map<Integer, String> sentences;
 	private int readCursor;
 	private Map<Integer, List<Link>> links;
+	private TextView mLinkInfo;
 	
 	private HashMap<String, String> hashAudio;
 	private boolean reading;
 	private RelativeLayout mainLayout;
 	
 	private Button mTmp;
+	private String currentSentence;
+	private Link currentLink;
 	
 	public WikitalkActivity() {
 		this.sentences = new HashMap<Integer, String>();
@@ -168,7 +174,25 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
         // does not require a recognition in a specific language (i.e., different from the system
         // locale), the application does not need to read the voice settings.
         refreshVoiceSettings();
+        
+        this.mLinkInfo = (TextView)	findViewById(R.id.linkInfo);
+        this.mLinkInfo.setOnClickListener(new OnClickListener() {
+			
+			public void onClick(View v) {
+				if (currentLink != null) {
+					search(currentLink.link);
+				}
+			}
+		});
+        
+        
     }
+    
+    final Handler handler = new Handler() {
+        public void  handleMessage(Message msg) {
+             mLinkInfo.setText(msg.getData().getString(LINK_LABEL));
+        }
+   };
     
     /**
      * Fire an intent to start the speech recognition activity.
@@ -240,6 +264,8 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
     };
     int i =0;
 
+	private int textSize;
+
     private void sayHello() {
         // Select a random hello.
         int helloLength = HELLOS.length;
@@ -260,7 +286,6 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 		Log.d(WIKITALK, line);
 	}
 	
-	private String currentSentence;
 	public void readText() {
 		this.sentences.clear();
 		this.links.clear();
@@ -295,7 +320,9 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 			}			
 						
 			idx++;
-		}				
+		}
+		
+		this.textSize = idx;
 		
 		this.readCursor = 0;
 		this.readAtPosition();
@@ -357,6 +384,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	
 	public void search(String toSearch) {
 		if (toSearch != null) {
+			this.pauseRead();
 			String searchStr = capitalizeFirstLetters(toSearch);
 			this.mTitle.setText(searchStr);
 			RetrievePageTask pageTask = new RetrievePageTask(this);		
@@ -497,8 +525,21 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	    	this.readAtPosition();   		    
 	    }
 	    
-	    private void readAtPosition() {	    	
-	    	if (this.readCursor < this.sentences.size()) {
+	    private void readAtPosition() {
+	    	if (this.readCursor < this.textSize) {	    	
+	    		if (this.links.containsKey(this.readCursor)) {
+	    			List<Link> currentLinks = this.links.get(this.readCursor);
+	    			if (currentLinks.size() > 0) {
+	    				this.currentLink = currentLinks.get(0);
+	    				Bundle bundle = new Bundle();
+	    				bundle.putString(LINK_LABEL, this.currentLink.link);
+	    				Message message = new Message();
+	    				message.setData(bundle);
+	    				this.handler.sendMessage(message);
+	    				// this.mLinkInfo.setText(this.currentLink.label);
+	    			}
+	    		}	    	
+	    		    	
 		    	if (this.sentences.containsKey(this.readCursor)) {
 		    		String sentence = this.sentences.get(this.readCursor);		    	
 			    	this.reading = true;
@@ -506,7 +547,8 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 				            TextToSpeech.QUEUE_ADD,  // Drop allpending entries in the playback queue.
 				            this.hashAudio);
 		    	} else {
-		    		this.readCursor++;
+		    		this.readCursor++;		    		
+		    		this.readAtPosition();		    				    	
 		    	}
 	    	}
 	    }
