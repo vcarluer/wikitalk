@@ -322,21 +322,25 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	}
 	
 	public void previousImage() {
-		this.imageCursor--;
-		if (this.imageCursor < 0) {
-			this.imageCursor = this.images.size() - 1;
+		if (this.images != null) {
+			this.imageCursor--;
+			if (this.imageCursor < 0) {
+				this.imageCursor = this.images.size() - 1;
+			}
+			
+			this.showImage();
 		}
-		
-		this.showImage();
 	}
 	
 	public void nextImage() {
-		this.imageCursor++;
-		if (this.imageCursor >= this.images.size()) {
-			this.imageCursor = 0;
-		}
-		
-		this.showImage();
+		if (this.images != null) {
+			this.imageCursor++;
+			if (this.imageCursor >= this.images.size()) {
+				this.imageCursor = 0;
+			}
+			
+			this.showImage();
+		}			
 	}
 	
 	public void search(String toSearch) {
