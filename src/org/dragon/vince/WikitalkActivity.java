@@ -153,6 +153,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
         Intent intent = getIntent();
         if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
           String query = intent.getStringExtra(SearchManager.QUERY);
+          query = capitalizeFirstLetters(query);
           search(query);
         }
         
@@ -416,12 +417,11 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	
 	public void search(String toSearch) {
 		if (toSearch != null) {
-			this.pauseRead();
-			String searchStr = capitalizeFirstLetters(toSearch);
-			this.mTitle.setText(searchStr);
+			this.pauseRead();			
+			this.mTitle.setText(toSearch);
 			RetrievePageTask pageTask = new RetrievePageTask(this);		
 			initTxt();
-			pageTask.execute(searchStr);
+			pageTask.execute(toSearch);
 		}
 	}
 	
@@ -434,7 +434,8 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	                    RecognizerIntent.EXTRA_RESULTS);
 	            if (matches.size() > 0) {
 	            	// Search first match
-	            	this.search(matches.get(0));
+	            	String match = capitalizeFirstLetters(matches.get(0));
+	            	this.search(match);
 	            }
 	        }
 
