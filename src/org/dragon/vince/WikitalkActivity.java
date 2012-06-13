@@ -50,7 +50,6 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
     private Button mImgPrev;
     private TextView mTitle;
     private Handler mHandler;
-    private TextView mLangPref;
     private Spinner mSupportedLanguageView;
 	private String textToRead;
 	private List<ImageInfo> images;
@@ -75,12 +74,12 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	private String currentSearch;
 	private ImageChanger imageChanger;
 	private long imageShown;
+	private String langPref;
 	
 	public WikitalkActivity() {
 		this.sentences = new HashMap<Integer, String>();
 		this.hashAudio = new HashMap<String, String>();
 		this.links = new HashMap<Integer, List<Link>>();
-		this.imageChanger = new ImageChanger(this);
 	}
 	
 	/** Called when the activity is first created. */
@@ -164,7 +163,6 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
         }
         
         this.mTitle = (TextView) findViewById(R.id.txtTitle);
-        this.mLangPref = (TextView) findViewById(R.id.language_preference);
         mSupportedLanguageView = (Spinner) findViewById(R.id.supported_languages);
         mHandler = new Handler();
      // Check to see if a recognition activity is present
@@ -197,8 +195,6 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 				}
 			}
 		});
-        
-        
     }
     
     final Handler handler = new Handler() {
@@ -206,6 +202,12 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
              mLinkInfo.setText(msg.getData().getString(LINK_LABEL));
         }
    };
+   
+   final Handler handlerNextImage = new Handler() {
+       public void  handleMessage(Message msg) {
+            nextImage();
+       }
+  };
     
     /**
      * Fire an intent to start the speech recognition activity.
@@ -250,24 +252,18 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 
 	public void onInit(int status) {
 		// status can be either TextToSpeech.SUCCESS or TextToSpeech.ERROR.
-        if (status == TextToSpeech.SUCCESS) {
-                       int result = mTts.setLanguage(Locale.FRANCE);
-           
-            if (result == TextToSpeech.LANG_MISSING_DATA ||
-                result == TextToSpeech.LANG_NOT_SUPPORTED) {
-               // Lanuage data is missing or the language is not supported.
-                Log.e(WIKITALK, "Language is not available.");
-            } else {
-                // Check the documentation for other possible result codes.
-                // For example, the language may be available for the locale,
-                // but not for the specified country and variant.
-                // The TTS engine has been successfully initialized.
-                // Allow the user to press the button for the app to speak again.
-                // Greet the user.            	
-            	this.mTts.setOnUtteranceCompletedListener(this);
-            	this.hashAudio.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, WIKITALK);
+        if (status == TextToSpeech.SUCCESS) {                    	
+           // Language set at search
+            
+            // Check the documentation for other possible result codes.
+            // For example, the language may be available for the locale,
+            // but not for the specified country and variant.
+            // The TTS engine has been successfully initialized.
+            // Allow the user to press the button for the app to speak again.
+            // Greet the user.            	
+        	this.mTts.setOnUtteranceCompletedListener(this);
+        	this.hashAudio.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, WIKITALK);
             	sayHello();
-            }
         } else {
             // Initialization failed.
             Log.e(WIKITALK, "Could not initialize TextToSpeech.");
@@ -304,7 +300,9 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
     	this.currentSentence = "";
     	this.readCursor = 0;
     	this.imageCursor = 0;
-    	this.imageChanger.interrupt();
+    	if (this.imageChanger != null) {
+    		this.imageChanger.cancel(true);
+    	}    	
     }
 	
 	private void initWidgets() {
@@ -327,6 +325,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 		this.sentences.clear();
 		this.links.clear();
 		this.mTitle.setText(this.currentSearch);
+		this.initLanguage();
 		
 		String[] splitSentence = this.textToRead.split("\\.");
 		
@@ -372,10 +371,28 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 //	            null);
 	}		
 	
+	private void initLanguage() {		
+		Locale loc = Locale.ENGLISH;
+		if (!mSupportedLanguageView.getSelectedItem().toString().equals("Default")) {
+            String lang = mSupportedLanguageView.getSelectedItem().toString();
+            
+            if (lang == "fr-FR") loc = Locale.FRANCE;
+		}
+		
+		int result = mTts.setLanguage(loc);
+        
+        if (result == TextToSpeech.LANG_MISSING_DATA ||
+            result == TextToSpeech.LANG_NOT_SUPPORTED) {
+           // Lanuage data is missing or the language is not supported.
+            Log.e(WIKITALK, "Language is not available.");
+        }
+	}
+
 	public void setImages(List<ImageInfo> images) {
 		this.images = images;
 		this.showFirstImage();
-		this.imageChanger.run();
+//		this.imageChanger = new ImageChanger(this);
+//		this.imageChanger.execute();
 	}
 	
 	private void showFirstImage() {
@@ -440,7 +457,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 		}
 	}
 	
-	public void nextImage() {
+	private void nextImage() {
 		if (this.images != null && this.statusImage == StatusImage.Ready) {
 			this.imageCursor++;
 			if (this.imageCursor >= this.images.size()) {
@@ -489,15 +506,28 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	    private void updateSupportedLanguages(List<String> languages) {
 	        // We add "Default" at the beginning of the list to simulate default language.
 	        languages.add(0, "Default");
-
+	        int lgIdx = 0;	        
+	        if (this.langPref != null && this.langPref.length() > 0) {
+	        	int i = 0;
+	        	for(String lang : languages) {
+	        		if (langPref.toUpperCase().equals(lang.toUpperCase())) {
+	        			lgIdx = i;
+	        			break;
+	        		}
+	        		
+	        		i++;
+	        	}
+	        }
+	        
 	        SpinnerAdapter adapter = new ArrayAdapter<CharSequence>(this,
 	                android.R.layout.simple_spinner_item, languages.toArray(
 	                        new String[languages.size()]));
 	        mSupportedLanguageView.setAdapter(adapter);
+	        mSupportedLanguageView.setSelection(lgIdx);
 	    }
 
 	    private void updateLanguagePreference(String language) {
-	        this.mLangPref.setText(language);
+	        this.langPref = language;
 	    }
 
 	    /**
@@ -528,17 +558,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	                    }
 	                });
 	            }
-
-	            if (extra.containsKey(RecognizerIntent.EXTRA_SUPPORTED_LANGUAGES)) {
-	                mHandler.post(new Runnable() {
-
-	                    public void run() {
-	                        updateSupportedLanguages(extra.getStringArrayList(
-	                                RecognizerIntent.EXTRA_SUPPORTED_LANGUAGES));
-	                    }
-	                });
-	            }
-
+	            
 	            if (extra.containsKey(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE)) {
 	                mHandler.post(new Runnable() {
 
@@ -548,6 +568,16 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	                    }
 	                });
 	            }
+
+	            if (extra.containsKey(RecognizerIntent.EXTRA_SUPPORTED_LANGUAGES)) {
+	                mHandler.post(new Runnable() {
+
+	                    public void run() {
+	                        updateSupportedLanguages(extra.getStringArrayList(
+	                                RecognizerIntent.EXTRA_SUPPORTED_LANGUAGES));
+	                    }
+	                });
+	            }	            
 	        }
 
 	        private void showToast(String text) {
@@ -679,5 +709,10 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 		        tagValues.add(matcher.group(1));
 		    }
 		    return tagValues;
+		}
+		
+		public void callNextImage() {
+			Message message = new Message();
+			this.handlerNextImage.sendMessage(message);
 		}
 }
