@@ -1,19 +1,11 @@
 package org.dragon.vince;
 
-import java.io.IOException;
-import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Random;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.w3c.dom.Document;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 
 import android.app.Activity;
 import android.app.SearchManager;
@@ -27,42 +19,64 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.speech.RecognizerIntent;
 import android.speech.tts.TextToSpeech;
+import android.speech.tts.TextToSpeech.OnUtteranceCompletedListener;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.Gallery;
 import android.widget.ImageView;
-import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.SpinnerAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class WikitalkActivity extends Activity implements TextToSpeech.OnInitListener {
+public class WikitalkActivity extends Activity implements TextToSpeech.OnInitListener, OnUtteranceCompletedListener{
 
     private static final int VOICE_RECOGNITION_REQUEST_CODE = 1234;
     
 	static final String WIKITALK = "wikitalk";
-	private static final String TAG = "TextToSpeechDemo";
-    private TextToSpeech mTts;
-    private Button mGetWP;
-    private Button mReadIt;
-    private Button mStopRead;
-    private TextView mTxt;
+    private TextToSpeech mTts;    
     private ImageView mImage;
     private Button mImgNext;
     private Button mImgPrev;
     private TextView mTitle;
     private Handler mHandler;
+    private TextView mLangPref;
     private Spinner mSupportedLanguageView;
+	private String textToRead;
+	private List<ImageInfo> images;
+	private int imageCursor;
+	private Status status;
+	private Map<Integer, String> sentences;
+	private int readCursor;
+	private HashMap<String, String> hashAudio;
+	private boolean reading;
+	private RelativeLayout mainLayout;
+	
+	private Button mTmp;
+	
+	public WikitalkActivity() {
+		this.sentences = new HashMap<Integer, String>();
+		this.hashAudio = new HashMap<String, String>();
+	}
 	
 	/** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
+        
+        this.status = Status.Ready;
+        
+        this.mTmp = (Button) findViewById(R.id.readIt);
+        this.mTmp.setOnClickListener(new OnClickListener() {
+			
+			public void onClick(View v) {
+				search("Lyon");
+			}
+		});
         
      // Initialize text-to-speech. This is an asynchronous operation.
         // The OnInitListener (second argument) is called after initialization completes.
@@ -71,40 +85,34 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
                     this  //TextToSpeech.OnInitListener
                     );
         }
-                
-        mTxt = (TextView) findViewById(R.id.editWP);
-        mGetWP = (Button) findViewById(R.id.getWikiPedia);
-        mGetWP.setOnClickListener(new View.OnClickListener() {
-			
-			public void onClick(View v) {
-				search("Albert%20Einstein");				
-			}
-		});
-        
-        mReadIt = (Button) findViewById(R.id.readIt);
-        mReadIt.setOnClickListener(new View.OnClickListener() {
-			
-			public void onClick(View v) {
-				readText();
-			}
-		});
-        
-        mStopRead = (Button) findViewById(R.id.stopRead);
-        mStopRead.setOnClickListener(new View.OnClickListener() {
-			
-			public void onClick(View v) {
-				if (mTts.isSpeaking()) {
-					mTts.stop();
-				}
-			}
-		});
-        
 
         this.mImage = (ImageView) findViewById(R.id.wikiImage);
         this.mImage.setOnClickListener(new View.OnClickListener() {
 			
 			public void onClick(View v) {
-				showFullImage();
+				// showFullImage();
+				if (status == Status.Ready) {
+					if (mTts.isSpeaking()) {
+						pauseRead();
+					} else {
+						resumeRead();
+					}					
+				}
+			}
+		});
+        
+        this.mainLayout = (RelativeLayout) findViewById(R.id.mainLayout);
+        this.mainLayout.setOnClickListener(new View.OnClickListener() {
+			
+			public void onClick(View v) {
+				// showFullImage();
+				if (status == Status.Ready) {
+					if (mTts.isSpeaking()) {
+						pauseRead();
+					} else {
+						resumeRead();
+					}					
+				}
 			}
 		});
         
@@ -200,19 +208,21 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
             if (result == TextToSpeech.LANG_MISSING_DATA ||
                 result == TextToSpeech.LANG_NOT_SUPPORTED) {
                // Lanuage data is missing or the language is not supported.
-                Log.e(TAG, "Language is not available.");
+                Log.e(WIKITALK, "Language is not available.");
             } else {
                 // Check the documentation for other possible result codes.
                 // For example, the language may be available for the locale,
                 // but not for the specified country and variant.
                 // The TTS engine has been successfully initialized.
                 // Allow the user to press the button for the app to speak again.
-                // Greet the user.
-                sayHello();
+                // Greet the user.            	
+            	this.mTts.setOnUtteranceCompletedListener(this);
+            	this.hashAudio.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, WIKITALK);
+            	sayHello();
             }
         } else {
             // Initialization failed.
-            Log.e(TAG, "Could not initialize TextToSpeech.");
+            Log.e(WIKITALK, "Could not initialize TextToSpeech.");
         }
 	}
 	
@@ -224,6 +234,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
       
     };
     int i =0;
+
     private void sayHello() {
         // Select a random hello.
         int helloLength = HELLOS.length;
@@ -234,51 +245,53 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
             TextToSpeech.QUEUE_FLUSH,  // Drop allpending entries in the playback queue.
             null);
     }
-
-	private String textToRead;
-	private List<ImageInfo> images;
-	private int imageCursor;
-
-	private TextView mLangPref;
 	
 	private void initTxt() {
-		textToRead = "";
-		mTxt.setText(textToRead);		
+		textToRead = "";		
 	}
 	
 	public void addTextToRead(String line) {
 		this.textToRead += line;
-		this.mTxt.setText(this.textToRead);
+		Log.d(WIKITALK, line);
 	}
 	
 	public void readText() {
 		String[] splitSentence = this.textToRead.split("\\.");
-		for(String sentence : splitSentence) {
+		
+		int idx = 0;
+		for(String sentence : splitSentence) {			
 			// Parse wikimedia tag here
 			sentence = sentence.replaceAll("[\\[\\]]", "");
-			// sentence = sentence.replaceAll("<br />", "");
-			// sentence = sentence.replaceAll("<ref>", "");
-			// sentence = sentence.replaceAll("</ref>", "");
-			// sentence = sentence.replaceAll("/>", "");
-			// sentence = sentence.replaceAll("<ref ", "");
+//			sentence = sentence.replaceAll("<br />", "");
+//			sentence = sentence.replaceAll("<ref>", "");
+//			sentence = sentence.replaceAll("</ref>", "");
+//			sentence = sentence.replaceAll("/>", "");
+//			sentence = sentence.replaceAll("<ref ", "");			
 			if (sentence.trim().length() > 0 && 
 					!sentence.contains("{") && 
 					!sentence.contains("}") &&
 					!sentence.contains("|") && 
 					!sentence.contains("[") && 
 					!sentence.contains("]") &&
-					!sentence.contains("<a") &&
+					!sentence.contains("<") &&
+					!sentence.contains(">") &&
+					!sentence.contains("&") &&
+					!sentence.contains("/") &&
 					!sentence.contains("_")) {
-				mTts.speak(sentence,
-			            TextToSpeech.QUEUE_ADD,  // Drop allpending entries in the playback queue.
-			            null);
+				
+				this.sentences.put(idx, sentence);
+				
+				idx++;
 			}			
 		}
+		
+		this.readCursor = 0;
+		this.readAtPosition();
 		
 //		mTts.speak(this.textToRead,
 //	            TextToSpeech.QUEUE_ADD,  // Drop allpending entries in the playback queue.
 //	            null);
-	}
+	}		
 	
 	public void setImages(List<ImageInfo> images) {
 		this.images = images;
@@ -353,7 +366,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	    }
 
 	    private void refreshVoiceSettings() {
-	        Log.i(TAG, "Sending broadcast");
+	        Log.i(WIKITALK, "Sending broadcast");
 	        sendOrderedBroadcast(RecognizerIntent.getVoiceDetailsIntent(this), null,
 	                new SupportedLanguageBroadcastReceiver(), null, Activity.RESULT_OK, null, null);
 	    }
@@ -381,7 +394,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	    private class SupportedLanguageBroadcastReceiver extends BroadcastReceiver {
 
 	        public void onReceive(Context context, final Intent intent) {
-	            Log.i(TAG, "Receiving broadcast " + intent);
+	            Log.i(WIKITALK, "Receiving broadcast " + intent);
 
 	            final Bundle extra = getResultExtras(false);
 
@@ -455,5 +468,38 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	        return s;
 
 	    }
+	    
+	    public void pauseRead() {	    	
+	    	if (this.mTts.isSpeaking()) {
+	    		this.mTts.stop();
+	    	}
+	    	
+	    	this.reading = false;
+	    }
+	    
+	    public void resumeRead() {
+	    	this.readAtPosition();   		    
+	    }
+	    
+	    private void readAtPosition() {	    	
+	    	if (this.readCursor < this.sentences.size()) {
+		    	String sentence = this.sentences.get(this.readCursor);
+		    	this.reading = true;
+	    		mTts.speak(sentence,
+			            TextToSpeech.QUEUE_ADD,  // Drop allpending entries in the playback queue.
+			            this.hashAudio);
+	    	}
+	    }
+	    
+	    public void readNext() {
+	    	this.readCursor++;
+	    	this.readAtPosition();
+	    }
 
+		public void onUtteranceCompleted(String utteranceId) {
+			if (this.reading) {
+				this.reading = false;
+				this.readNext();
+			}			
+		}
 }

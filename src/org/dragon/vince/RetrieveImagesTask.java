@@ -15,9 +15,13 @@ import org.apache.http.util.EntityUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 
+import android.content.Context;
+import android.graphics.Point;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
+import android.view.Display;
+import android.view.WindowManager;
 
 public class RetrieveImagesTask extends AsyncTask<String, Void, List<ImageInfo>> {
 	private WikitalkActivity mainActivity;
@@ -65,7 +69,14 @@ public class RetrieveImagesTask extends AsyncTask<String, Void, List<ImageInfo>>
 			for (int i = 0; i < nodes.getLength(); i++) {
 				String title = nodes.item(i).getAttributes().getNamedItem("title").getNodeValue();
 				title = Uri.encode(title.replace("Fichier:", ""));
-				int imgFormat = 200;
+				WindowManager wm = (WindowManager) this.mainActivity.getSystemService(Context.WINDOW_SERVICE);
+				Display display = wm.getDefaultDisplay();
+				Point size = new Point();
+				display.getSize(size);
+				int width = size.x;
+				int height = size.y;
+								
+				int imgFormat = width; // Always width?
 				String imageUrl = "http://fr.wikipedia.org/w/api.php?action=query&titles=Image:" + title +"&prop=imageinfo&iiprop=url&iiurlwidth=" + String.valueOf(imgFormat) + "&format=xml";
 				uri = new HttpGet(imageUrl);
 				
