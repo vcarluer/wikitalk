@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import android.app.Activity;
 import android.app.SearchManager;
@@ -51,6 +53,8 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	private Status status;
 	private Map<Integer, String> sentences;
 	private int readCursor;
+	private Map<Integer, List<Link>> links;
+	
 	private HashMap<String, String> hashAudio;
 	private boolean reading;
 	private RelativeLayout mainLayout;
@@ -60,6 +64,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	public WikitalkActivity() {
 		this.sentences = new HashMap<Integer, String>();
 		this.hashAudio = new HashMap<String, String>();
+		this.links = new HashMap<Integer, List<Link>>();
 	}
 	
 	/** Called when the activity is first created. */
@@ -255,13 +260,20 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 		Log.d(WIKITALK, line);
 	}
 	
+	private String currentSentence;
 	public void readText() {
+		this.sentences.clear();
+		this.links.clear();
+		
 		String[] splitSentence = this.textToRead.split("\\.");
 		
 		int idx = 0;
-		for(String sentence : splitSentence) {			
+		for(String sentence : splitSentence) {
+			this.currentSentence = sentence;
+			this.parseLinks(this.currentSentence, idx);
+			sentence = this.currentSentence;
 			// Parse wikimedia tag here
-			sentence = sentence.replaceAll("[\\[\\]]", "");
+//			sentence = sentence.replaceAll("[\\[\\]]", "");
 //			sentence = sentence.replaceAll("<br />", "");
 //			sentence = sentence.replaceAll("<ref>", "");
 //			sentence = sentence.replaceAll("</ref>", "");
@@ -279,11 +291,11 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 					!sentence.contains("/") &&
 					!sentence.contains("_")) {
 				
-				this.sentences.put(idx, sentence);
-				
-				idx++;
+				this.sentences.put(idx, sentence);								
 			}			
-		}
+						
+			idx++;
+		}				
 		
 		this.readCursor = 0;
 		this.readAtPosition();
@@ -487,11 +499,15 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	    
 	    private void readAtPosition() {	    	
 	    	if (this.readCursor < this.sentences.size()) {
-		    	String sentence = this.sentences.get(this.readCursor);
-		    	this.reading = true;
-	    		mTts.speak(sentence,
-			            TextToSpeech.QUEUE_ADD,  // Drop allpending entries in the playback queue.
-			            this.hashAudio);
+		    	if (this.sentences.containsKey(this.readCursor)) {
+		    		String sentence = this.sentences.get(this.readCursor);		    	
+			    	this.reading = true;
+		    		mTts.speak(sentence,
+				            TextToSpeech.QUEUE_ADD,  // Drop allpending entries in the playback queue.
+				            this.hashAudio);
+		    	} else {
+		    		this.readCursor++;
+		    	}
 	    	}
 	    }
 	    
@@ -505,5 +521,50 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 				this.reading = false;
 				this.readNext();
 			}			
+		}
+		
+		private List<Link> GetSentenceLinks(String sentence) {			
+			List<String> linkFound = getTagValues(sentence, LINK_REGEX);
+			List<Link> newLinks = new ArrayList<Link>();
+			for(String linkStr : linkFound) {
+				Link link = null;
+				if (linkStr.contains("|")) {
+					String[] linkStrSplit = linkStr.split("\\|");
+					if (linkStrSplit.length == 2) {
+						link = new Link();
+						link.label = linkStrSplit[0];
+						link.link = linkStrSplit[1];
+					}
+				} else {
+					link = new Link();
+					link.label = linkStr;
+					link.link = linkStr;
+				}
+				
+				String replaceString = "";
+				if (link != null) {
+					newLinks.add(link);
+					replaceString = link.label;
+				}
+				
+				this.currentSentence = sentence.replace("[[" + linkStr + "]]", replaceString);
+			}
+
+			return newLinks;
+		}
+		
+		public void parseLinks(String sentence, int idx) {
+			this.links.put(idx, this.GetSentenceLinks(sentence));
+		}
+		
+		private static final Pattern LINK_REGEX = Pattern.compile("\\[\\[(.+?)\\]\\]");
+
+		private static List<String> getTagValues(final String str, final Pattern regEx) {
+		    final List<String> tagValues = new ArrayList<String>();
+		    final Matcher matcher = regEx.matcher(str);
+		    while (matcher.find()) {
+		        tagValues.add(matcher.group(1));
+		    }
+		    return tagValues;
 		}
 }
