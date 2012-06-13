@@ -70,6 +70,8 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	private Link currentLink;
 	
 	private TextView mImgInfo;
+	private int textSize;	
+	private String currentSearch;
 	
 	public WikitalkActivity() {
 		this.sentences = new HashMap<Integer, String>();
@@ -275,11 +277,11 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
       "Le bouton suivant lira l'article wikipedia"
       
     };
-    int i =0;
-
-	private int textSize;
-
+    
+	
+	
     private void sayHello() {
+    	int i = 0;
         // Select a random hello.
         int helloLength = HELLOS.length;
         String hello = HELLOS[i];
@@ -289,9 +291,23 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
             TextToSpeech.QUEUE_FLUSH,  // Drop allpending entries in the playback queue.
             null);
     }
+    
+    private void initData() {
+    	this.currentLink = null;
+    	this.currentSearch = "";
+    	this.currentSentence = "";
+    	this.readCursor = 0;
+    	this.imageCursor = 0;
+    }
 	
-	private void initTxt() {
+	private void initWidgets() {
 		textToRead = "";		
+		// to put in string
+		this.mTitle.setText("Recherche...");
+		this.mImage.setImageDrawable(null);
+		this.mLinkInfo.setText("");
+		this.mImgInfo.setText("");
+		
 	}
 	
 	public void addTextToRead(String line) {
@@ -300,8 +316,10 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	}
 	
 	public void readText() {				
+		this.status = Status.Ready;
 		this.sentences.clear();
 		this.links.clear();
+		this.mTitle.setText(this.currentSearch);
 		
 		String[] splitSentence = this.textToRead.split("\\.");
 		
@@ -417,11 +435,13 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	
 	public void search(String toSearch) {
 		if (toSearch != null) {
-			this.pauseRead();			
-			this.mTitle.setText(toSearch);
-			RetrievePageTask pageTask = new RetrievePageTask(this);		
-			initTxt();
+			this.pauseRead();
+			this.initData();
+			initWidgets();
+			this.currentSearch = toSearch;									
+			RetrievePageTask pageTask = new RetrievePageTask(this);			
 			pageTask.execute(toSearch);
+			this.status = Status.Working;
 		}
 	}
 	
@@ -607,8 +627,8 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 					String[] linkStrSplit = linkStr.split("\\|");
 					if (linkStrSplit.length == 2) {
 						link = new Link();
-						link.label = linkStrSplit[0];
-						link.link = linkStrSplit[1];
+						link.link = linkStrSplit[0];
+						link.label = linkStrSplit[1];						
 					}
 				} else {
 					link = new Link();
