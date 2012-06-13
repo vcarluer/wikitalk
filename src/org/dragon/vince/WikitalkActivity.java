@@ -722,7 +722,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 			this.handlerNextImage.sendMessage(message);
 		}
 		
-		public String getCountryLc() {
-			return this.currentLang.getCountry().toLowerCase();
+		public String getLanguageLc() {
+			return this.currentLang.getLanguage().toLowerCase();
 		}
 }
