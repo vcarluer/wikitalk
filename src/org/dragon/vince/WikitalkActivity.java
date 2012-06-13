@@ -56,6 +56,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	private List<ImageInfo> images;
 	private int imageCursor;
 	private Status status;
+	private StatusImage statusImage;
 	private Map<Integer, String> sentences;
 	private int readCursor;
 	private Map<Integer, List<Link>> links;
@@ -72,11 +73,14 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	private TextView mImgInfo;
 	private int textSize;	
 	private String currentSearch;
+	private ImageChanger imageChanger;
+	private long imageShown;
 	
 	public WikitalkActivity() {
 		this.sentences = new HashMap<Integer, String>();
 		this.hashAudio = new HashMap<String, String>();
 		this.links = new HashMap<Integer, List<Link>>();
+		this.imageChanger = new ImageChanger(this);
 	}
 	
 	/** Called when the activity is first created. */
@@ -293,11 +297,14 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
     }
     
     private void initData() {
+    	this.status = Status.Ready;
+    	this.statusImage = StatusImage.Ready;
     	this.currentLink = null;
     	this.currentSearch = "";
     	this.currentSentence = "";
     	this.readCursor = 0;
     	this.imageCursor = 0;
+    	this.imageChanger.interrupt();
     }
 	
 	private void initWidgets() {
@@ -328,6 +335,8 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 			this.currentSentence = sentence;
 			this.parseLinks(this.currentSentence, idx);
 			sentence = this.currentSentence;
+			// Replace if not numeric
+			// sentence = sentence.replaceAll("-", " ");
 			// Parse wikimedia tag here
 //			sentence = sentence.replaceAll("[\\[\\]]", "");
 //			sentence = sentence.replaceAll("<br />", "");
@@ -366,6 +375,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	public void setImages(List<ImageInfo> images) {
 		this.images = images;
 		this.showFirstImage();
+		this.imageChanger.run();
 	}
 	
 	private void showFirstImage() {
@@ -374,13 +384,37 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	}
 
 	private void showImage() {
-		if (this.images.size() > this.imageCursor) {
+		if (this.images.size() > 0 && this.images.size() > this.imageCursor && this.statusImage == StatusImage.Ready) {
+			this.statusImage = statusImage.Working;
 			RetrieveImageTask retrieveImage = new RetrieveImageTask(this);
 			ImageInfo ii = this.images.get(this.imageCursor);
 			retrieveImage.execute(ii.thumbUrl);			
 		}
 	}
+
+	private void showFullImage() {
+		if (this.images.size() > 0 && this.images.size() > this.imageCursor && this.statusImage == StatusImage.Ready) {
+			this.statusImage = statusImage.Working;
+			RetrieveImageTask retrieveImage = new RetrieveImageTask(this);
+			ImageInfo ii = this.images.get(this.imageCursor);
+			retrieveImage.execute(ii.url);			
+		}
+	}
 	
+	public long getImageShown() {
+		return this.imageShown;
+	}
+	
+	public void showImage(Bitmap bitmap) {
+		this.statusImage = statusImage.Ready;
+		this.imageShown = System.currentTimeMillis();
+		this.mImage.setImageBitmap(bitmap);
+		if (this.images.size() > 0 && this.images.size() > this.imageCursor) {			
+			ImageInfo ii = this.images.get(this.imageCursor);
+			this.showImageInfo(ii);
+		}
+	}
+
 	private void showImageInfo(ImageInfo imageInfo) {
 		String info = "";
 		if (imageInfo != null && imageInfo.name != null) {
@@ -393,22 +427,6 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 		
 		info = Uri.decode(info);
 		this.mImgInfo.setText(info);
-	}
-
-	private void showFullImage() {
-		if (this.images.size() > 0 && this.images.size() > this.imageCursor) {
-			RetrieveImageTask retrieveImage = new RetrieveImageTask(this);
-			ImageInfo ii = this.images.get(this.imageCursor);
-			retrieveImage.execute(ii.url);			
-		}
-	}
-	
-	public void showImage(Bitmap bitmap) {
-		this.mImage.setImageBitmap(bitmap);
-		if (this.images.size() > 0 && this.images.size() > this.imageCursor) {			
-			ImageInfo ii = this.images.get(this.imageCursor);
-			this.showImageInfo(ii);
-		}
 	}
 	
 	public void previousImage() {
@@ -423,7 +441,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	}
 	
 	public void nextImage() {
-		if (this.images != null) {
+		if (this.images != null && this.statusImage == StatusImage.Ready) {
 			this.imageCursor++;
 			if (this.imageCursor >= this.images.size()) {
 				this.imageCursor = 0;
