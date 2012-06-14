@@ -488,10 +488,10 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
     }
 	
 	private void initWidgets() {		
-		// this.mImage.setImageDrawable(null);
+		this.mImage.setImageDrawable(null);
 		this.mLinkInfo.setText("");
 		this.mImgInfo.setText("");
-		
+		this.mLinkImage.setVisibility(View.GONE);		
 	}
 	
 	public void addTextToRead(String line) {
@@ -1028,7 +1028,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
             iView.setLayoutParams(new
                         ImageSwitcher.LayoutParams(
                                     LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT));
-            iView.setBackgroundColor(0xFF000000);
+            // iView.setBackgroundColor(0xFF000000);
             return iView;
       }
 }
