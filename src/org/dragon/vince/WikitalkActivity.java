@@ -30,6 +30,7 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -111,6 +112,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         this.status = Status.Ready;
         
         this.mTmp = (Button) findViewById(R.id.readIt);
@@ -346,6 +348,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
     	this.linkCursor = -1;
     	this.linkTargetCursor = -1;
     	this.sentences.clear();
+    	this.textSize = -1;
     }
 	
 	private void initWidgets() {
