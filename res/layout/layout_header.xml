@@ -4,10 +4,7 @@
     android:layout_height="wrap_content"
     android:orientation="horizontal"
     >
-
-	    
-	
-	
+    
 	<ProgressBar
         android:id="@+id/searchProgress"
         android:visibility="invisible"

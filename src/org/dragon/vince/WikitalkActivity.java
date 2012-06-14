@@ -27,6 +27,7 @@ import android.speech.tts.TextToSpeech;
 import android.speech.tts.TextToSpeech.OnUtteranceCompletedListener;
 import android.util.Log;
 import android.view.GestureDetector;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -37,6 +38,7 @@ import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.SearchView;
@@ -83,8 +85,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	private HashMap<String, String> hashAudio;
 	private boolean reading;
 	private RelativeLayout mainLayout;
-	
-	private Button mTmp;
+		
 	private String currentSentence;
 	private Link currentLink;
 	
@@ -118,14 +119,6 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
         
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         this.status = Status.Ready;
-        
-        this.mTmp = (Button) findViewById(R.id.readIt);
-        this.mTmp.setOnClickListener(new OnClickListener() {
-			
-			public void onClick(View v) {
-				search("Lyon");
-			}
-		});
         
      // Initialize text-to-speech. This is an asynchronous operation.
         // The OnInitListener (second argument) is called after initialization completes.
@@ -183,8 +176,8 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 			}
 		});             
         
-        this.mTitle = (TextView) findViewById(R.id.txtTitle);
-        mSupportedLanguageView = (Spinner) findViewById(R.id.supported_languages);
+        this.mTitle = (TextView) findViewById(R.id.txtTitle);                
+        
         mHandler = new Handler();
      // Check to see if a recognition activity is present
         PackageManager pm = getPackageManager();
@@ -309,6 +302,13 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
        MenuInflater inflater = getMenuInflater();
        inflater.inflate(R.menu.menu_main, menu);
        
+       LayoutInflater mInflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE); 
+       View sl = mInflater.inflate(R.layout.menu_spinner, null);       
+       mSupportedLanguageView = (Spinner) sl.findViewById(R.id.supported_languages);
+              
+       menu.findItem(R.id.menu_lang).setActionView(mSupportedLanguageView);
+//       mSupportedLanguageView = (Spinner) item.g
+
        // Get the SearchView and set the searchable configuration
        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
        SearchView searchView = (SearchView) menu.findItem(R.id.menu_search).getActionView();
