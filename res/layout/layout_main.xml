@@ -5,45 +5,65 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical" >
-    <LinearLayout 
+     <RelativeLayout 
+        android:id="@+id/main_noinfo"
         android:layout_width="match_parent"    
         android:layout_height="match_parent"
         android:layout_centerInParent="true"
-        android:gravity="center"       
-        android:orientation="vertical">
-        <TextView
-        android:id="@+id/imgText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        />
-
-        <ProgressBar
-            android:id="@+id/progressImage"
-            android:visibility="gone"
-            style="?android:attr/progressBarStyleLarge"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+        android:gravity="center">
 
         <ImageView
-            android:id="@+id/wikiImage"            
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
-    
-    </LinearLayout>
-    
-    <Button android:id="@+id/imgPrevious"
+            android:id="@+id/main_search"
+            android:layout_width="75dip"
+            android:layout_height="75dip"
+            android:src="@android:drawable/ic_btn_speak_now" />
+
+    </RelativeLayout>
+    <RelativeLayout
+        android:id="@+id/main_info"
         android:gravity="center"
-        android:layout_width="wrap_content"
-        android:layout_height="fill_parent"
-        android:layout_alignParentLeft="true"
-        android:alpha="0.5"
-        android:text="@string/imgleft"/>
-    <Button android:id="@+id/imgNext"
-        android:gravity="center"
-        android:layout_width="wrap_content"
-        android:layout_height="fill_parent"
-        android:layout_alignParentRight="true"
-        android:alpha="0.5"
-        android:text="@string/imgright"/>    
+	    android:layout_width="match_parent"
+	    android:layout_height="match_parent">
+        <LinearLayout         
+        android:layout_width="match_parent"    
+        android:layout_height="match_parent"
+        android:layout_centerInParent="true"
+        android:gravity="center">
+	        <TextView
+	        android:id="@+id/imgText"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        />
+	
+	        <ProgressBar
+	            android:id="@+id/progressImage"
+	            android:visibility="gone"
+	            style="?android:attr/progressBarStyleLarge"
+	            android:layout_width="wrap_content"
+	            android:layout_height="wrap_content" />
+	
+	        <ImageView
+	            android:id="@+id/wikiImage"            
+	            android:layout_width="wrap_content"
+	            android:layout_height="wrap_content"/>
+	    
+	    </LinearLayout>
+	    
+	    <Button android:id="@+id/imgPrevious"
+	        android:gravity="center"
+	        android:layout_width="wrap_content"
+	        android:layout_height="fill_parent"
+	        android:layout_alignParentLeft="true"
+	        android:alpha="0.5"
+	        android:text="@string/imgleft"/>
+	    <Button android:id="@+id/imgNext"
+	        android:gravity="center"
+	        android:layout_width="wrap_content"
+	        android:layout_height="fill_parent"
+	        android:layout_alignParentRight="true"
+	        android:alpha="0.5"
+	        android:text="@string/imgright"/>  
+    </RelativeLayout>
+      
 
 </RelativeLayout>

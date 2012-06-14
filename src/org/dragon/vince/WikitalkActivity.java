@@ -102,6 +102,10 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
     
     private ProgressBar mSearchBar;
     private ProgressBar mProgressImage;
+    
+    private RelativeLayout main_info;
+    private RelativeLayout main_noInfo;
+    private ImageView main_Search;
 	
 	public WikitalkActivity() {
 		this.sentences = new HashMap<Integer, String>();
@@ -149,14 +153,17 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
         this.mainLayout.setOnClickListener(new View.OnClickListener() {
 			
 			public void onClick(View v) {
-				// showFullImage();
-				if (status == Status.Ready) {
-					if (mTts.isSpeaking()) {
-						pauseRead();
-					} else {
-						resumeRead();
-					}					
-				}
+				if (textToRead == null || textToRead == "") {
+					startVoiceRecognitionActivity();
+				} else {
+					if (status == Status.Ready) {
+						if (mTts.isSpeaking()) {
+							pauseRead();
+						} else {
+							resumeRead();
+						}					
+					}
+				}				
 			}
 		});
         
@@ -224,6 +231,18 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
         this.mSearchBar = (ProgressBar) findViewById(R.id.searchProgress);
         this.mProgressImage = (ProgressBar) findViewById(R.id.progressImage);
         
+        this.main_info = (RelativeLayout) findViewById(R.id.main_info);
+        this.main_noInfo = (RelativeLayout) findViewById(R.id.main_noinfo);
+        this.main_Search = (ImageView) findViewById(R.id.main_search);
+        this.main_Search.setOnClickListener(new OnClickListener() {
+			
+			public void onClick(View v) {
+				startVoiceRecognitionActivity();
+			}
+		});
+        
+        this.main_info.setVisibility(View.GONE);
+        this.main_noInfo.setVisibility(View.VISIBLE);
         
         // Must be kept at end of method
         // Get the intent, verify the action and get the query
@@ -435,11 +454,11 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
     	this.linkCursor = -1;
     	this.linkTargetCursor = -1;
     	this.sentences.clear();
+    	this.textToRead = "";
     	this.textSize = -1;
     }
 	
-	private void initWidgets() {
-		textToRead = "";
+	private void initWidgets() {		
 		this.mImage.setImageDrawable(null);
 		this.mLinkInfo.setText("");
 		this.mImgInfo.setText("");
@@ -616,6 +635,9 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	
 	public void search(String toSearch) {
 		if (toSearch != null) {
+			this.main_info.setVisibility(View.VISIBLE);
+	        this.main_noInfo.setVisibility(View.GONE);
+	        
 			this.pauseRead();
 			this.initData();
 			initWidgets();
@@ -631,7 +653,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	}
 	
 	private void setCurrentLang() {
-		if (mSupportedLanguageView.getSelectedItem() != null) {
+		if (mSupportedLanguageView != null && mSupportedLanguageView.getSelectedItem() != null) {
 			currentLang = Locale.US;
 			String selected = mSupportedLanguageView.getSelectedItem().toString();
 			if (!selected.equals(DEFAULT_LANG)) {            	            
@@ -699,8 +721,11 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	        SpinnerAdapter adapter = new ArrayAdapter<CharSequence>(this,
 	                android.R.layout.simple_spinner_item, languages.toArray(
 	                        new String[languages.size()]));
-	        mSupportedLanguageView.setAdapter(adapter);
-	        mSupportedLanguageView.setSelection(lgIdx);
+	        if (mSupportedLanguageView != null) {
+	        	mSupportedLanguageView.setAdapter(adapter);
+		        mSupportedLanguageView.setSelection(lgIdx);
+	        }	        
+
 	        this.setCurrentLang();
 	    }
 
@@ -799,12 +824,12 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	    	
 	    	this.reading = false;
 	    	
-	    	Toast.makeText(this, "Pause", Toast.LENGTH_SHORT).show();
+	    	// Toast.makeText(this, "Pause", Toast.LENGTH_SHORT).show();
 	    }
 	    
 	    public void resumeRead() {
 	    	this.readAtPosition();   		
-	    	Toast.makeText(this, "Play", Toast.LENGTH_SHORT).show();
+	    	// Toast.makeText(this, "Play", Toast.LENGTH_SHORT).show();
 	    }
 	    
 	    private void readAtPosition() {
