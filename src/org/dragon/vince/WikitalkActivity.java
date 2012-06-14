@@ -47,6 +47,8 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.SearchView;
+import android.widget.SeekBar;
+import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.Spinner;
 import android.widget.SpinnerAdapter;
 import android.widget.TextView;
@@ -115,6 +117,8 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
     private RelativeLayout main_noInfo;
     private ImageView main_Search;
 	
+    private SeekBar mSeekText;
+    
 	public WikitalkActivity() {
 		this.sentences = new HashMap<Integer, String>();
 		this.hashAudio = new HashMap<String, String>();
@@ -204,20 +208,20 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
         
         mHandler = new Handler();
      // Check to see if a recognition activity is present
-        PackageManager pm = getPackageManager();
-        List<ResolveInfo> activities = pm.queryIntentActivities(
-                new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH), 0);
-        if (activities.size() != 0) {
-            this.mTitle.setOnClickListener(new View.OnClickListener() {
-				
-				public void onClick(View v) {					
-					startVoiceRecognitionActivity();
-				}
-			});
-        } else {
-            this.mTitle.setEnabled(false);
-            this.mTitle.setText("Recognizer not present");
-        }
+//        PackageManager pm = getPackageManager();
+//        List<ResolveInfo> activities = pm.queryIntentActivities(
+//                new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH), 0);
+//        if (activities.size() != 0) {
+//            this.mTitle.setOnClickListener(new View.OnClickListener() {
+//				
+//				public void onClick(View v) {					
+//					startVoiceRecognitionActivity();
+//				}
+//			});
+//        } else {
+//            this.mTitle.setEnabled(false);
+//            this.mTitle.setText("Recognizer not present");
+//        }
         
      // Most of the applications do not have to handle the voice settings. If the application
         // does not require a recognition in a specific language (i.e., different from the system
@@ -272,12 +276,32 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
         this.main_info.setVisibility(View.GONE);
         this.main_noInfo.setVisibility(View.VISIBLE);
         
+        this.mSeekText = (SeekBar) findViewById(R.id.txtSeekBar);
+        this.mSeekText.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
+			
+        	public void onStopTrackingTouch(SeekBar seekBar) {
+        		pauseRead();
+				readCursor = seekBar.getProgress();
+				resumeRead();
+			}
+			
+			public void onStartTrackingTouch(SeekBar seekBar) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			public void onProgressChanged(SeekBar seekBar, int progress,
+					boolean fromUser) {
+				// TODO Auto-generated method stub
+				
+			}
+		});
+        
         // Must be kept at end of method
         // Get the intent, verify the action and get the query
         Intent intent = getIntent();
         if (Intent.ACTION_SEARCH.equals(intent.getAction())) {        	        	
           String query = intent.getStringExtra(SearchManager.QUERY);
-          query = capitalizeFirstLetters(query);
           
           String country = intent.getStringExtra("langCountry");
           String lang = intent.getStringExtra("langLang");
@@ -505,6 +529,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 		this.mProgressLoadImage.setVisibility(View.GONE);
 		this.mImgPrev.setVisibility(View.GONE);
 		this.mImgNext.setVisibility(View.GONE);
+		this.mSeekText.setVisibility(View.GONE);
 	}
 	
 	public void addTextToRead(String line) {
@@ -557,11 +582,14 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 			idx++;
 		}
 		
-		this.textSize = idx;
-		
+		this.textSize = idx;		
 		this.readCursor = 0;
+		this.mSeekText.setVisibility(View.VISIBLE);
+		this.mSeekText.setMax(this.textSize);
+		this.mSeekText.setProgress(0);
+		
 		this.readAtPosition();
-		Toast.makeText(this, "Play", Toast.LENGTH_SHORT).show();
+//		Toast.makeText(this, "Play", Toast.LENGTH_SHORT).show();
 		
 //		mTts.speak(this.textToRead,
 //	            TextToSpeech.QUEUE_ADD,  // Drop allpending entries in the playback queue.
@@ -872,12 +900,11 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 
 	    }
 	    
-	    public void pauseRead() {	    	
+	    public void pauseRead() {
+	    	this.reading = false;
 	    	if (this.mTts.isSpeaking()) {
 	    		this.mTts.stop();
 	    	}
-	    	
-	    	this.reading = false;
 	    	
 	    	// Toast.makeText(this, "Pause", Toast.LENGTH_SHORT).show();
 	    }
@@ -889,6 +916,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	    
 	    private void readAtPosition() {
 	    	if (this.readCursor < this.textSize) {
+	    		this.mSeekText.setProgress(this.readCursor);
 	    		if (this.linksIndexed != null && this.linksIndexed.size() > 0) {
 	    			if (this.linksIndexed.containsKey(this.readCursor)) {
 	    				List<Link> currentLinks = this.linksIndexed.get(this.readCursor);
