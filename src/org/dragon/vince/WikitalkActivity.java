@@ -478,15 +478,17 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	}
 	
 	public void showImage(Bitmap bitmap) {
-		this.statusImage = statusImage.Ready;
-		this.imageShown = System.currentTimeMillis();
-		this.mImage.setImageBitmap(bitmap);
-		if (this.images.size() > 0 && this.images.size() > this.imageCursor) {			
-			ImageInfo ii = this.images.get(this.imageCursor);
-			this.showImageInfo(ii);
-		}
-		
-		Toast.makeText(this, String.valueOf(this.imageCursor + 1) + "/" + String.valueOf(this.images.size()), Toast.LENGTH_SHORT).show();
+		if (this.status == Status.Ready) {
+			this.statusImage = statusImage.Ready;
+			this.imageShown = System.currentTimeMillis();
+			this.mImage.setImageBitmap(bitmap);
+			if (this.images.size() > 0 && this.images.size() > this.imageCursor) {			
+				ImageInfo ii = this.images.get(this.imageCursor);
+				this.showImageInfo(ii);
+			}
+			
+			Toast.makeText(this, String.valueOf(this.imageCursor + 1) + "/" + String.valueOf(this.images.size()), Toast.LENGTH_SHORT).show();
+		}		
 	}
 
 	private void showImageInfo(ImageInfo imageInfo) {
