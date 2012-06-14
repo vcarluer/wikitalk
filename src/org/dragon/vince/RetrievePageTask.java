@@ -69,16 +69,18 @@ public class RetrievePageTask extends AsyncTask<String, Void, String> {
 	protected void onPostExecute(String result) {
 		Document doc = XmlHelper.xmlfromString(result);
 		NodeList nodes = doc.getElementsByTagName("page");
+		Node pageNode = null;
 		for (int i = 0; i < nodes.getLength(); i++) {
-			Node node = nodes.item(i).getAttributes().getNamedItem("pageid");
+			pageNode = nodes.item(i).getAttributes().getNamedItem("pageid");
 			// Handle here multiple results (take first or propose)
-			if(node != null) {
-				this.pageId = node.getNodeValue();
+			if(pageNode != null) {
+				this.pageId = pageNode.getNodeValue();
 				 // Only first one for now
 				 break;
 			}
 		}
-				
+		
+		// Use pageNode here to get image only from node with pageid?
 		nodes = doc.getElementsByTagName("rev"); 	
 		if (nodes != null && nodes.getLength() > 0) {
 			for (int i = 0; i < nodes.getLength(); i++) {

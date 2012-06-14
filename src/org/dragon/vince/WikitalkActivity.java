@@ -558,13 +558,16 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 		this.mTitle.setText(this.currentSearch);
 		this.initLanguage();
 		
+		// for now external reference must be remove before split with . because of long ref
+		this.textToRead = this.parseRef(this.textToRead);
 		splitSentence = this.textToRead.split("\\. ");
 		
 		int idx = 0;
 		for(String sentence : splitSentence) {
 			this.currentSentence = new String(sentence);
-			this.parseLinks(idx);
-			this.parseRef(idx);
+			this.parseLinks(idx);			
+			this.parseMenu(idx);
+			this.parseBoldAndOthers(idx);
 			// Replace if not numeric
 			// sentence = sentence.replaceAll("-", " ");
 			// Parse wikimedia tag here
@@ -606,6 +609,29 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 //	            null);
 	}		
 	
+	private void parseBoldAndOthers(int idx) {
+		// italic
+		this.currentSentence = this.currentSentence.replaceAll("''", "");
+		// bold
+		this.currentSentence = this.currentSentence.replaceAll("'''", "");
+		// bold italic
+		this.currentSentence = this.currentSentence.replaceAll("'''''", "");
+		// poem
+		this.currentSentence = this.currentSentence.replaceAll("<poem>", "");
+		this.currentSentence = this.currentSentence.replaceAll("</poem>", "");
+	}
+
+	private void parseMenu(int idx) {
+		if (this.currentSentence.contains("")) {
+			// Only remove for now
+			this.currentSentence = this.currentSentence.replaceAll("==", "");
+			this.currentSentence = this.currentSentence.replaceAll("===", "");
+			this.currentSentence = this.currentSentence.replaceAll("====", "");
+			this.currentSentence = this.currentSentence.replaceAll("=====", "");
+			this.currentSentence = this.currentSentence.replaceAll("======", "");	
+		}		
+	}
+
 	private void initLanguage() {						
 		int result = mTts.setLanguage(currentLang);
         
@@ -1068,19 +1094,22 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 			this.linksIndexed.put(idx, this.GetSentenceLinks());
 		}
 		
-		private void removeRef() {			
-			List<String> linkFound = getTagValues(this.currentSentence, REF_REGEX);
+		private String removeRef(String text) {			
+			String retText = text;
+			List<String> linkFound = getTagValues(retText, REF_REGEX);
 			for(String linkStr : linkFound) {
-				this.currentSentence = this.currentSentence.replace("<ref" + linkStr + "/ref>", "");
+				retText = retText.replace("<ref" + linkStr + "/ref>", "");
 			}
-			linkFound = getTagValues(this.currentSentence, REF2_REGEX);
+			linkFound = getTagValues(retText, REF2_REGEX);
 			for(String linkStr : linkFound) {
-				this.currentSentence = this.currentSentence.replace("<ref" + linkStr + "/>", "");
+				retText = retText.replace("<ref" + linkStr + "/>", "");
 			}
+			
+			return retText;
 		}
 		
-		public void parseRef(int idx) {
-			this.removeRef();
+		public String parseRef(String text) {
+			return this.removeRef(text);
 		}
 		
 		private static final Pattern LINK_REGEX = Pattern.compile("\\[\\[(.+?)\\]\\]");
