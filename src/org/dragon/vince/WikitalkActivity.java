@@ -412,12 +412,6 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
                return super.onOptionsItemSelected(item);
        }
    }
-   
-   final Handler handlerNextImage = new Handler() {
-       public void  handleMessage(Message msg) {
-    	   nextImage();
-       }
-  }; 
   
   final Handler handlerProgressImage = new Handler() {
 	  public void handleMessage(Message msg) {
@@ -988,7 +982,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 		    		}
 	    		}
 	    		
-	    		if (this.statusImage == StatusImage.Ready && this.images != null) {
+	    		if (this.statusImage == StatusImage.Ready && this.images != null && this.images.size() > 0) {
 	    			boolean needShow = false;
 	    			if (this.resetImageCursor && this.imagesIndexed.containsKey(this.readCursor)) {
 	    				if (this.imageCursor != firstListIdx) {
@@ -1098,11 +1092,6 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 		    return tagValues;
 		}
 		
-		public void callNextImage() {
-			Message message = new Message();
-			this.handlerNextImage.sendMessage(message);
-		}
-		
 		public String getLanguageLc() {
 			return currentLang.getLanguage().toLowerCase();
 		}
@@ -1129,6 +1118,17 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 			}
 		}
 		
+		@Override
+		protected void onPause() {
+			this.pauseRead();
+			super.onPause();
+		}
+
+		@Override
+		protected void onResume() {
+			super.onResume();
+		}
+
 		public View makeView() {
             ImageView iView = new ImageView(this);
             iView.setScaleType(ImageView.ScaleType.FIT_CENTER);
