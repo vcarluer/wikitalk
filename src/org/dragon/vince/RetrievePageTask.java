@@ -86,6 +86,7 @@ public class RetrievePageTask extends AsyncTask<String, Void, String> {
 		}
 		 
 		 if (this.pageId != null) {
+			 this.mainActivity.beginSearchImages();
 			 this.retrieveImage.execute(pageId);
 		 }
 		 

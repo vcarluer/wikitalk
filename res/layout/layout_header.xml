@@ -6,6 +6,14 @@
     >
 
 	    
+	
+	
+	<ProgressBar
+        android:id="@+id/searchProgress"
+        android:visibility="invisible"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+	
 	<TextView
         android:id="@+id/txtTitle"
         android:layout_width="match_parent"
@@ -13,10 +21,4 @@
         android:text="@string/title"
         android:gravity="center"
         android:textAppearance="?android:attr/textAppearanceLarge" />
-	
-	<ProgressBar
-        android:id="@+id/searchProgress"
-        android:visibility="invisible"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
 </LinearLayout>

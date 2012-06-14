@@ -88,6 +88,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
     private String[] splitSentence;
     
     private ProgressBar mSearchBar;
+    private ProgressBar mProgressImage;
 	
 	public WikitalkActivity() {
 		this.sentences = new HashMap<Integer, String>();
@@ -223,6 +224,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
         this.mainLayout.setOnTouchListener(this.gestureListener);
         
         this.mSearchBar = (ProgressBar) findViewById(R.id.searchProgress);
+        this.mProgressImage = (ProgressBar) findViewById(R.id.progressImage);
     }
     
     final Handler handler = new Handler() {
@@ -413,6 +415,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	}
 
 	public void setImages(List<ImageInfo> fetchedImages) {
+		this.endSearchImage();
 		int idx = 0;
 		List<ImageInfo> newImages = new ArrayList<ImageInfo>();
 		for(String sentence : this.splitSentence) {
@@ -803,5 +806,13 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 					resumeRead();
 				}					
 			}
+		}
+
+		public void beginSearchImages() {
+			this.mProgressImage.setVisibility(View.VISIBLE);
+		}
+		
+		public void endSearchImage() {
+			this.mProgressImage.setVisibility(View.INVISIBLE);
 		}
 }
