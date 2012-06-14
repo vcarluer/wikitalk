@@ -475,35 +475,12 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
             // Greet the user.            	
         	this.mTts.setOnUtteranceCompletedListener(this);
         	this.hashAudio.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, WIKITALK);
-            	sayHello();
         } else {
             // Initialization failed.
             Log.e(WIKITALK, "Could not initialize TextToSpeech.");
         }
-	}
-	
-	private static final Random RANDOM = new Random();
-    private static final String[] HELLOS = {
-      "Salut",
-      "Le bouton ci-dessous récupérera les informations d'une recherche sur Albert Einstein",
-      "Le bouton suivant lira l'article wikipedia"
-      
-    };
-    
-	
-	
-    private void sayHello() {
-    	int i = 0;
-        // Select a random hello.
-        int helloLength = HELLOS.length;
-        String hello = HELLOS[i];
-        i++;
-        if(i == helloLength) i =0;
-        mTts.speak(hello,
-            TextToSpeech.QUEUE_FLUSH,  // Drop allpending entries in the playback queue.
-            null);
-    }
-    
+	}    
+	    
     private void initData() {
     	this.status = Status.Ready;
     	this.statusImage = StatusImage.Ready;
