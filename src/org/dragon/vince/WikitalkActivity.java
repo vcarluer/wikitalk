@@ -27,6 +27,9 @@ import android.speech.tts.TextToSpeech;
 import android.speech.tts.TextToSpeech.OnUtteranceCompletedListener;
 import android.util.Log;
 import android.view.GestureDetector;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -36,6 +39,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
+import android.widget.SearchView;
 import android.widget.Spinner;
 import android.widget.SpinnerAdapter;
 import android.widget.TextView;
@@ -74,7 +78,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	
 	private TextView mLinkInfo;
 	
-	private Locale currentLang;
+	private static Locale currentLang;
 	
 	private HashMap<String, String> hashAudio;
 	private boolean reading;
@@ -177,15 +181,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 			public void onClick(View v) {
 				nextImage();				
 			}
-		});
-        
-        // Get the intent, verify the action and get the query
-        Intent intent = getIntent();
-        if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
-          String query = intent.getStringExtra(SearchManager.QUERY);
-          query = capitalizeFirstLetters(query);
-          search(query);
-        }
+		});             
         
         this.mTitle = (TextView) findViewById(R.id.txtTitle);
         mSupportedLanguageView = (Spinner) findViewById(R.id.supported_languages);
@@ -197,8 +193,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
         if (activities.size() != 0) {
             this.mTitle.setOnClickListener(new View.OnClickListener() {
 				
-				public void onClick(View v) {
-					pauseRead();
+				public void onClick(View v) {					
 					startVoiceRecognitionActivity();
 				}
 			});
@@ -235,6 +230,72 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
         
         this.mSearchBar = (ProgressBar) findViewById(R.id.searchProgress);
         this.mProgressImage = (ProgressBar) findViewById(R.id.progressImage);
+        
+        
+        // Must be kept at end of method
+        // Get the intent, verify the action and get the query
+        Intent intent = getIntent();
+        if (Intent.ACTION_SEARCH.equals(intent.getAction())) {        	        	
+          String query = intent.getStringExtra(SearchManager.QUERY);
+          query = capitalizeFirstLetters(query);
+          
+          String country = intent.getStringExtra("langCountry");
+          String lang = intent.getStringExtra("langLang");
+          if (country != null && lang != null) {
+        	  currentLang = new Locale(country, lang);
+          }          
+          
+//          Bundle appData = getIntent().getBundleExtra(SearchManager.APP_DATA);
+//          if (appData != null) {
+//        	  String country = appData.getString("langCountry");
+//              String lang = appData.getString("langLang");
+//              currentLang = new Locale(country, lang);
+//          }
+          
+          search(query);
+        }
+    }
+    
+//    @Override
+//    public void onSaveInstanceState(Bundle savedInstanceState) {
+//      super.onSaveInstanceState(savedInstanceState);
+//      // Save UI state changes to the savedInstanceState.
+//      // This bundle will be passed to onCreate if the process is
+//      // killed and restarted.
+//      savedInstanceState.putString("langCountry", currentLang.getCountry());
+//      savedInstanceState.putString("langLang", currentLang.getLanguage());      
+//    }
+//    
+//    @Override
+//    public void onRestoreInstanceState(Bundle savedInstanceState) {
+//      super.onRestoreInstanceState(savedInstanceState);
+//      // Restore UI state from the savedInstanceState.
+//      // This bundle has also been passed to onCreate.
+//      String country = savedInstanceState.getString("langCountry");
+//      String lang = savedInstanceState.getString("langLang");
+//      currentLang = new Locale(country, lang);
+//    }
+    
+//    @Override
+//    public boolean onSearchRequested() {
+//         Bundle appData = new Bundle();
+//         appData.putString("langCountry", currentLang.getCountry());
+//         appData.putString("langLang", currentLang.getLanguage());
+//         startSearch(null, false, appData, false);
+//         return true;
+//     }
+    
+    @Override
+    public void startActivity(Intent intent) {
+  
+       if(Intent.ACTION_SEARCH.equals(intent.getAction())) {
+    	   if (currentLang != null) {
+    		   intent.putExtra("langCountry", currentLang.getCountry());
+    	       intent.putExtra("langLang", currentLang.getLanguage());
+    	   }          
+       }
+       super.startActivity(intent);
+  
     }
     
     final Handler handler = new Handler() {
@@ -242,6 +303,30 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
              mLinkInfo.setText(msg.getData().getString(LINK_LABEL));
         }
    };
+   
+   @Override
+   public boolean onCreateOptionsMenu(Menu menu) {
+       MenuInflater inflater = getMenuInflater();
+       inflater.inflate(R.menu.menu_main, menu);
+       
+       // Get the SearchView and set the searchable configuration
+       SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+       SearchView searchView = (SearchView) menu.findItem(R.id.menu_search).getActionView();
+       searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+       searchView.setIconifiedByDefault(false); // Do not iconify the widget; expand it by default
+       return true;
+   }
+   
+   @Override
+   public boolean onOptionsItemSelected(MenuItem item) {
+       switch (item.getItemId()) {
+           case R.id.menu_speak:
+        	   startVoiceRecognitionActivity();
+        	   return true;
+           default:
+               return super.onOptionsItemSelected(item);
+       }
+   }
    
    final Handler handlerNextImage = new Handler() {
        public void  handleMessage(Message msg) {
@@ -253,7 +338,9 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
      * Fire an intent to start the speech recognition activity.
      */
     private void startVoiceRecognitionActivity() {
-        Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+    	pauseRead();
+    	
+    	Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
 
         // Specify the calling package to identify your application
         intent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, getClass().getPackage().getName());
@@ -418,7 +505,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	}		
 	
 	private void initLanguage() {						
-		int result = mTts.setLanguage(this.currentLang);
+		int result = mTts.setLanguage(currentLang);
         
         if (result == TextToSpeech.LANG_MISSING_DATA ||
             result == TextToSpeech.LANG_NOT_SUPPORTED) {
@@ -534,14 +621,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 			initWidgets();
 			this.mTitle.setText(toSearch);
 			this.currentSearch = toSearch;
-			this.currentLang = Locale.US;
-			String selected = mSupportedLanguageView.getSelectedItem().toString();
-			if (!selected.equals(DEFAULT_LANG)) {            	            
-				String[] locales = selected.split("-");
-				if (locales.length == 2) {
-					this.currentLang = new Locale(locales[0], locales[1]);
-				}				
-			}
+			this.setCurrentLang();
 			
 			RetrievePageTask pageTask = new RetrievePageTask(this);			
 			this.mSearchBar.setVisibility(View.VISIBLE);
@@ -550,6 +630,23 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 		}
 	}
 	
+	private void setCurrentLang() {
+		if (mSupportedLanguageView.getSelectedItem() != null) {
+			currentLang = Locale.US;
+			String selected = mSupportedLanguageView.getSelectedItem().toString();
+			if (!selected.equals(DEFAULT_LANG)) {            	            
+				String[] locales = selected.split("-");
+				if (locales.length == 2) {
+					currentLang = new Locale(locales[0], locales[1]);
+				}				
+			}
+		} else {
+			if (currentLang == null) {
+				currentLang = Locale.US;
+			}
+		}
+	}
+
 	// voice reco
 	 @Override
 	    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -576,8 +673,18 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	    private void updateSupportedLanguages(List<String> languages) {
 	        // We add "Default" at the beginning of the list to simulate default language.
 	        languages.add(0, DEFAULT_LANG);
-	        int lgIdx = 0;	        
-	        if (this.langPref != null && this.langPref.length() > 0) {
+	        int lgIdx = 0;
+	        String toSearch = null;
+	        
+	        if (currentLang != null) {
+	        	toSearch = currentLang.toString();
+	        } else {
+	        	if (this.langPref != null && this.langPref.length() > 0) {
+		        	toSearch = this.langPref;
+		        }
+	        }	        
+	        
+	        if (toSearch != null) {
 	        	int i = 0;
 	        	for(String lang : languages) {
 	        		if (langPref.toUpperCase().equals(lang.toUpperCase())) {
@@ -594,6 +701,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	                        new String[languages.size()]));
 	        mSupportedLanguageView.setAdapter(adapter);
 	        mSupportedLanguageView.setSelection(lgIdx);
+	        this.setCurrentLang();
 	    }
 
 	    private void updateLanguagePreference(String language) {
@@ -835,7 +943,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 		}
 		
 		public String getLanguageLc() {
-			return this.currentLang.getLanguage().toLowerCase();
+			return currentLang.getLanguage().toLowerCase();
 		}
 		
 		public void swithReading() {

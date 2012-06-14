@@ -13,4 +13,5 @@
 <string name="imgleft">&lt;</string>
 <string name="imgright">&gt;</string>
 <string name="search_hint">Rechercher</string>
+<string name="search">Rechercher</string>
 </resources>
