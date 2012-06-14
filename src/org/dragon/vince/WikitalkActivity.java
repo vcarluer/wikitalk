@@ -431,7 +431,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
         intent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, getClass().getPackage().getName());
 
         // Display an hint to the user about what he should say.
-        intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Rechercher dans Wikitalk");
+        intent.putExtra(RecognizerIntent.EXTRA_PROMPT, getString(R.string.voice_prompt));
 
         // Given an hint to the recognizer about what the user is going to say
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,

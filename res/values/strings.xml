@@ -1,18 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="hello">salut le monde</string>
-    <string name="app_name">wiki talk</string>
-<string name="again">Instructions</string>
-<string name="red">red</string>
-
-<string name="white">#FF00FF</string>
-<string name="getwikipedia">wikipedia</string>
-<string name="readit">Lire!</string>
-<string name="stopread">Arrêter</string>
-<string name="title">Rechercher</string>
-<string name="imgleft">&lt;</string>
-<string name="imgright">&gt;</string>
-<string name="search_hint">Rechercher</string>
-<string name="search">Rechercher</string>
-<string name="search_voice">Recherche vocale</string>
+    <string name="app_name">Dany</string>
+	<string name="title">Rechercher</string>
+	<string name="imgleft">&lt;</string>
+	<string name="imgright">&gt;</string>
+	<string name="search_hint">Rechercher</string>
+	<string name="search">Rechercher</string>
+	<string name="search_voice">Recherche vocale</string>
+	<string name="voice_prompt">Demander à Dany</string>
 </resources>

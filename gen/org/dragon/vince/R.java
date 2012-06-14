@@ -49,20 +49,14 @@ public final class R {
         public static final int menu_main=0x7f060000;
     }
     public static final class string {
-        public static final int again=0x7f050002;
-        public static final int app_name=0x7f050001;
-        public static final int getwikipedia=0x7f050005;
-        public static final int hello=0x7f050000;
-        public static final int imgleft=0x7f050009;
-        public static final int imgright=0x7f05000a;
-        public static final int readit=0x7f050006;
-        public static final int red=0x7f050003;
-        public static final int search=0x7f05000c;
-        public static final int search_hint=0x7f05000b;
-        public static final int search_voice=0x7f05000d;
-        public static final int stopread=0x7f050007;
-        public static final int title=0x7f050008;
-        public static final int white=0x7f050004;
+        public static final int app_name=0x7f050000;
+        public static final int imgleft=0x7f050002;
+        public static final int imgright=0x7f050003;
+        public static final int search=0x7f050005;
+        public static final int search_hint=0x7f050004;
+        public static final int search_voice=0x7f050006;
+        public static final int title=0x7f050001;
+        public static final int voice_prompt=0x7f050007;
     }
     public static final class xml {
         public static final int searchable=0x7f040000;
