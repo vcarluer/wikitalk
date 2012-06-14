@@ -20,9 +20,9 @@ public final class R {
         public static final int imgText=0x7f070004;
         public static final int linkInfo=0x7f070000;
         public static final int mainLayout=0x7f070003;
-        public static final int menu_lang=0x7f07000d;
+        public static final int menu_lang=0x7f07000e;
         public static final int menu_search=0x7f07000f;
-        public static final int menu_speak=0x7f07000e;
+        public static final int menu_speak=0x7f07000d;
         public static final int progressImage=0x7f070005;
         public static final int searchProgress=0x7f070001;
         public static final int supported_languages=0x7f07000c;

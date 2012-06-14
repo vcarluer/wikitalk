@@ -1,15 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/menu_speak"
+          android:icon="@android:drawable/ic_btn_speak_now"
+          android:title="@string/search_voice"
+          android:showAsAction="ifRoom" />
+    
     <item android:id="@+id/menu_lang"
           android:icon="@android:drawable/ic_menu_preferences"
           android:title="@string/search"
           android:showAsAction="ifRoom">
 	    
    	</item>
-    <item android:id="@+id/menu_speak"
-          android:icon="@android:drawable/ic_btn_speak_now"
-          android:title="@string/search_voice"
-          android:showAsAction="ifRoom" />
+    
     <item android:id="@+id/menu_search"
           android:title="@string/search"
           android:icon="@android:drawable/ic_menu_search"
