@@ -119,6 +119,9 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	
     private SeekBar mSeekText;
     
+    private boolean resetImageCursor;
+    private boolean resetLinkCursor;
+    
 	public WikitalkActivity() {
 		this.sentences = new HashMap<Integer, String>();
 		this.hashAudio = new HashMap<String, String>();
@@ -280,6 +283,8 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
         this.mSeekText.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
 			
         	public void onStopTrackingTouch(SeekBar seekBar) {
+        		resetImageCursor = true;
+        		resetLinkCursor = true;
         		pauseRead();
 				readCursor = seekBar.getProgress();
 				resumeRead();
@@ -519,6 +524,8 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
     	this.sentences.clear();
     	this.textToRead = "";
     	this.textSize = -1;
+    	this.resetImageCursor = false;
+    	this.resetLinkCursor = false;
     }
 	
 	private void initWidgets() {		
@@ -694,6 +701,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 				this.imageCursor = this.images.size() - 1;
 			}
 			
+			this.resetImageCursor = false;
 			this.showImage();
 		}
 	}
@@ -705,6 +713,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 				this.imageCursor = 0;
 			}
 			
+			this.resetImageCursor = false;
 			this.showImage();
 		}			
 	}
@@ -917,27 +926,48 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	    private void readAtPosition() {
 	    	if (this.readCursor < this.textSize) {
 	    		this.mSeekText.setProgress(this.readCursor);
+	    		
+	    		int firstListIdx = 0;
 	    		if (this.linksIndexed != null && this.linksIndexed.size() > 0) {
 	    			if (this.linksIndexed.containsKey(this.readCursor)) {
 	    				List<Link> currentLinks = this.linksIndexed.get(this.readCursor);
 		    			if (currentLinks.size() > 0) {
 		    				Link l = currentLinks.get(currentLinks.size() - 1);
 		    				this.linkTargetCursor = l.idx;
+		    				l = currentLinks.get(0);
+		    				firstListIdx = l.idx;
 		    			}
 	    			}
 	    		}
-	    		
-	    		if (this.links != null && this.linkCursor < this.linkTargetCursor && System.currentTimeMillis() - this.linkShown > 5000) {
-	    			this.linkCursor++;
-	    			this.linkShown = System.currentTimeMillis();
-	    			this.currentLink = links.get(this.linkCursor);
-	    			Bundle bundle = new Bundle();
-    				bundle.putString(LINK_LABEL, this.currentLink.label);
-    				Message message = new Message();
-    				message.setData(bundle);
-    				this.handler.sendMessage(message);
+	    			    		
+	    		if (this.links != null) {
+	    			boolean needSend = false;
+	    			if (this.resetLinkCursor && this.linksIndexed.containsKey(this.readCursor)) {
+	    				if (this.linkCursor != firstListIdx) {
+	    					this.linkCursor = firstListIdx;
+	    					needSend = true;
+	    				}
+	    				
+	    				this.resetLinkCursor = false;
+	    			} else {
+	    				if (this.linkCursor < this.linkTargetCursor && System.currentTimeMillis() - this.linkShown > 5000) {
+	    					this.linkCursor++;
+	    	    			needSend = true;
+	    				}
+	    			}
+	    			
+	    			if (needSend) {
+	    				this.linkShown = System.currentTimeMillis();
+    	    			this.currentLink = links.get(this.linkCursor);
+    	    			Bundle bundle = new Bundle();
+        				bundle.putString(LINK_LABEL, this.currentLink.label);
+        				Message message = new Message();
+        				message.setData(bundle);
+        				this.handler.sendMessage(message);
+	    			}
 	    		}	
 	    		
+	    		firstListIdx = 0;
 	    		if (this.imagesIndexed != null && this.imagesIndexed.size() > 0) {
 	    			if (this.imagesIndexed.containsKey(this.readCursor)) {
 		    			// only first one
@@ -945,15 +975,31 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	    				if (iis.size() > 0) {
 	    					ImageInfo ii = iis.get(iis.size() - 1);
 		    				this.imageTargetCursor = ii.idx;
+		    				ii = iis.get(0);
+		    				firstListIdx = ii.idx;
 	    				}	    						    			
 		    		}
 	    		}
 	    		
 	    		if (this.statusImage == StatusImage.Ready && this.images != null) {
-		    		if ((this.imageCursor < this.imageTargetCursor && System.currentTimeMillis() - this.imageShown > 5000) || this.imageCursor == -1) {
-		    			this.imageCursor++;
-		    			this.showImage();
-		    		}	    			    			
+	    			boolean needShow = false;
+	    			if (this.resetImageCursor && this.imagesIndexed.containsKey(this.readCursor)) {
+	    				if (this.imageCursor != firstListIdx) {
+	    					this.imageCursor = firstListIdx;
+	    					needShow = true;
+	    				}
+	    				
+	    				this.resetImageCursor = false;
+	    			} else {
+	    				if ((this.imageCursor < this.imageTargetCursor && System.currentTimeMillis() - this.imageShown > 5000) || this.imageCursor == -1) {
+			    			this.imageCursor++;
+			    			needShow = true;
+			    		}
+	    			}
+	    			
+	    			if (needShow) {
+	    				this.showImage();
+	    			}
 	    		}
 	    		
 		    	if (this.sentences.containsKey(this.readCursor)) {
