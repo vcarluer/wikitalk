@@ -418,27 +418,29 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 		this.endSearchImage();
 		int idx = 0;
 		List<ImageInfo> newImages = new ArrayList<ImageInfo>();
-		for(String sentence : this.splitSentence) {
-			
-			List<ImageInfo> iis = new ArrayList<ImageInfo>();
-			
-			for(ImageInfo ii : fetchedImages) {
-				if (sentence.toUpperCase().contains(ii.name.toUpperCase())) {
-					newImages.add(ii);
-					ii.idx = newImages.size() - 1;
-					iis.add(ii);					
+		if (this.splitSentence != null) {
+			for(String sentence : this.splitSentence) {
+				
+				List<ImageInfo> iis = new ArrayList<ImageInfo>();
+				
+				for(ImageInfo ii : fetchedImages) {
+					if (sentence.toUpperCase().contains(ii.name.toUpperCase())) {
+						newImages.add(ii);
+						ii.idx = newImages.size() - 1;
+						iis.add(ii);					
+					}
 				}
+				
+				if (iis.size() > 0) {
+					this.imagesIndexed.put(idx, iis);
+				}
+				
+				idx++;
 			}
 			
-			if (iis.size() > 0) {
-				this.imagesIndexed.put(idx, iis);
-			}
-			
-			idx++;
+			this.images = newImages;
+			this.showFirstImage();
 		}
-		
-		this.images = newImages;
-		this.showFirstImage();
 	}
 	
 	private void showFirstImage() {
@@ -813,6 +815,6 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 		}
 		
 		public void endSearchImage() {
-			this.mProgressImage.setVisibility(View.INVISIBLE);
+			this.mProgressImage.setVisibility(View.GONE);
 		}
 }
