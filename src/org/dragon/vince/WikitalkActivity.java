@@ -485,6 +485,9 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	
 	public void readText() {				
 		this.mSearchBar.setVisibility(View.INVISIBLE);
+		this.main_info.setVisibility(View.VISIBLE);
+        this.main_noInfo.setVisibility(View.GONE);
+
 		this.status = Status.Ready;
 		this.sentences.clear();
 		this.linksIndexed.clear();
@@ -648,10 +651,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	}
 	
 	public void search(String toSearch) {
-		if (toSearch != null) {
-			this.main_info.setVisibility(View.VISIBLE);
-	        this.main_noInfo.setVisibility(View.GONE);
-	        
+		if (toSearch != null) {	        
 			this.pauseRead();
 			this.initData();
 			initWidgets();
