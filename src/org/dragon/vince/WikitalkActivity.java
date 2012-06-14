@@ -543,8 +543,12 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 		Log.d(WIKITALK, line);
 	}
 	
-	public void readText() {				
+	public void stopSearchBar() {
 		this.mSearchBar.setVisibility(View.INVISIBLE);
+	}
+	
+	public void readText() {				
+		this.stopSearchBar();
 		this.main_info.setVisibility(View.VISIBLE);
         this.main_noInfo.setVisibility(View.GONE);
 

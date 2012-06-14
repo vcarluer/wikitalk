@@ -73,25 +73,42 @@ public class RetrievePageTask extends AsyncTask<String, Void, String> {
 			Node node = nodes.item(i).getAttributes().getNamedItem("pageid");
 			// Handle here multiple results (take first or propose)
 			if(node != null) {
-				this.pageId = nodes.item(i).getAttributes().getNamedItem("pageid").getNodeValue();
+				this.pageId = node.getNodeValue();
 				 // Only first one for now
 				 break;
 			}
 		}
 				
-		nodes = doc.getElementsByTagName("rev"); 
-		 for (int i = 0; i < nodes.getLength(); i++) {
-			 String line = nodes.item(i).getTextContent();
-			 this.mainActivity.addTextToRead(line);			 
+		nodes = doc.getElementsByTagName("rev"); 	
+		if (nodes != null && nodes.getLength() > 0) {
+			for (int i = 0; i < nodes.getLength(); i++) {
+				 String line = nodes.item(i).getTextContent();
+				 if (line.contains("#REDIRECT")) {					 
+					 int posS = line.indexOf("[[");
+					 if (posS > -1) {
+						 posS = posS + 2;
+					 }
+					 
+					 int posE = line.indexOf("]]");
+					 if (posE > -1 && posS > -1) {
+						 String redirect = line.substring(posS, posE);
+						 this.mainActivity.search(redirect);
+					 }
+				 } else {
+					 this.mainActivity.addTextToRead(line);
+					 
+					 if (this.pageId != null) {
+						 this.mainActivity.beginSearchImages();
+						 this.retrieveImage.execute(pageId);
+					 }
+					 
+					 this.mainActivity.readText();
+				 }			 			 
+			}	 
+		} else {
+			this.mainActivity.stopSearchBar();
 		}
-		 
-		 if (this.pageId != null) {
-			 this.mainActivity.beginSearchImages();
-			 this.retrieveImage.execute(pageId);
-		 }
-		 
-		 this.mainActivity.readText();
-						
+		 						
 		super.onPostExecute(result);
 	}
 }
