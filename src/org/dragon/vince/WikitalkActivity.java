@@ -503,6 +503,8 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 		this.mImgInfo.setText("");
 		this.mLinkImage.setVisibility(View.GONE);		
 		this.mProgressLoadImage.setVisibility(View.GONE);
+		this.mImgPrev.setVisibility(View.GONE);
+		this.mImgNext.setVisibility(View.GONE);
 	}
 	
 	public void addTextToRead(String line) {
@@ -683,7 +685,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 		if (toSearch != null) {	        
 			this.pauseRead();
 			this.initData();
-			initWidgets();
+			this.initWidgets();
 			this.mTitle.setText(toSearch);
 			this.currentSearch = toSearch;
 			this.setCurrentLang();
@@ -1040,6 +1042,10 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 		
 		public void endSearchImage() {
 			this.mProgressImage.setVisibility(View.GONE);
+			if (this.images != null && this.images.size() > 0) {
+				this.mImgPrev.setVisibility(View.VISIBLE);
+				this.mImgNext.setVisibility(View.VISIBLE);
+			}
 		}
 		
 		public View makeView() {
