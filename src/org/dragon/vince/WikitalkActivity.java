@@ -18,6 +18,8 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -34,9 +36,12 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup.LayoutParams;
 import android.view.WindowManager;
+import android.view.animation.AnimationUtils;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageSwitcher;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -46,8 +51,9 @@ import android.widget.Spinner;
 import android.widget.SpinnerAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ViewSwitcher.ViewFactory;
 
-public class WikitalkActivity extends Activity implements TextToSpeech.OnInitListener, OnUtteranceCompletedListener{
+public class WikitalkActivity extends Activity implements TextToSpeech.OnInitListener, OnUtteranceCompletedListener, ViewFactory  {
 
     private static final String DEFAULT_LANG = "Default";
 
@@ -57,7 +63,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
     
 	static final String WIKITALK = "wikitalk";
     private TextToSpeech mTts;    
-    private ImageView mImage;
+    private ImageSwitcher mImage;
     private Button mImgNext;
     private Button mImgPrev;
     private TextView mTitle;
@@ -132,7 +138,14 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
                     );
         }
 
-        this.mImage = (ImageView) findViewById(R.id.wikiImage);
+        this.mImage = (ImageSwitcher) findViewById(R.id.wikiImage);                
+        this.mImage.setFactory(this);
+        this.mImage.setInAnimation(AnimationUtils.loadAnimation(this,
+                    android.R.anim.fade_in));
+        this.mImage.setOutAnimation(AnimationUtils.loadAnimation(this,
+                    android.R.anim.fade_out));
+        
+        
         this.mImage.setOnClickListener(new View.OnClickListener() {
 			
 			public void onClick(View v) {
@@ -459,7 +472,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
     }
 	
 	private void initWidgets() {		
-		this.mImage.setImageDrawable(null);
+		// this.mImage.setImageDrawable(null);
 		this.mLinkInfo.setText("");
 		this.mImgInfo.setText("");
 		
@@ -587,7 +600,8 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 		if (this.status == Status.Ready) {
 			this.statusImage = statusImage.Ready;
 			this.imageShown = System.currentTimeMillis();
-			this.mImage.setImageBitmap(bitmap);
+			Drawable drawable = new BitmapDrawable(bitmap);
+			this.mImage.setImageDrawable(drawable);
 			if (this.images.size() > 0 && this.images.size() > this.imageCursor) {			
 				ImageInfo ii = this.images.get(this.imageCursor);
 				this.showImageInfo(ii);
@@ -647,6 +661,9 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 			
 			RetrievePageTask pageTask = new RetrievePageTask(this);			
 			this.mSearchBar.setVisibility(View.VISIBLE);
+			this.main_info.setVisibility(View.GONE);
+	        this.main_noInfo.setVisibility(View.VISIBLE);
+
 			pageTask.execute(toSearch);
 			this.status = Status.Working;
 		}
@@ -988,4 +1005,14 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 		public void endSearchImage() {
 			this.mProgressImage.setVisibility(View.GONE);
 		}
+		
+		public View makeView() {
+            ImageView iView = new ImageView(this);
+            iView.setScaleType(ImageView.ScaleType.FIT_CENTER);
+            iView.setLayoutParams(new
+                        ImageSwitcher.LayoutParams(
+                                    LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT));
+            iView.setBackgroundColor(0xFF000000);
+            return iView;
+      }
 }
