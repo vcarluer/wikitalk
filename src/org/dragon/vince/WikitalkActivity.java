@@ -65,8 +65,15 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	private StatusImage statusImage;
 	private Map<Integer, String> sentences;
 	private int readCursor;
-	private Map<Integer, List<Link>> links;
+	private List<Link> links;
+	private Map<Integer, List<Link>> linksIndexed;
+	private int linkCursor;
+	private int linkTargetCursor;
+	private long linkShown;	
+	
 	private TextView mLinkInfo;
+	
+	private Locale currentLang;
 	
 	private HashMap<String, String> hashAudio;
 	private boolean reading;
@@ -93,8 +100,9 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	public WikitalkActivity() {
 		this.sentences = new HashMap<Integer, String>();
 		this.hashAudio = new HashMap<String, String>();
-		this.links = new HashMap<Integer, List<Link>>();
+		this.linksIndexed = new HashMap<Integer, List<Link>>();
 		this.imagesIndexed = new HashMap<Integer, List<ImageInfo>>(); 
+		this.links = new ArrayList<Link>();
 	}
 	
 	/** Called when the activity is first created. */
@@ -237,9 +245,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
        public void  handleMessage(Message msg) {
             nextImage();
        }
-  };
-
-  private Locale currentLang;
+  }; 
     
     /**
      * Fire an intent to start the speech recognition activity.
@@ -331,11 +337,14 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
     	this.currentSearch = "";
     	this.currentSentence = "";
     	this.readCursor = 0;
-    	this.imageCursor = 0;
-    	this.imageTargetCursor = 0;
+    	this.imageCursor = -1;
+    	this.imageTargetCursor = -1;
     	this.splitSentence = null;
     	this.imagesIndexed.clear();
+    	this.linksIndexed.clear();
     	this.links.clear();
+    	this.linkCursor = -1;
+    	this.linkTargetCursor = -1;
     	this.sentences.clear();
     }
 	
@@ -356,7 +365,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 		this.mSearchBar.setVisibility(View.INVISIBLE);
 		this.status = Status.Ready;
 		this.sentences.clear();
-		this.links.clear();
+		this.linksIndexed.clear();
 		this.mTitle.setText(this.currentSearch);
 		this.initLanguage();
 		
@@ -440,13 +449,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 			}
 			
 			this.images = newImages;
-			this.showFirstImage();
 		}
-	}
-	
-	private void showFirstImage() {
-		this.imageCursor = 0;
-		this.showImage();
 	}
 
 	private void showImage() {
@@ -692,19 +695,27 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	    }
 	    
 	    private void readAtPosition() {
-	    	if (this.readCursor < this.textSize) {	    	
-	    		if (this.links.containsKey(this.readCursor)) {
-	    			List<Link> currentLinks = this.links.get(this.readCursor);
-	    			if (currentLinks.size() > 0) {
-	    				this.currentLink = currentLinks.get(0);
-	    				Bundle bundle = new Bundle();
-	    				bundle.putString(LINK_LABEL, this.currentLink.label);
-	    				Message message = new Message();
-	    				message.setData(bundle);
-	    				this.handler.sendMessage(message);
-	    				// this.mLinkInfo.setText(this.currentLink.label);
+	    	if (this.readCursor < this.textSize) {
+	    		if (this.linksIndexed != null && this.linksIndexed.size() > 0) {
+	    			if (this.linksIndexed.containsKey(this.readCursor)) {
+	    				List<Link> currentLinks = this.linksIndexed.get(this.readCursor);
+		    			if (currentLinks.size() > 0) {
+		    				Link l = currentLinks.get(currentLinks.size() - 1);
+		    				this.linkTargetCursor = l.idx;
+		    			}
 	    			}
-	    		}	    	
+	    		}
+	    		
+	    		if (this.links != null && this.linkCursor < this.linkTargetCursor && System.currentTimeMillis() - this.linkShown > 5000) {
+	    			this.linkCursor++;
+	    			this.linkShown = System.currentTimeMillis();
+	    			this.currentLink = links.get(this.linkCursor);
+	    			Bundle bundle = new Bundle();
+    				bundle.putString(LINK_LABEL, this.currentLink.label);
+    				Message message = new Message();
+    				message.setData(bundle);
+    				this.handler.sendMessage(message);
+	    		}	
 	    		
 	    		if (this.imagesIndexed != null && this.imagesIndexed.size() > 0) {
 	    			if (this.imagesIndexed.containsKey(this.readCursor)) {
@@ -768,6 +779,8 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 				String replaceString = "";
 				if (link != null) {
 					newLinks.add(link);
+					this.links.add(link);
+					link.idx = this.links.size() - 1;
 					replaceString = link.label;
 				}
 				
@@ -778,7 +791,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 		}
 		
 		public void parseLinks(int idx) {
-			this.links.put(idx, this.GetSentenceLinks());
+			this.linksIndexed.put(idx, this.GetSentenceLinks());
 		}
 		
 		private void removeRef() {			
