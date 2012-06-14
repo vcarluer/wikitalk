@@ -733,9 +733,11 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 		    		}
 	    		}
 	    		
-	    		if (this.statusImage == StatusImage.Ready && this.images != null && this.imageCursor < this.imageTargetCursor && System.currentTimeMillis() - this.imageShown > 5000) {
-	    			this.imageCursor++;
-	    			this.showImage();
+	    		if (this.statusImage == StatusImage.Ready && this.images != null) {
+		    		if ((this.imageCursor < this.imageTargetCursor && System.currentTimeMillis() - this.imageShown > 5000) || this.imageCursor == -1) {
+		    			this.imageCursor++;
+		    			this.showImage();
+		    		}	    			    			
 	    		}
 	    		
 		    	if (this.sentences.containsKey(this.readCursor)) {
