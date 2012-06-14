@@ -86,6 +86,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	
 	private TextView mLinkInfo;
 	private ImageView mLinkImage;
+	private ProgressBar mProgressLoadImage;
 	
 	private static Locale currentLang;
 	
@@ -160,6 +161,8 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 				}
 			}
 		});
+        
+        this.mProgressLoadImage = (ProgressBar) findViewById(R.id.progressLoadImage);
         
         this.mImgInfo = (TextView) findViewById(R.id.imgText);
         
@@ -598,6 +601,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 			this.statusImage = statusImage.Working;
 			RetrieveImageTask retrieveImage = new RetrieveImageTask(this);
 			ImageInfo ii = this.images.get(this.imageCursor);
+			this.mProgressLoadImage.setVisibility(View.VISIBLE);
 			retrieveImage.execute(ii.thumbUrl);			
 		}
 	}
@@ -617,6 +621,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	
 	public void showImage(Bitmap bitmap) {
 		if (this.status == Status.Ready) {
+			this.mProgressLoadImage.setVisibility(View.GONE);
 			this.statusImage = statusImage.Ready;
 			this.imageShown = System.currentTimeMillis();
 			Drawable drawable = new BitmapDrawable(bitmap);
@@ -1015,7 +1020,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 		}
 
 		public void beginSearchImages() {
-			this.mProgressImage.setVisibility(View.VISIBLE);
+			this.mProgressImage.setVisibility(View.VISIBLE);			
 		}
 		
 		public void endSearchImage() {
