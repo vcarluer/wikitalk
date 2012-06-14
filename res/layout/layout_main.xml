@@ -23,7 +23,8 @@
         android:id="@+id/main_info"
         android:gravity="center"
 	    android:layout_width="match_parent"
-	    android:layout_height="match_parent">
+	    android:layout_height="match_parent">               
+        
         <LinearLayout         
         android:layout_width="match_parent"    
         android:layout_height="match_parent"
@@ -62,8 +63,16 @@
 	            android:layout_width="fill_parent"
 	            android:layout_height="fill_parent"/>
 	    
-	    </LinearLayout>
+	    </LinearLayout>	           
 	    
+        <ImageView
+            android:id="@+id/media_readInfo"
+            android:layout_width="100dip"
+            android:layout_height="100dip"
+            android:layout_centerInParent="true"
+            android:alpha="0.5"            
+            android:src="@android:drawable/ic_media_pause" />
+        
 	    <Button android:id="@+id/imgPrevious"
 	        android:gravity="center"
 	        android:layout_width="wrap_content"

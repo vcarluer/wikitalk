@@ -122,6 +122,8 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
     private boolean resetImageCursor;
     private boolean resetLinkCursor;
     
+    private ImageView mMediaInfo;
+    
 	public WikitalkActivity() {
 		this.sentences = new HashMap<Integer, String>();
 		this.hashAudio = new HashMap<String, String>();
@@ -301,6 +303,8 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 				
 			}
 		});
+        
+        this.mMediaInfo = (ImageView) findViewById(R.id.media_readInfo);
         
         // Must be kept at end of method
         // Get the intent, verify the action and get the query
@@ -537,6 +541,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 		this.mImgPrev.setVisibility(View.GONE);
 		this.mImgNext.setVisibility(View.GONE);
 		this.mSeekText.setVisibility(View.GONE);
+		this.mMediaInfo.setVisibility(View.GONE);
 	}
 	
 	public void addTextToRead(String line) {
@@ -910,6 +915,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	    }
 	    
 	    public void pauseRead() {
+	    	this.mMediaInfo.setVisibility(View.VISIBLE);
 	    	this.reading = false;
 	    	if (this.mTts.isSpeaking()) {
 	    		this.mTts.stop();
@@ -919,6 +925,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	    }
 	    
 	    public void resumeRead() {
+	    	this.mMediaInfo.setVisibility(View.GONE);
 	    	this.readAtPosition();   		
 	    	// Toast.makeText(this, "Play", Toast.LENGTH_SHORT).show();
 	    }
