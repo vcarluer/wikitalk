@@ -33,6 +33,7 @@ import android.view.View.OnClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.SpinnerAdapter;
@@ -59,6 +60,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	private List<ImageInfo> images;
 	private Map<Integer, List<ImageInfo>> imagesIndexed;
 	private int imageCursor;
+	private int imageTargetCursor;
 	private Status status;
 	private StatusImage statusImage;
 	private Map<Integer, String> sentences;
@@ -84,6 +86,8 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
     private View.OnTouchListener gestureListener;
     
     private String[] splitSentence;
+    
+    private ProgressBar mSearchBar;
 	
 	public WikitalkActivity() {
 		this.sentences = new HashMap<Integer, String>();
@@ -183,6 +187,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
             this.mTitle.setOnClickListener(new View.OnClickListener() {
 				
 				public void onClick(View v) {
+					pauseRead();
 					startVoiceRecognitionActivity();
 				}
 			});
@@ -216,6 +221,8 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
         
         this.mImage.setOnTouchListener(this.gestureListener);
         this.mainLayout.setOnTouchListener(this.gestureListener);
+        
+        this.mSearchBar = (ProgressBar) findViewById(R.id.searchProgress);
     }
     
     final Handler handler = new Handler() {
@@ -323,7 +330,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
     	this.currentSentence = "";
     	this.readCursor = 0;
     	this.imageCursor = 0;
-    	
+    	this.imageTargetCursor = 0;
     	this.splitSentence = null;
     	this.imagesIndexed.clear();
     	this.links.clear();
@@ -331,9 +338,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
     }
 	
 	private void initWidgets() {
-		textToRead = "";		
-		// to put in string
-		this.mTitle.setText("Recherche...");
+		textToRead = "";
 		this.mImage.setImageDrawable(null);
 		this.mLinkInfo.setText("");
 		this.mImgInfo.setText("");
@@ -346,6 +351,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	}
 	
 	public void readText() {				
+		this.mSearchBar.setVisibility(View.INVISIBLE);
 		this.status = Status.Ready;
 		this.sentences.clear();
 		this.links.clear();
@@ -356,9 +362,8 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 		
 		int idx = 0;
 		for(String sentence : splitSentence) {
-			this.currentSentence = sentence;
+			this.currentSentence = new String(sentence);
 			this.parseLinks(this.currentSentence, idx);
-			sentence = this.currentSentence;
 			// Replace if not numeric
 			// sentence = sentence.replaceAll("-", " ");
 			// Parse wikimedia tag here
@@ -368,19 +373,19 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 //			sentence = sentence.replaceAll("</ref>", "");
 //			sentence = sentence.replaceAll("/>", "");
 //			sentence = sentence.replaceAll("<ref ", "");			
-			if (sentence.trim().length() > 0 && 
-					!sentence.contains("{") && 
-					!sentence.contains("}") &&
-					!sentence.contains("|") && 
-					!sentence.contains("[") && 
-					!sentence.contains("]") &&
-					!sentence.contains("<") &&
-					!sentence.contains(">") &&
-					!sentence.contains("&") &&
-					!sentence.contains("/") &&
-					!sentence.contains("_")) {
+			if (currentSentence.trim().length() > 0 && 
+					!currentSentence.contains("{") && 
+					!currentSentence.contains("}") &&
+					!currentSentence.contains("|") && 
+					!currentSentence.contains("[") && 
+					!currentSentence.contains("]") &&
+					!currentSentence.contains("<") &&
+					!currentSentence.contains(">") &&
+					!currentSentence.contains("&") &&
+					!currentSentence.contains("/") &&
+					!currentSentence.contains("_")) {
 				
-				this.sentences.put(idx, sentence);								
+				this.sentences.put(idx, currentSentence);								
 			}			
 						
 			idx++;
@@ -407,23 +412,18 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
         }
 	}
 
-	public void setImages(List<ImageInfo> images) {
-		this.images = images;
+	public void setImages(List<ImageInfo> fetchedImages) {
 		int idx = 0;
-		int imageIdx = 0;
+		List<ImageInfo> newImages = new ArrayList<ImageInfo>();
 		for(String sentence : this.splitSentence) {
-			if (imageIdx >= this.images.size()) {
-				break;
-			}
 			
-			boolean found = true;
 			List<ImageInfo> iis = new ArrayList<ImageInfo>();
-			while (found) {
-				if (sentence.toUpperCase().contains(this.images.get(imageIdx).name.toUpperCase())) {
-					iis.add(this.images.get(imageIdx));					
-					imageIdx++;
-				} else {
-					found = false;
+			
+			for(ImageInfo ii : fetchedImages) {
+				if (sentence.toUpperCase().contains(ii.name.toUpperCase())) {
+					newImages.add(ii);
+					ii.idx = newImages.size() - 1;
+					iis.add(ii);					
 				}
 			}
 			
@@ -434,9 +434,8 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 			idx++;
 		}
 		
+		this.images = newImages;
 		this.showFirstImage();
-//		this.imageChanger = new ImageChanger(this);
-//		this.imageChanger.execute();
 	}
 	
 	private void showFirstImage() {
@@ -519,6 +518,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 			this.pauseRead();
 			this.initData();
 			initWidgets();
+			this.mTitle.setText(toSearch);
 			this.currentSearch = toSearch;
 			this.currentLang = Locale.US;
 			String selected = mSupportedLanguageView.getSelectedItem().toString();
@@ -530,6 +530,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 			}
 			
 			RetrievePageTask pageTask = new RetrievePageTask(this);			
+			this.mSearchBar.setVisibility(View.VISIBLE);
 			pageTask.execute(toSearch);
 			this.status = Status.Working;
 		}
@@ -702,10 +703,17 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	    		if (this.imagesIndexed != null && this.imagesIndexed.size() > 0) {
 	    			if (this.imagesIndexed.containsKey(this.readCursor)) {
 		    			// only first one
-	    				ImageInfo ii = this.imagesIndexed.get(this.readCursor).get(0);
-		    			this.imageCursor = ii.idx;
-		    			this.showImage();
+	    				List<ImageInfo> iis = this.imagesIndexed.get(this.readCursor);
+	    				if (iis.size() > 0) {
+	    					ImageInfo ii = iis.get(iis.size() - 1);
+		    				this.imageTargetCursor = ii.idx;
+	    				}	    						    			
 		    		}
+	    		}
+	    		
+	    		if (this.statusImage == StatusImage.Ready && this.images != null && this.imageCursor < this.imageTargetCursor && System.currentTimeMillis() - this.imageShown > 5000) {
+	    			this.imageCursor++;
+	    			this.showImage();
 	    		}
 	    		
 		    	if (this.sentences.containsKey(this.readCursor)) {

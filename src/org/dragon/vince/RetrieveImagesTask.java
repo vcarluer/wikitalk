@@ -68,9 +68,10 @@ public class RetrieveImagesTask extends AsyncTask<String, Void, List<ImageInfo>>
 			Document doc = XmlHelper.xmlfromString(line);
 			NodeList nodes = doc.getElementsByTagName("im");
 			for (int i = 0; i < nodes.getLength(); i++) {
-				String title = nodes.item(i).getAttributes().getNamedItem("title").getNodeValue();
-				int pos = title.indexOf(":");				
-				title = Uri.encode(title.substring(pos + 1));
+				String titleBase = nodes.item(i).getAttributes().getNamedItem("title").getNodeValue();
+				int pos = titleBase.indexOf(":");				
+				titleBase = titleBase.substring(pos + 1);
+				String title = Uri.encode(titleBase);
 				WindowManager wm = (WindowManager) this.mainActivity.getSystemService(Context.WINDOW_SERVICE);
 				Display display = wm.getDefaultDisplay();
 				Point size = new Point();
@@ -105,7 +106,8 @@ public class RetrieveImagesTask extends AsyncTask<String, Void, List<ImageInfo>>
 								NodeList nodes2 = doc2.getElementsByTagName("ii"); 
 								 for (int j = 0; j < nodes2.getLength(); j++) {
 									 ImageInfo ii = new ImageInfo();
-									 ii.name = title;
+									 // not encoded title?
+									 ii.name = titleBase;
 									 ii.url = nodes2.item(j).getAttributes().getNamedItem("url").getNodeValue();
 									 ii.thumbUrl = nodes2.item(j).getAttributes().getNamedItem("thumburl").getNodeValue();									 
 									 
