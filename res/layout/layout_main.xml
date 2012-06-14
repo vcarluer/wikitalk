@@ -78,14 +78,14 @@
 	        android:layout_width="wrap_content"
 	        android:layout_height="fill_parent"
 	        android:layout_alignParentLeft="true"
-	        android:alpha="0.5"
+	        android:alpha="0.25"
 	        android:text="@string/imgleft"/>
 	    <Button android:id="@+id/imgNext"
 	        android:gravity="center"
 	        android:layout_width="wrap_content"
 	        android:layout_height="fill_parent"
 	        android:layout_alignParentRight="true"
-	        android:alpha="0.5"
+	        android:alpha="0.25"
 	        android:text="@string/imgright"/>  
     </RelativeLayout>
       
