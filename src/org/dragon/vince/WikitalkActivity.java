@@ -85,6 +85,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	private long linkShown;	
 	
 	private TextView mLinkInfo;
+	private ImageView mLinkImage;
 	
 	private static Locale currentLang;
 	
@@ -230,6 +231,17 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 			}
 		});
         
+        this.mLinkImage = (ImageView) findViewById(R.id.linkImage);
+        this.mLinkImage.setVisibility(View.GONE);
+        this.mLinkImage.setOnClickListener(new OnClickListener() {
+			
+			public void onClick(View v) {
+				if (currentLink != null) {
+					search(currentLink.link);
+				}
+			}
+		});
+        
      // Gesture detection
         gestureDetector = new GestureDetector(new MyGestureDetector(this));
         gestureListener = new View.OnTouchListener() {
@@ -325,7 +337,11 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
     
     final Handler handler = new Handler() {
         public void  handleMessage(Message msg) {
-             mLinkInfo.setText(msg.getData().getString(LINK_LABEL));
+            String info = msg.getData().getString(LINK_LABEL);        	
+             if (info != null && info != "") {
+            	 mLinkInfo.setText(info);
+            	 mLinkImage.setVisibility(View.VISIBLE);
+             }
         }
    };
    
@@ -1011,7 +1027,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
             iView.setScaleType(ImageView.ScaleType.FIT_CENTER);
             iView.setLayoutParams(new
                         ImageSwitcher.LayoutParams(
-                                    LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT));
+                                    LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT));
             iView.setBackgroundColor(0xFF000000);
             return iView;
       }
