@@ -365,7 +365,8 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 		int idx = 0;
 		for(String sentence : splitSentence) {
 			this.currentSentence = new String(sentence);
-			this.parseLinks(this.currentSentence, idx);
+			this.parseLinks(idx);
+			this.parseRef(idx);
 			// Replace if not numeric
 			// sentence = sentence.replaceAll("-", " ");
 			// Parse wikimedia tag here
@@ -746,8 +747,8 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 			}			
 		}
 		
-		private List<Link> GetSentenceLinks(String sentence) {			
-			List<String> linkFound = getTagValues(sentence, LINK_REGEX);
+		private List<Link> GetSentenceLinks() {			
+			List<String> linkFound = getTagValues(this.currentSentence, LINK_REGEX);
 			List<Link> newLinks = new ArrayList<Link>();
 			for(String linkStr : linkFound) {
 				Link link = null;
@@ -770,17 +771,34 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 					replaceString = link.label;
 				}
 				
-				this.currentSentence = sentence.replace("[[" + linkStr + "]]", replaceString);
+				this.currentSentence = this.currentSentence.replace("[[" + linkStr + "]]", replaceString);
 			}
 
 			return newLinks;
 		}
 		
-		public void parseLinks(String sentence, int idx) {
-			this.links.put(idx, this.GetSentenceLinks(sentence));
+		public void parseLinks(int idx) {
+			this.links.put(idx, this.GetSentenceLinks());
+		}
+		
+		private void removeRef() {			
+			List<String> linkFound = getTagValues(this.currentSentence, REF_REGEX);
+			for(String linkStr : linkFound) {
+				this.currentSentence = this.currentSentence.replace("<ref" + linkStr + "/ref>", "");
+			}
+			linkFound = getTagValues(this.currentSentence, REF2_REGEX);
+			for(String linkStr : linkFound) {
+				this.currentSentence = this.currentSentence.replace("<ref" + linkStr + "/>", "");
+			}
+		}
+		
+		public void parseRef(int idx) {
+			this.removeRef();
 		}
 		
 		private static final Pattern LINK_REGEX = Pattern.compile("\\[\\[(.+?)\\]\\]");
+		private static final Pattern REF_REGEX = Pattern.compile("<ref(.+?)/ref>");
+		private static final Pattern REF2_REGEX = Pattern.compile("<ref(.+?)/>");
 
 		private static List<String> getTagValues(final String str, final Pattern regEx) {
 		    final List<String> tagValues = new ArrayList<String>();
