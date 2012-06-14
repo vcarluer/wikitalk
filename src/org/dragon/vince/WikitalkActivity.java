@@ -358,6 +358,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
        mSupportedLanguageView = (Spinner) sl.findViewById(R.id.supported_languages);
               
        menu.findItem(R.id.menu_lang).setActionView(mSupportedLanguageView);
+       this.setSpinnerAdapter();
 //       mSupportedLanguageView = (Spinner) item.g
 
        // Get the SearchView and set the searchable configuration
@@ -381,9 +382,15 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
    
    final Handler handlerNextImage = new Handler() {
        public void  handleMessage(Message msg) {
-            nextImage();
+    	   nextImage();
        }
   }; 
+  
+  final Handler handlerProgressImage = new Handler() {
+	  public void handleMessage(Message msg) {
+		  mProgressLoadImage.setVisibility(View.VISIBLE);
+	  }
+  };
     
     /**
      * Fire an intent to start the speech recognition activity.
@@ -410,7 +417,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
         // Specify the recognition language. This parameter has to be specified only if the
         // recognition has to be done in a specific language and not the default one (i.e., the
         // system locale). Most of the applications do not have to set this parameter.
-        if (!mSupportedLanguageView.getSelectedItem().toString().equals(DEFAULT_LANG)) {
+        if (mSupportedLanguageView != null && !mSupportedLanguageView.getSelectedItem().toString().equals(DEFAULT_LANG)) {
             String extraLang = mSupportedLanguageView.getSelectedItem().toString();
         	intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE,
                     extraLang);
@@ -495,6 +502,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 		this.mLinkInfo.setText("");
 		this.mImgInfo.setText("");
 		this.mLinkImage.setVisibility(View.GONE);		
+		this.mProgressLoadImage.setVisibility(View.GONE);
 	}
 	
 	public void addTextToRead(String line) {
@@ -569,7 +577,6 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	}
 
 	public void setImages(List<ImageInfo> fetchedImages) {
-		this.endSearchImage();
 		int idx = 0;
 		List<ImageInfo> newImages = new ArrayList<ImageInfo>();
 		if (this.splitSentence != null) {
@@ -593,6 +600,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 			}
 			
 			this.images = newImages;
+			this.endSearchImage();
 		}
 	}
 
@@ -601,7 +609,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 			this.statusImage = statusImage.Working;
 			RetrieveImageTask retrieveImage = new RetrieveImageTask(this);
 			ImageInfo ii = this.images.get(this.imageCursor);
-			this.mProgressLoadImage.setVisibility(View.VISIBLE);
+			this.handlerProgressImage.sendMessage(new Message());
 			retrieveImage.execute(ii.thumbUrl);			
 		}
 	}
@@ -733,7 +741,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	    private void updateSupportedLanguages(List<String> languages) {
 	        // We add "Default" at the beginning of the list to simulate default language.
 	        languages.add(0, DEFAULT_LANG);
-	        int lgIdx = 0;
+	        this.spinnerIdx = 0;
 	        String toSearch = null;
 	        
 	        if (currentLang != null) {
@@ -748,7 +756,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	        	int i = 0;
 	        	for(String lang : languages) {
 	        		if (langPref.toUpperCase().equals(lang.toUpperCase())) {
-	        			lgIdx = i;
+	        			this.spinnerIdx = i;
 	        			break;
 	        		}
 	        		
@@ -756,16 +764,23 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	        	}
 	        }
 	        
-	        SpinnerAdapter adapter = new ArrayAdapter<CharSequence>(this,
+	        this.spinnerAdapter = new ArrayAdapter<CharSequence>(this,
 	                android.R.layout.simple_spinner_item, languages.toArray(
 	                        new String[languages.size()]));
-	        if (mSupportedLanguageView != null) {
-	        	mSupportedLanguageView.setAdapter(adapter);
-		        mSupportedLanguageView.setSelection(lgIdx);
-	        }	        
-
-	        this.setCurrentLang();
+	        this.setSpinnerAdapter();	        	        
 	    }
+	    
+	    private void setSpinnerAdapter() {
+	    	if (mSupportedLanguageView != null && this.spinnerAdapter != null) {
+	        	mSupportedLanguageView.setAdapter(this.spinnerAdapter);
+		        mSupportedLanguageView.setSelection(this.spinnerIdx);
+	        }
+	    	
+	    	this.setCurrentLang();
+		}
+
+		private SpinnerAdapter spinnerAdapter;
+	    private int spinnerIdx;
 
 	    private void updateLanguagePreference(String language) {
 	        this.langPref = language;
