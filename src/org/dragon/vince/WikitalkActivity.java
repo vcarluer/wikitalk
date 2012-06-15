@@ -34,6 +34,9 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup.LayoutParams;
 import android.view.WindowManager;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
+import android.view.animation.Animation.AnimationListener;
 import android.view.animation.AnimationUtils;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -118,6 +121,8 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
     private boolean resetLinkCursor;
     
     private ImageView mMediaInfo;
+    
+    private Animation fadeOutAnimation;
     
 	public WikitalkActivity() {
 		this.sentences = new HashMap<Integer, String>();
@@ -300,6 +305,10 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 		});
         
         this.mMediaInfo = (ImageView) findViewById(R.id.media_readInfo);
+        
+        this.fadeOutAnimation = new AlphaAnimation(1.00f, 0.00f);
+        this.fadeOutAnimation.setDuration(1000);
+        this.fadeOutAnimation.setAnimationListener(new FadeOutAnimationListener(this.mMediaInfo));
         
         // Must be kept at end of method
         // Get the intent, verify the action and get the query
@@ -902,7 +911,9 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	    }
 	    
 	    public void pauseRead() {
+	    	this.mMediaInfo.setImageResource(android.R.drawable.ic_media_pause);
 	    	this.mMediaInfo.setVisibility(View.VISIBLE);
+	    	this.mMediaInfo.setAlpha(0.5f);
 	    	this.reading = false;
 	    	if (this.mTts.isSpeaking()) {
 	    		this.mTts.stop();
@@ -912,12 +923,18 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	    }
 	    
 	    public void resumeRead() {
-	    	this.mMediaInfo.setVisibility(View.GONE);
-	    	this.readAtPosition();   		
-	    	// Toast.makeText(this, "Play", Toast.LENGTH_SHORT).show();
+	    	this.showReadImage();
+	    	this.readAtPosition();
 	    }
 	    
-	    private void readAtPosition() {
+	    public void showReadImage() {
+	    	this.mMediaInfo.setAlpha(1.0f);
+	    	this.mMediaInfo.setImageResource(android.R.drawable.ic_media_play);
+	    	this.mMediaInfo.setVisibility(View.VISIBLE);
+	    	this.mMediaInfo.startAnimation(this.fadeOutAnimation);
+		}
+
+		private void readAtPosition() {
 	    	if (this.readCursor < this.textSize) {
 	    		this.mSeekText.setProgress(this.readCursor);
 	    		

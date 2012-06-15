@@ -105,6 +105,7 @@ public class RetrievePageTask extends AsyncTask<String, Void, String> {
 					 }
 					 
 					 this.mainActivity.readText();
+					 this.mainActivity.showReadImage();
 				 }			 			 
 			}	 
 		} else {
