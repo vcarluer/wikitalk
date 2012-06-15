@@ -49,7 +49,7 @@ public class RetrievePageTask extends AsyncTask<String, Void, String> {
 		if (response != null) {
 			StatusLine status = response.getStatusLine();
 	    	if (status.getStatusCode() != 200) {
-	    	    Log.d(WikitalkActivity.WIKITALK, "HTTP error, invalid server status code: " + response.getStatusLine());  
+	    		WikitalkActivity.Logd(WikitalkActivity.WIKITALK, "HTTP error, invalid server status code: " + response.getStatusLine());  
 	    	} else {
 	    		HttpEntity entity = response.getEntity();
 	    		try {

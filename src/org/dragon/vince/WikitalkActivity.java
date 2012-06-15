@@ -59,7 +59,8 @@ import android.widget.Toast;
 import android.widget.ViewSwitcher.ViewFactory;
 
 public class WikitalkActivity extends Activity implements TextToSpeech.OnInitListener, OnUtteranceCompletedListener, ViewFactory  {
-
+	
+	private static boolean DEBUG = true;
     private static final String DEFAULT_LANG = "Default";
 
 	private static final String LINK_LABEL = "LinkLabel";
@@ -149,6 +150,9 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         
+        if (!DEBUG) {
+        	
+        }
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         this.status = Status.Ready;
         
@@ -339,8 +343,10 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 		});
         
         this.adRequest = new AdRequest();
-        adRequest.addTestDevice(AdRequest.TEST_EMULATOR);               // Emulator
-        adRequest.addTestDevice(SGS_VCR);                      // Test Android Device
+        if (DEBUG) {
+        	adRequest.addTestDevice(AdRequest.TEST_EMULATOR);               // Emulator
+            adRequest.addTestDevice(SGS_VCR);                      // Test Android Device
+        }        
         this.adView = (AdView) findViewById(R.id.adView);
         
         // Must be kept at end of method
@@ -514,7 +520,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
         	this.hashAudio.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, WIKITALK);
         } else {
             // Initialization failed.
-            Log.e(WIKITALK, "Could not initialize TextToSpeech.");
+            Loge(WIKITALK, "Could not initialize TextToSpeech.");
         }
 	}    
 	    
@@ -554,7 +560,25 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	
 	public void addTextToRead(String line) {
 		this.textToRead += line;
-		Log.d(WIKITALK, line);
+		Logd(WIKITALK, line);
+	}
+	
+	public static void Logd(String tag, String msg) {
+		if (DEBUG) {
+			Log.d(tag, msg);
+		}
+	}
+	
+	public static void Logi(String tag, String msg) {
+		if (DEBUG) {
+			Log.i(tag, msg);
+		}
+	}
+	
+	public static void Loge(String tag, String msg) {
+		if (DEBUG) {
+			Log.e(tag, msg);
+		}
 	}
 	
 	public void stopSearchBar() {
@@ -652,7 +676,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
         if (result == TextToSpeech.LANG_MISSING_DATA ||
             result == TextToSpeech.LANG_NOT_SUPPORTED) {
            // Lanuage data is missing or the language is not supported.
-            Log.e(WIKITALK, "Language is not available.");
+            Loge(WIKITALK, "Language is not available.");
         }
 	}
 
@@ -807,7 +831,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	    }
 
 	    private void refreshVoiceSettings() {
-	        Log.i(WIKITALK, "Sending broadcast");
+	        Logi(WIKITALK, "Sending broadcast");
 	        sendOrderedBroadcast(RecognizerIntent.getVoiceDetailsIntent(this), null,
 	                new SupportedLanguageBroadcastReceiver(), null, Activity.RESULT_OK, null, null);
 	    }
@@ -869,7 +893,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	    private class SupportedLanguageBroadcastReceiver extends BroadcastReceiver {
 
 	        public void onReceive(Context context, final Intent intent) {
-	            Log.i(WIKITALK, "Receiving broadcast " + intent);
+	            Logi(WIKITALK, "Receiving broadcast " + intent);
 
 	            final Bundle extra = getResultExtras(false);
 
