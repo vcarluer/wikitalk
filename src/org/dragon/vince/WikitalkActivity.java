@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -14,10 +13,7 @@ import android.app.SearchManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.content.res.Configuration;
-import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -43,7 +39,6 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageSwitcher;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.SearchView;
@@ -522,6 +517,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	
 	public void stopSearchBar() {
 		this.mSearchBar.setVisibility(View.INVISIBLE);
+		this.status = Status.Ready;
 	}
 	
 	public void readText() {				
@@ -529,7 +525,6 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 		this.main_info.setVisibility(View.VISIBLE);
         this.main_noInfo.setVisibility(View.GONE);
 
-		this.status = Status.Ready;
 		this.sentences.clear();
 		this.linksIndexed.clear();
 		this.mTitle.setText(this.currentSearch);
@@ -716,7 +711,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	}
 	
 	public void search(String toSearch) {
-		if (toSearch != null) {	        
+		if (toSearch != null && this.status == Status.Ready) {	        
 			this.pauseRead();
 			this.initData();
 			this.initWidgets();
