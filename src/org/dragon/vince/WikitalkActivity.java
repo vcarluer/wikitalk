@@ -597,7 +597,8 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 		int idx = 0;
 		for(String sentence : splitSentence) {
 			this.currentSentence = new String(sentence);
-			this.parseLinks(idx);			
+			this.parseLinks(idx);
+			this.parseModel(idx);
 			this.parseMenu(idx);
 			this.parseBoldAndOthers(idx);
 			// Replace if not numeric
@@ -1197,6 +1198,30 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 		private static final Pattern LINK_REGEX = Pattern.compile("\\[\\[(.+?)\\]\\]");
 		private static final Pattern REF_REGEX = Pattern.compile("<ref(.+?)/ref>");
 		private static final Pattern REF2_REGEX = Pattern.compile("<ref(.+?)/>");
+		private static final Pattern MODEL_REGEX = Pattern.compile("\\{\\{(.+?)\\}\\}");
+		
+		private void parseModel(int idx) {
+			// Simple replace for now, see model here: http://fr.wikipedia.org/wiki/Aide:Syntaxe					
+			List<String> linkFound = getTagValues(this.currentSentence, MODEL_REGEX);			
+			for(String linkStr : linkFound) {
+				String replaceString = "";
+				if (linkStr.contains("|")) {
+					String[] linkStrSplit = linkStr.split("\\|");
+					boolean firstPassed = false;
+					for (String val : linkStrSplit) {
+						if (!firstPassed) {
+							firstPassed = true;
+						} else {
+							replaceString += val + " ";
+						}						
+					}
+				} else {
+					replaceString = "";
+				}
+				
+				this.currentSentence = this.currentSentence.replace("{{" + linkStr + "}}", replaceString);
+			}
+		}
 
 		private static List<String> getTagValues(final String str, final Pattern regEx) {
 		    final List<String> tagValues = new ArrayList<String>();
