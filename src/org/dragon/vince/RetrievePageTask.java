@@ -88,6 +88,7 @@ public class RetrievePageTask extends AsyncTask<String, Void, String> {
 					String title = titleNode.getNodeValue();
 					if (title != null && title.length() > 0) {
 						this.mainActivity.setCurrentTitle(title);
+						this.mainActivity.addTextToRead(title + ". ");
 						 // Only first one for now
 						break;
 					}										 

@@ -642,6 +642,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	}		
 	
 	private void parseBoldAndOthers(int idx) {
+		// http://fr.wikipedia.org/wiki/Aide:Syntaxe
 		// italic
 		this.currentSentence = this.currentSentence.replaceAll("''", "");
 		// bold
@@ -652,8 +653,33 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 		this.currentSentence = this.currentSentence.replaceAll("<poem>", "");
 		this.currentSentence = this.currentSentence.replaceAll("</poem>", "");
 		// Puces
-		this.currentSentence = this.currentSentence.replaceAll("# ", "");
+		this.currentSentence = this.currentSentence.replaceAll("### ", "");
+		this.currentSentence = this.currentSentence.replaceAll("## ", "");
+		this.currentSentence = this.currentSentence.replaceAll("# ", "");		
+		this.currentSentence = this.currentSentence.replaceAll("\\*\\*\\* ", "");
+		this.currentSentence = this.currentSentence.replaceAll("\\*\\* ", "");
 		this.currentSentence = this.currentSentence.replaceAll("\\* ", "");
+		this.currentSentence = this.currentSentence.replaceAll("#\\* ", "");
+		// Others
+		this.currentSentence = this.currentSentence.replaceAll("<br />", "");
+		this.currentSentence = this.currentSentence.replaceAll("<center>", "");
+		this.currentSentence = this.currentSentence.replaceAll("</center>", "");
+		// Boites déroulante, tableaux, <span color, 
+		this.currentSentence = this.currentSentence.replaceAll("<small>", "");
+		this.currentSentence = this.currentSentence.replaceAll("</small>", "");
+		this.currentSentence = this.currentSentence.replaceAll("<big>", "");
+		this.currentSentence = this.currentSentence.replaceAll("</big>", "");
+		this.currentSentence = this.currentSentence.replaceAll("<u>", "");
+		this.currentSentence = this.currentSentence.replaceAll("</u>", "");
+		this.currentSentence = this.currentSentence.replaceAll("<s>", "");
+		this.currentSentence = this.currentSentence.replaceAll("</s>", "");
+		// Indice, exposant
+		// liens direct http:// sans []
+		// Liens vers catégories, images
+		// Dates
+		// Unités
+		// Mots magique
+		
 	}
 
 	private void parseMenu(int idx) {
