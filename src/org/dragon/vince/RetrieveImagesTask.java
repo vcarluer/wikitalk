@@ -36,7 +36,7 @@ public class RetrieveImagesTask extends AsyncTask<String, Void, List<ImageInfo>>
 		String line = null;
     	String pageId = params[0];
     	// imlimit=500 for regular users
-    	HttpGet uri = new HttpGet("http://" + this.mainActivity.getLanguageLc() + ".wikipedia.org/w/api.php?format=xml&action=query&pageids=" + pageId + "&prop=images&imlimit=max");
+    	HttpGet uri = new HttpGet("http://" + this.mainActivity.getWikipediaLanguageLc() + ".wikipedia.org/w/api.php?format=xml&action=query&pageids=" + pageId + "&prop=images&imlimit=max");
     	// close client request?
     	DefaultHttpClient client = new DefaultHttpClient();
     	HttpResponse response = null;

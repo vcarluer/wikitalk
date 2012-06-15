@@ -559,6 +559,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 		this.mLinkInfo.setText("");
 		this.mImgInfo.setText("");
 		this.mLinkImage.setVisibility(View.GONE);		
+		this.mProgressImage.setVisibility(View.GONE);
 		this.mProgressLoadImage.setVisibility(View.GONE);
 		this.mImgPrev.setVisibility(View.GONE);
 		this.mImgNext.setVisibility(View.GONE);
@@ -859,7 +860,23 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	        	if (this.langPref != null && this.langPref.length() > 0) {
 		        	toSearch = this.langPref;
 		        }
-	        }	        
+	        }
+	        
+	        // Remove Latin
+	        int rmI = -1;
+	        int j = 0;
+	        for(String lang : languages) {
+	        	if (lang.toUpperCase().equals("LATIN")) {
+	        		rmI = j;	        				
+	        		break;
+	        	}	        	
+	        	j++;
+	        }
+	        if (rmI > -1) {
+	        	languages.remove(rmI);
+	        }
+	        
+	        java.util.Collections.sort(languages);
 	        
 	        if (toSearch != null) {
 	        	int i = 0;
@@ -1174,8 +1191,13 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 		    return tagValues;
 		}
 		
-		public String getLanguageLc() {
-			return currentLang.getLanguage().toLowerCase();
+		public String getWikipediaLanguageLc() {
+			String lg = currentLang.getLanguage().toLowerCase();
+			if (lg.equals("cmn") || lg.equals("yue")) {
+				lg = "zh";
+			}
+			
+			return lg;
 		}
 		
 		public void swithReading() {

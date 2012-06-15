@@ -58,7 +58,7 @@ public class RetrieveImageTask extends AsyncTask<ImageInfo, Void, ImageInfo> {
 				int height = size.y;
 								
 				int imgFormat = width; // Always width?
-				String imageUrl = "http://" + this.mainActivity.getLanguageLc() + ".wikipedia.org/w/api.php?action=query&titles=Image:" + title +"&prop=imageinfo&iiprop=url&iiurlwidth=" + String.valueOf(imgFormat) + "&format=xml";
+				String imageUrl = "http://" + this.mainActivity.getWikipediaLanguageLc() + ".wikipedia.org/w/api.php?action=query&titles=Image:" + title +"&prop=imageinfo&iiprop=url&iiurlwidth=" + String.valueOf(imgFormat) + "&format=xml";
 				uri = new HttpGet(imageUrl);			
 		    	response = null;
 				try {
