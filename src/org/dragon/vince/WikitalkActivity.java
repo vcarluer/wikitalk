@@ -593,40 +593,36 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 		// for now external reference must be remove before split with . because of long ref
 		this.textToRead = this.parseRef(this.textToRead);
 		splitSentence = this.textToRead.split("\\. ");
-		
 		int idx = 0;
-		for(String sentence : splitSentence) {
-			this.currentSentence = new String(sentence);
-			this.parseLinks(idx);
-			this.parseBoldAndOthers(idx);
-			this.parseModel(idx);
-			this.parseMenu(idx);			
-			// Replace if not numeric
-			// sentence = sentence.replaceAll("-", " ");
-			// Parse wikimedia tag here
-//			sentence = sentence.replaceAll("[\\[\\]]", "");
-//			sentence = sentence.replaceAll("<br />", "");
-//			sentence = sentence.replaceAll("<ref>", "");
-//			sentence = sentence.replaceAll("</ref>", "");
-//			sentence = sentence.replaceAll("/>", "");
-//			sentence = sentence.replaceAll("<ref ", "");			
-			if (currentSentence.trim().length() > 0 && 
-					!currentSentence.contains("{") && 
-					!currentSentence.contains("}") &&
-					!currentSentence.contains("|") && 
-					!currentSentence.contains("[") && 
-					!currentSentence.contains("]") &&
-					!currentSentence.contains("<") &&
-					!currentSentence.contains(">") &&
-					!currentSentence.contains("&") &&
-					!currentSentence.contains("/") &&
-					!currentSentence.contains("_")) {
-				
-				this.sentences.put(idx, currentSentence);								
-			}			
-						
-			idx++;
-		}
+		// special language
+		if (splitSentence.length == 0) {
+			splitSentence = new String[1];
+			splitSentence[0] = this.textToRead;
+		} else {
+			for(String sentence : splitSentence) {
+				this.currentSentence = new String(sentence);
+				this.parseLinks(idx);
+				this.parseBoldAndOthers(idx);
+				this.parseModel(idx);
+				this.parseMenu(idx);			
+				if (currentSentence.trim().length() > 0 && 
+						!currentSentence.contains("{") && 
+						!currentSentence.contains("}") &&
+						!currentSentence.contains("|") && 
+						!currentSentence.contains("[") && 
+						!currentSentence.contains("]") &&
+						!currentSentence.contains("<") &&
+						!currentSentence.contains(">") &&
+						!currentSentence.contains("&") &&
+						!currentSentence.contains("/") &&
+						!currentSentence.contains("_")) {
+					
+					this.sentences.put(idx, currentSentence);								
+				}			
+							
+				idx++;
+			}
+		}		
 		
 		this.textSize = idx;		
 		this.readCursor = 0;
@@ -706,6 +702,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
             result == TextToSpeech.LANG_NOT_SUPPORTED) {
            // Lanuage data is missing or the language is not supported.
             Loge(WIKITALK, "Language is not available.");
+            Toast.makeText(this, getString(R.string.language_not_available), Toast.LENGTH_SHORT).show();
         }
 	}
 
