@@ -598,9 +598,9 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 		for(String sentence : splitSentence) {
 			this.currentSentence = new String(sentence);
 			this.parseLinks(idx);
-			this.parseModel(idx);
-			this.parseMenu(idx);
 			this.parseBoldAndOthers(idx);
+			this.parseModel(idx);
+			this.parseMenu(idx);			
 			// Replace if not numeric
 			// sentence = sentence.replaceAll("-", " ");
 			// Parse wikimedia tag here
@@ -644,12 +644,12 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	
 	private void parseBoldAndOthers(int idx) {
 		// http://fr.wikipedia.org/wiki/Aide:Syntaxe
-		// italic
-		this.currentSentence = this.currentSentence.replaceAll("''", "");
-		// bold
-		this.currentSentence = this.currentSentence.replaceAll("'''", "");
 		// bold italic
 		this.currentSentence = this.currentSentence.replaceAll("'''''", "");
+		// bold
+		this.currentSentence = this.currentSentence.replaceAll("'''", "");
+		// italic
+		this.currentSentence = this.currentSentence.replaceAll("''", "");				
 		// poem
 		this.currentSentence = this.currentSentence.replaceAll("<poem>", "");
 		this.currentSentence = this.currentSentence.replaceAll("</poem>", "");
@@ -680,6 +680,9 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 		// Dates
 		// Unités
 		// Mots magique
+		//{{{
+		this.currentSentence = this.currentSentence.replaceAll("\\{\\{\\{", "");
+		this.currentSentence = this.currentSentence.replaceAll("\\}\\}\\}", "");
 		
 	}
 
@@ -1202,7 +1205,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 		
 		private void parseModel(int idx) {
 			// Simple replace for now, see model here: http://fr.wikipedia.org/wiki/Aide:Syntaxe		
-			// Remove beforce {{{ ?
+			// {{{ removed before
 			List<String> linkFound = getTagValues(this.currentSentence, MODEL_REGEX);			
 			for(String linkStr : linkFound) {
 				String replaceString = "";
