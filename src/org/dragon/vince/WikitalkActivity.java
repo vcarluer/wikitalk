@@ -84,8 +84,6 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	private Map<Integer, List<ImageInfo>> imagesIndexed;
 	private int imageCursor;
 	private int imageTargetCursor;
-	private Status status;
-	private StatusImage statusImage;
 	private Map<Integer, String> sentences;
 	private int readCursor;
 	private List<Link> links;
@@ -137,6 +135,10 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
         
     private AdView adView;
     
+    private RetrievePageTask retrievePageTask;
+    private RetrieveImagesTask retrieveImagesTask;
+    private RetrieveImageTask retrieveImageTask;
+    
 	public WikitalkActivity() {
 		this.sentences = new HashMap<Integer, String>();
 		this.hashAudio = new HashMap<String, String>();
@@ -155,7 +157,6 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
         	
         }
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        this.status = Status.Ready;
         
      // Initialize text-to-speech. This is an asynchronous operation.
         // The OnInitListener (second argument) is called after initialization completes.
@@ -177,7 +178,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 			
 			public void onClick(View v) {
 				// showFullImage();
-				if (status == Status.Ready) {
+				if (retrievePageTask == null) {
 					if (mTts.isSpeaking()) {
 						pauseRead();
 					} else {
@@ -198,7 +199,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 				if (textToRead == null || textToRead == "") {
 					startVoiceRecognitionActivity();
 				} else {
-					if (status == Status.Ready) {
+					if (retrievePageTask == null) {
 						if (mTts.isSpeaking()) {
 							pauseRead();
 						} else {
@@ -519,8 +520,6 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	}    
 	    
     private void initData() {
-    	this.status = Status.Ready;
-    	this.statusImage = StatusImage.Ready;
     	this.currentLink = null;
     	this.currentSearch = "";
     	this.currentSentence = "";
@@ -538,6 +537,9 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
     	this.textSize = -1;
     	this.resetImageCursor = false;
     	this.resetLinkCursor = false;
+    	this.retrieveImagesTask = null;
+    	this.retrieveImageTask = null;
+    	this.retrievePageTask = null;
     }
 	
 	private void initWidgets() {		
@@ -578,11 +580,10 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	
 	public void stopSearchBar() {
 		this.mSearchBar.setVisibility(View.INVISIBLE);
-		this.status = Status.Ready;
+		this.retrievePageTask = null;
 	}
 	
-	public void readText() {				
-		this.stopSearchBar();
+	public void readText() {
 		this.main_info.setVisibility(View.VISIBLE);
         this.main_noInfo.setVisibility(View.GONE);
 
@@ -707,6 +708,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	}
 
 	public void setImages(List<ImageInfo> fetchedImages) {
+		this.retrieveImagesTask = null;
 		int idx = 0;
 		List<ImageInfo> newImages = new ArrayList<ImageInfo>();
 		if (this.splitSentence != null) {
@@ -735,12 +737,10 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	}
 
 	private void showImage() {
-		if (this.images.size() > 0 && this.images.size() > this.imageCursor && this.statusImage == StatusImage.Ready) {
-			this.statusImage = statusImage.Working;
-			RetrieveImageTask retrieveImage = new RetrieveImageTask(this);
+		if (this.images.size() > 0 && this.images.size() > this.imageCursor && this.retrieveImagesTask == null) {
 			ImageInfo ii = this.images.get(this.imageCursor);
 			this.handlerProgressImage.sendMessage(new Message());
-			retrieveImage.execute(ii);			
+			this.getNewRetrieveImage().execute(ii);			
 		}
 	}
 	
@@ -748,12 +748,12 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 		return this.imageShown;
 	}
 	
-	public void showImage(ImageInfo imageInfo) {						
-		if (this.status == Status.Ready) {			
-			this.mProgressLoadImage.setVisibility(View.GONE);
+	public void showImage(ImageInfo imageInfo) {
+		this.retrieveImageTask = null;
+		this.mProgressLoadImage.setVisibility(View.GONE);
+		if (this.retrieveImagesTask == null) {						
 			if (imageInfo.bitmap != null) {
-				if (this.images.size() > 0) {					
-					this.statusImage = statusImage.Ready;
+				if (this.images.size() > 0) {
 					this.imageShown = System.currentTimeMillis();
 					Drawable drawable = new BitmapDrawable(imageInfo.bitmap);
 					this.mImage.setImageDrawable(drawable);
@@ -784,7 +784,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	}
 	
 	public void previousImage() {
-		if (this.images != null) {
+		if (this.images != null && this.retrieveImageTask == null) {
 			this.imageCursor--;
 			if (this.imageCursor < 0) {
 				this.imageCursor = this.images.size() - 1;
@@ -796,7 +796,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	}
 	
 	public void nextImage() {
-		if (this.images != null && this.statusImage == StatusImage.Ready) {
+		if (this.images != null && this.retrieveImageTask == null) {
 			this.imageCursor++;
 			if (this.imageCursor >= this.images.size()) {
 				this.imageCursor = 0;
@@ -808,7 +808,9 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	}
 	
 	public void search(String toSearch) {
-		if (toSearch != null && this.status == Status.Ready) {			
+		if (toSearch != null) {
+			this.cancelAllAsync();
+			
 			this.adView.loadAd(this.getRequest(toSearch));
 			this.pauseRead();
 			this.initData();
@@ -817,16 +819,49 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 			this.currentSearch = toSearch;
 			this.setCurrentLang();
 			
-			RetrievePageTask pageTask = new RetrievePageTask(this);			
+			this.retrievePageTask = new RetrievePageTask(this);			
 			this.mSearchBar.setVisibility(View.VISIBLE);
 			this.main_info.setVisibility(View.GONE);
 	        this.main_noInfo.setVisibility(View.VISIBLE);
 
-			pageTask.execute(toSearch);
-			this.status = Status.Working;
+			this.retrievePageTask.execute(toSearch);
 		}
 	}
 	
+	private void cancelAllAsync() {
+		if (this.retrievePageTask != null) {
+			this.retrievePageTask.cancel(true);
+		}
+		
+		this.cancelImagesAsync();
+	}
+	
+	public void cancelImagesAsync() {
+		if (this.retrieveImagesTask != null) {
+			this.retrieveImagesTask.cancel(true);
+		}
+		
+		this.cancelImageAsync();
+	}
+	
+	public void cancelImageAsync() {
+		if (this.retrieveImageTask != null) {
+			this.retrieveImageTask.cancel(true);
+		}
+	}
+	
+	public RetrieveImagesTask getNewRetrieveImages() {
+		this.cancelImagesAsync();
+		this.retrieveImagesTask = new RetrieveImagesTask(this);
+		return this.retrieveImagesTask;
+	}
+	
+	public RetrieveImageTask getNewRetrieveImage() {
+		this.cancelImageAsync();
+		this.retrieveImageTask = new RetrieveImageTask(this);
+		return this.retrieveImageTask;
+	}
+
 	private void setCurrentLang() {
 		if (mSupportedLanguageView != null && mSupportedLanguageView.getSelectedItem() != null) {
 			currentLang = Locale.US;
@@ -1097,7 +1132,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 		    		}
 	    		}
 	    		
-	    		if (this.statusImage == StatusImage.Ready && this.images != null && this.images.size() > 0) {
+	    		if (this.retrieveImageTask == null && this.images != null && this.images.size() > 0) {
 	    			boolean needShow = false;
 	    			if (this.resetImageCursor && this.imagesIndexed.containsKey(this.readCursor)) {
 	    				if (this.imageCursor != firstListIdx) {
@@ -1258,7 +1293,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 		}
 		
 		public void swithReading() {
-			if (status == Status.Ready) {
+			if (this.retrievePageTask == null) {
 				if (mTts.isSpeaking()) {
 					pauseRead();
 				} else {

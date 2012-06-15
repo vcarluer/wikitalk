@@ -21,13 +21,11 @@ import android.util.Log;
 
 public class RetrievePageTask extends AsyncTask<String, Void, String> {
 	private WikitalkActivity mainActivity;
-	private RetrieveImagesTask retrieveImage;
 	private String search;
 	private String pageId;
 	
 	public RetrievePageTask(WikitalkActivity activity) {
-		this.mainActivity = activity;
-		this.retrieveImage = new RetrieveImagesTask(this.mainActivity);
+		this.mainActivity = activity;		
 	}
 	
 	@Override	
@@ -116,20 +114,17 @@ public class RetrievePageTask extends AsyncTask<String, Void, String> {
 						 
 						 if (this.pageId != null) {
 							 this.mainActivity.beginSearchImages();
-							 this.retrieveImage.execute(pageId);
+							 this.mainActivity.getNewRetrieveImages().execute(pageId);
 						 }
 						 
 						 this.mainActivity.readText();
 						 this.mainActivity.showReadImage();
 					 }			 			 
 				}	 
-			} else {
-				this.mainActivity.stopSearchBar();
 			}
-		} else {
-			this.mainActivity.stopSearchBar();
 		}
 		
+		this.mainActivity.stopSearchBar();
 		 						
 		super.onPostExecute(result);
 	}
