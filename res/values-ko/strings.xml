@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Dany</string>
+	<string name="imgleft">&lt;</string>
+	<string name="imgright">&gt;</string>	
+	<string name="search">검색</string>
+	<string name="search_voice">음성 검색</string>
+	<string name="voice_prompt">Dany에게 물어봐</string>	
+	<string name="language">언어</string>
+</resources>

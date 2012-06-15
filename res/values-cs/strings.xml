@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Dany</string>
+	<string name="imgleft">&lt;</string>
+	<string name="imgright">&gt;</string>	
+	<string name="search">Hledat</string>
+	<string name="search_voice">hlasové vyhledávání</string>
+	<string name="voice_prompt">Zeptejte se Dany</string>	
+	<string name="language">jazyk</string>
+</resources>

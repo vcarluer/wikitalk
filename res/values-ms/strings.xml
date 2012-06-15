@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Dany</string>
+	<string name="imgleft">&lt;</string>
+	<string name="imgright">&gt;</string>	
+	<string name="search">mencari</string>
+	<string name="search_voice">Voice search</string>
+	<string name="voice_prompt">Meminta untuk Dany</string>	
+	<string name="language">Bahasa</string>
+</resources>

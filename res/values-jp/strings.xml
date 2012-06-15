@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Dany</string>
+	<string name="imgleft">&lt;</string>
+	<string name="imgright">&gt;</string>	
+	<string name="search">検索</string>
+	<string name="search_voice">音声検索</string>
+	<string name="voice_prompt">ダニーに頼む</string>	
+	<string name="language">言語</string>
+</resources>

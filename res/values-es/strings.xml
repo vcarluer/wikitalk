@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Dany</string>
+	<string name="imgleft">&lt;</string>
+	<string name="imgright">&gt;</string>	
+	<string name="search">Buscar</string>
+	<string name="search_voice">búsqueda por voz</string>
+	<string name="voice_prompt">Pregunte a Dany</string>	
+	<string name="language">lengua</string>
+</resources>
