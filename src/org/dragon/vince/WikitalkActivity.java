@@ -8,6 +8,9 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.google.ads.AdRequest;
+import com.google.ads.AdView;
+
 import android.app.Activity;
 import android.app.SearchManager;
 import android.content.BroadcastReceiver;
@@ -38,6 +41,7 @@ import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
 import android.view.animation.AnimationUtils;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageSwitcher;
@@ -61,6 +65,8 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	private static final String LINK_LABEL = "LinkLabel";
 
 	private static final int VOICE_RECOGNITION_REQUEST_CODE = 1234;
+	private static final String SGS_VCR = "703A6FB6180B55E158105A7D9481857A";
+	private static final String AdMobPublisherId = "a14fdb0fed6cda1";
     
 	static final String WIKITALK = "wikitalk";
     private TextToSpeech mTts;    
@@ -125,6 +131,9 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
     
     private Animation fadeOutAnimation;
     private SearchView mSearch;
+    
+    private AdRequest adRequest;
+    private AdView adView;
     
 	public WikitalkActivity() {
 		this.sentences = new HashMap<Integer, String>();
@@ -318,6 +327,8 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 			
 			public boolean onQueryTextSubmit(String query) {
 				search(query);
+				InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+				imm.hideSoftInputFromWindow(mSearch.getWindowToken(), 0);
 				return true;
 			}
 			
@@ -326,6 +337,11 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 				return false;
 			}
 		});
+        
+        this.adRequest = new AdRequest();
+        adRequest.addTestDevice(AdRequest.TEST_EMULATOR);               // Emulator
+        adRequest.addTestDevice(SGS_VCR);                      // Test Android Device
+        this.adView = (AdView) findViewById(R.id.adView);
         
         // Must be kept at end of method
         // Get the intent, verify the action and get the query
@@ -737,7 +753,8 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	}
 	
 	public void search(String toSearch) {
-		if (toSearch != null && this.status == Status.Ready) {	        
+		if (toSearch != null && this.status == Status.Ready) {
+			this.adView.loadAd(this.adRequest);
 			this.pauseRead();
 			this.initData();
 			this.initWidgets();
