@@ -1201,7 +1201,8 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 		private static final Pattern MODEL_REGEX = Pattern.compile("\\{\\{(.+?)\\}\\}");
 		
 		private void parseModel(int idx) {
-			// Simple replace for now, see model here: http://fr.wikipedia.org/wiki/Aide:Syntaxe					
+			// Simple replace for now, see model here: http://fr.wikipedia.org/wiki/Aide:Syntaxe		
+			// Remove beforce {{{ ?
 			List<String> linkFound = getTagValues(this.currentSentence, MODEL_REGEX);			
 			for(String linkStr : linkFound) {
 				String replaceString = "";
@@ -1210,13 +1211,17 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 					boolean firstPassed = false;
 					for (String val : linkStrSplit) {
 						if (!firstPassed) {
-							firstPassed = true;
+							if (!val.equals("lang")) {
+								// todo: read with proper language
+								firstPassed = true;
+							}							
 						} else {
 							replaceString += val + " ";
 						}						
 					}
 				} else {
-					replaceString = "";
+					// exposant
+					replaceString = linkStr;
 				}
 				
 				this.currentSentence = this.currentSentence.replace("{{" + linkStr + "}}", replaceString);
