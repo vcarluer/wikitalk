@@ -60,7 +60,7 @@ import android.widget.ViewSwitcher.ViewFactory;
 
 public class WikitalkActivity extends Activity implements TextToSpeech.OnInitListener, OnUtteranceCompletedListener, ViewFactory  {
 	
-	private static boolean DEBUG = false;
+	private static boolean DEBUG = true;
     private static final String DEFAULT_LANG = "Default";
 
 	private static final String LINK_LABEL = "LinkLabel";
@@ -730,26 +730,29 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 		return this.imageShown;
 	}
 	
-	public void showImage(ImageInfo imageInfo) {
-		if (this.status == Status.Ready) {
+	public void showImage(ImageInfo imageInfo) {						
+		if (this.status == Status.Ready) {			
 			this.mProgressLoadImage.setVisibility(View.GONE);
-			this.statusImage = statusImage.Ready;
-			this.imageShown = System.currentTimeMillis();
-			Drawable drawable = new BitmapDrawable(imageInfo.bitmap);
-			this.mImage.setImageDrawable(drawable);
-			if (this.images.size() > 0 && this.images.size() > this.imageCursor) {			
-				ImageInfo ii = this.images.get(this.imageCursor);
-				this.showImageInfo(ii);
-			}
-			
-			Toast.makeText(this, String.valueOf(this.imageCursor + 1) + "/" + String.valueOf(this.images.size()), Toast.LENGTH_SHORT).show();
+			if (imageInfo.bitmap != null) {
+				if (this.images.size() > 0) {					
+					this.statusImage = statusImage.Ready;
+					this.imageShown = System.currentTimeMillis();
+					Drawable drawable = new BitmapDrawable(imageInfo.bitmap);
+					this.mImage.setImageDrawable(drawable);
+					if (this.images.size() > 0 && this.images.size() > this.imageCursor) {								
+						this.showImageInfo(imageInfo.name);
+					}
+					
+					Toast.makeText(this, String.valueOf(this.imageCursor + 1) + "/" + String.valueOf(this.images.size()), Toast.LENGTH_SHORT).show();
+				}				
+			}			
 		}		
 	}
 
-	private void showImageInfo(ImageInfo imageInfo) {
+	private void showImageInfo(String imageName) {
 		String info = "";
-		if (imageInfo != null && imageInfo.name != null) {
-			info = imageInfo.name;
+		if (imageName != null && imageName != null) {
+			info = imageName;
 			int pos = info.lastIndexOf(".");
 			if (pos > -1) {
 				info = info.substring(0, pos);
