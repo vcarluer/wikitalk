@@ -58,6 +58,7 @@ public final class R {
         public static final int search_hint=0x7f050004;
         public static final int search_voice=0x7f050006;
         public static final int title=0x7f050001;
+        public static final int tts_error=0x7f050008;
         public static final int voice_prompt=0x7f050007;
     }
     public static final class xml {

@@ -8,4 +8,5 @@
 	<string name="search">Rechercher</string>
 	<string name="search_voice">Recherche vocale</string>
 	<string name="voice_prompt">Demander à Dany</string>
+	<string name="tts_error">Could not initialize TextToSpeech.</string>
 </resources>

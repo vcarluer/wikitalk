@@ -382,35 +382,6 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
     	return adRequest;
     }
     
-//    @Override
-//    public void onSaveInstanceState(Bundle savedInstanceState) {
-//      super.onSaveInstanceState(savedInstanceState);
-//      // Save UI state changes to the savedInstanceState.
-//      // This bundle will be passed to onCreate if the process is
-//      // killed and restarted.
-//      savedInstanceState.putString("langCountry", currentLang.getCountry());
-//      savedInstanceState.putString("langLang", currentLang.getLanguage());      
-//    }
-//    
-//    @Override
-//    public void onRestoreInstanceState(Bundle savedInstanceState) {
-//      super.onRestoreInstanceState(savedInstanceState);
-//      // Restore UI state from the savedInstanceState.
-//      // This bundle has also been passed to onCreate.
-//      String country = savedInstanceState.getString("langCountry");
-//      String lang = savedInstanceState.getString("langLang");
-//      currentLang = new Locale(country, lang);
-//    }
-    
-//    @Override
-//    public boolean onSearchRequested() {
-//         Bundle appData = new Bundle();
-//         appData.putString("langCountry", currentLang.getCountry());
-//         appData.putString("langLang", currentLang.getLanguage());
-//         startSearch(null, false, appData, false);
-//         return true;
-//     }
-    
     @Override
     public void startActivity(Intent intent) {
   
@@ -543,7 +514,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
         	this.hashAudio.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, WIKITALK);
         } else {
             // Initialization failed.
-            Loge(WIKITALK, "Could not initialize TextToSpeech.");
+            Loge(WIKITALK, getString(R.string.tts_error));
         }
 	}    
 	    
@@ -686,11 +657,11 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	private void parseMenu(int idx) {
 		if (this.currentSentence.contains("")) {
 			// Only remove for now
-			this.currentSentence = this.currentSentence.replaceAll("==", "");
-			this.currentSentence = this.currentSentence.replaceAll("===", "");
-			this.currentSentence = this.currentSentence.replaceAll("====", "");
+			this.currentSentence = this.currentSentence.replaceAll("======", "");
 			this.currentSentence = this.currentSentence.replaceAll("=====", "");
-			this.currentSentence = this.currentSentence.replaceAll("======", "");	
+			this.currentSentence = this.currentSentence.replaceAll("====", "");
+			this.currentSentence = this.currentSentence.replaceAll("===", "");
+			this.currentSentence = this.currentSentence.replaceAll("==", "");
 		}		
 	}
 
