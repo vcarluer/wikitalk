@@ -1,12 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Dany</string>
-	<string name="title">Rechercher</string>
 	<string name="imgleft">&lt;</string>
-	<string name="imgright">&gt;</string>
-	<string name="search_hint">Rechercher</string>
-	<string name="search">Rechercher</string>
-	<string name="search_voice">Recherche vocale</string>
-	<string name="voice_prompt">Demander à Dany</string>
-	<string name="tts_error">Could not initialize TextToSpeech.</string>
+	<string name="imgright">&gt;</string>	
+	<string name="search">Search</string>
+	<string name="search_voice">Voice search</string>
+	<string name="voice_prompt">Ask to Dany</string>	
 </resources>

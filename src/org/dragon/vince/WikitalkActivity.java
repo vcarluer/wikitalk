@@ -514,7 +514,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
         	this.hashAudio.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, WIKITALK);
         } else {
             // Initialization failed.
-            Loge(WIKITALK, getString(R.string.tts_error));
+            Loge(WIKITALK, "Could not initialize TextToSpeech.");
         }
 	}    
 	    
@@ -914,7 +914,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	            if (getResultCode() != Activity.RESULT_OK) {
 	                mHandler.post(new Runnable() {
 	                    public void run() {
-	                        showToast("Error code:" + getResultCode());
+	                        // showToast("Error code:" + getResultCode());
 	                    }
 	                });
 	            }
@@ -922,7 +922,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	            if (extra == null) {
 	                mHandler.post(new Runnable() {
 	                    public void run() {
-	                        showToast("No extra");
+	                        // showToast("No extra");
 	                    }
 	                });
 	            }
