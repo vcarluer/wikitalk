@@ -42,6 +42,8 @@ import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
 import android.view.animation.AnimationUtils;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageSwitcher;
@@ -440,6 +442,19 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
        LayoutInflater mInflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE); 
        View sl = mInflater.inflate(R.layout.menu_spinner, null);       
        mSupportedLanguageView = (Spinner) sl.findViewById(R.id.supported_languages);
+       this.mSupportedLanguageView.setOnItemSelectedListener(new OnItemSelectedListener() {
+
+		public void onItemSelected(AdapterView<?> arg0, View arg1, int arg2,
+				long arg3) {
+			setCurrentLang();
+		}
+
+		public void onNothingSelected(AdapterView<?> arg0) {
+			// TODO Auto-generated method stub
+			
+		}
+    	   
+       });
               
        menu.findItem(R.id.menu_lang).setActionView(mSupportedLanguageView);
        this.setSpinnerAdapter();
@@ -812,10 +827,12 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 		if (mSupportedLanguageView != null && mSupportedLanguageView.getSelectedItem() != null) {
 			currentLang = Locale.US;
 			String selected = mSupportedLanguageView.getSelectedItem().toString();
-			if (!selected.equals(DEFAULT_LANG)) {            	            
-				String[] locales = selected.split("-");
-				if (locales.length == 2) {
-					currentLang = new Locale(locales[0], locales[1]);
+			if (!selected.equals(DEFAULT_LANG)) {
+				int pos = selected.indexOf("-");
+				if (pos > -1) {
+					String lang = selected.substring(0, pos);
+					String coun = selected.substring(pos + 1);
+					currentLang = new Locale(lang, coun);
 				}				
 			}
 		} else {
@@ -901,8 +918,6 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	        	mSupportedLanguageView.setAdapter(this.spinnerAdapter);
 		        mSupportedLanguageView.setSelection(this.spinnerIdx);
 	        }
-	    	
-	    	this.setCurrentLang();
 		}
 
 		private SpinnerAdapter spinnerAdapter;
@@ -1193,8 +1208,14 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 		
 		public String getWikipediaLanguageLc() {
 			String lg = currentLang.getLanguage().toLowerCase();
+			// Chinese
 			if (lg.equals("cmn") || lg.equals("yue")) {
 				lg = "zh";
+			}
+			
+			// hebrew
+			if (lg.equals("iw")) {
+				lg = "he";
 			}
 			
 			return lg;

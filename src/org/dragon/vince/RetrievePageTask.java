@@ -67,50 +67,55 @@ public class RetrievePageTask extends AsyncTask<String, Void, String> {
 
 	@Override
 	protected void onPostExecute(String result) {
-		Document doc = XmlHelper.xmlfromString(result);
-		NodeList nodes = doc.getElementsByTagName("page");
-		Node pageNode = null;
-		for (int i = 0; i < nodes.getLength(); i++) {
-			pageNode = nodes.item(i).getAttributes().getNamedItem("pageid");
-			// Handle here multiple results (take first or propose)
-			if(pageNode != null) {
-				this.pageId = pageNode.getNodeValue();
-				 // Only first one for now
-				 break;
-			}
-		}
-		
-		// Use pageNode here to get image only from node with pageid?
-		nodes = doc.getElementsByTagName("rev"); 	
-		if (nodes != null && nodes.getLength() > 0) {
+		if (result != null) {
+			Document doc = XmlHelper.xmlfromString(result);
+			NodeList nodes = doc.getElementsByTagName("page");
+			Node pageNode = null;
 			for (int i = 0; i < nodes.getLength(); i++) {
-				 String line = nodes.item(i).getTextContent();
-				 if (line.contains("#REDIRECT")) {					 
-					 int posS = line.indexOf("[[");
-					 if (posS > -1) {
-						 posS = posS + 2;
-					 }
-					 
-					 int posE = line.indexOf("]]");
-					 if (posE > -1 && posS > -1) {
-						 String redirect = line.substring(posS, posE);
-						 this.mainActivity.search(redirect);
-					 }
-				 } else {
-					 this.mainActivity.addTextToRead(line);
-					 
-					 if (this.pageId != null) {
-						 this.mainActivity.beginSearchImages();
-						 this.retrieveImage.execute(pageId);
-					 }
-					 
-					 this.mainActivity.readText();
-					 this.mainActivity.showReadImage();
-				 }			 			 
-			}	 
+				pageNode = nodes.item(i).getAttributes().getNamedItem("pageid");
+				// Handle here multiple results (take first or propose)
+				if(pageNode != null) {
+					this.pageId = pageNode.getNodeValue();
+					 // Only first one for now
+					 break;
+				}
+			}
+			
+			// Use pageNode here to get image only from node with pageid?
+			nodes = doc.getElementsByTagName("rev"); 	
+			if (nodes != null && nodes.getLength() > 0) {
+				for (int i = 0; i < nodes.getLength(); i++) {
+					 String line = nodes.item(i).getTextContent();
+					 if (line.contains("#REDIRECT")) {					 
+						 int posS = line.indexOf("[[");
+						 if (posS > -1) {
+							 posS = posS + 2;
+						 }
+						 
+						 int posE = line.indexOf("]]");
+						 if (posE > -1 && posS > -1) {
+							 String redirect = line.substring(posS, posE);
+							 this.mainActivity.search(redirect);
+						 }
+					 } else {
+						 this.mainActivity.addTextToRead(line);
+						 
+						 if (this.pageId != null) {
+							 this.mainActivity.beginSearchImages();
+							 this.retrieveImage.execute(pageId);
+						 }
+						 
+						 this.mainActivity.readText();
+						 this.mainActivity.showReadImage();
+					 }			 			 
+				}	 
+			} else {
+				this.mainActivity.stopSearchBar();
+			}
 		} else {
 			this.mainActivity.stopSearchBar();
 		}
+		
 		 						
 		super.onPostExecute(result);
 	}

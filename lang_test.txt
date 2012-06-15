@@ -23,7 +23,7 @@
  en-001,
  fr-FR, 
  de-DE,
- iw-IL,
+ iw-IL, Hebrew
  id-ID,
  zu-ZA,
  it-IT,
