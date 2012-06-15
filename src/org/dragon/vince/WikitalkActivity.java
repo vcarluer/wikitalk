@@ -652,6 +652,9 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 		// poem
 		this.currentSentence = this.currentSentence.replaceAll("<poem>", "");
 		this.currentSentence = this.currentSentence.replaceAll("</poem>", "");
+		// Puces
+		this.currentSentence = this.currentSentence.replaceAll("# ", "");
+		this.currentSentence = this.currentSentence.replaceAll("* ", "");
 	}
 
 	private void parseMenu(int idx) {
