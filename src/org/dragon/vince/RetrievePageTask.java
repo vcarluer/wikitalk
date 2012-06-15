@@ -19,19 +19,17 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
 
-public class RetrievePageTask extends AsyncTask<String, Void, String> {
+public class RetrievePageTask extends AsyncTask<String, Void, Page> {
 	private WikitalkActivity mainActivity;
-	private String search;
-	private String pageId;
 	
 	public RetrievePageTask(WikitalkActivity activity) {
 		this.mainActivity = activity;		
 	}
 	
 	@Override	
-	protected String doInBackground(String... params) {
-		String line = null;
-    	search = Uri.encode(params[0]);
+	protected Page doInBackground(String... params) {
+		String text = null;
+    	String search = Uri.encode(params[0]);
     	HttpGet uri = new HttpGet("http://" + this.mainActivity.getWikipediaLanguageLc() + ".wikipedia.org/w/api.php?format=xml&action=query&titles=" + search + "&prop=revisions&rvprop=content");
     	// close client request?
     	DefaultHttpClient client = new DefaultHttpClient();
@@ -51,7 +49,7 @@ public class RetrievePageTask extends AsyncTask<String, Void, String> {
 	    	} else {
 	    		HttpEntity entity = response.getEntity();
 	    		try {
-					line = EntityUtils.toString(entity);															
+					text = EntityUtils.toString(entity);															
 				} catch (ParseException e) {
 					e.printStackTrace();
 				} catch (IOException e) {
@@ -60,20 +58,18 @@ public class RetrievePageTask extends AsyncTask<String, Void, String> {
 	    	}
 		}
 		
-    	return line;
-	}
-
-	@Override
-	protected void onPostExecute(String result) {
-		if (result != null) {
-			Document doc = XmlHelper.xmlfromString(result);
+		Page page = new Page();
+		page.workedText = "";
+		if (text != null) {
+			
+			Document doc = XmlHelper.xmlfromString(text);
 			NodeList nodes = doc.getElementsByTagName("page");
 			Node pageNode = null;
 			for (int i = 0; i < nodes.getLength(); i++) {
 				pageNode = nodes.item(i).getAttributes().getNamedItem("pageid");
 				// Handle here multiple results (take first or propose)
 				if(pageNode != null) {
-					this.pageId = pageNode.getNodeValue();
+					page.id = pageNode.getNodeValue();
 					 // Only first one for now
 					 break;
 				}								
@@ -85,8 +81,8 @@ public class RetrievePageTask extends AsyncTask<String, Void, String> {
 				if(titleNode != null) {
 					String title = titleNode.getNodeValue();
 					if (title != null && title.length() > 0) {
-						this.mainActivity.setCurrentTitle(title);
-						this.mainActivity.addTextToRead(title + ". ");
+						page.title = title;
+						page.workedText = title + ". ";
 						 // Only first one for now
 						break;
 					}										 
@@ -107,24 +103,38 @@ public class RetrievePageTask extends AsyncTask<String, Void, String> {
 						 int posE = line.indexOf("]]");
 						 if (posE > -1 && posS > -1) {
 							 String redirect = line.substring(posS, posE);
-							 this.mainActivity.search(redirect);
+							 page.redirect = redirect;
 						 }
 					 } else {
-						 this.mainActivity.addTextToRead(line);
-						 
-						 if (this.pageId != null) {
-							 this.mainActivity.beginSearchImages();
-							 this.mainActivity.getNewRetrieveImages().execute(pageId);
-						 }
-						 
-						 this.mainActivity.readText();
-						 this.mainActivity.showReadImage();
+						 page.workedText += line;						 						 
 					 }			 			 
 				}	 
 			}
 		}
 		
+		page.parseOriginalText();		
+		return page;
+	}
+	
+
+
+	@Override
+	protected void onPostExecute(Page result) {
 		this.mainActivity.stopSearchBar();
+		if (result.redirect != null) {
+			this.mainActivity.search(result.redirect);
+		} else {
+			if (result.id != null) {
+				 this.mainActivity.beginSearchImages();
+				 this.mainActivity.getNewRetrieveImages().execute(result.id);
+			 }
+			if (result.title != null) {
+				this.mainActivity.setCurrentTitle(result.title);
+			}
+			
+			this.mainActivity.readText(result);
+			this.mainActivity.showReadImage();
+		}						
 		 						
 		super.onPostExecute(result);
 	}

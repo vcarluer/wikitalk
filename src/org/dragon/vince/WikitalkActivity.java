@@ -79,15 +79,11 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
     private TextView mTitle;
     private Handler mHandler;
     private Spinner mSupportedLanguageView;
-	private String textToRead;
 	private List<ImageInfo> images;
 	private Map<Integer, List<ImageInfo>> imagesIndexed;
 	private int imageCursor;
 	private int imageTargetCursor;
-	private Map<Integer, String> sentences;
 	private int readCursor;
-	private List<Link> links;
-	private Map<Integer, List<Link>> linksIndexed;
 	private int linkCursor;
 	private int linkTargetCursor;
 	private long linkShown;	
@@ -105,8 +101,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	private String currentSentence;
 	private Link currentLink;
 	
-	private TextView mImgInfo;
-	private int textSize;	
+	private TextView mImgInfo;	
 	private String currentSearch;
 	private long imageShown;
 	private String langPref;
@@ -114,7 +109,6 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	private GestureDetector gestureDetector;
     private View.OnTouchListener gestureListener;
     
-    private String[] splitSentence;
     
     private ProgressBar mSearchBar;
     private ProgressBar mProgressImage;
@@ -139,12 +133,11 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
     private RetrieveImagesTask retrieveImagesTask;
     private RetrieveImageTask retrieveImageTask;
     
+    private Page page;
+    
 	public WikitalkActivity() {
-		this.sentences = new HashMap<Integer, String>();
 		this.hashAudio = new HashMap<String, String>();
-		this.linksIndexed = new HashMap<Integer, List<Link>>();
 		this.imagesIndexed = new HashMap<Integer, List<ImageInfo>>(); 
-		this.links = new ArrayList<Link>();
 	}
 	
 	/** Called when the activity is first created. */
@@ -196,7 +189,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
         this.mainLayout.setOnClickListener(new View.OnClickListener() {
 			
 			public void onClick(View v) {
-				if (textToRead == null || textToRead == "") {
+				if (page == null) {
 					startVoiceRecognitionActivity();
 				} else {
 					if (retrievePageTask == null) {
@@ -526,20 +519,15 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
     	this.readCursor = 0;
     	this.imageCursor = -1;
     	this.imageTargetCursor = -1;
-    	this.splitSentence = null;
     	this.imagesIndexed.clear();
-    	this.linksIndexed.clear();
-    	this.links.clear();
     	this.linkCursor = -1;
     	this.linkTargetCursor = -1;
-    	this.sentences.clear();
-    	this.textToRead = "";
-    	this.textSize = -1;
     	this.resetImageCursor = false;
     	this.resetLinkCursor = false;
     	this.retrieveImagesTask = null;
     	this.retrieveImageTask = null;
     	this.retrievePageTask = null;
+    	this.page = null;
     }
 	
 	private void initWidgets() {		
@@ -553,11 +541,6 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 		this.mImgNext.setVisibility(View.GONE);
 		this.mSeekText.setVisibility(View.GONE);
 		this.mMediaInfo.setVisibility(View.GONE);
-	}
-	
-	public void addTextToRead(String line) {
-		this.textToRead += line;
-		Logd(WIKITALK, line);
 	}
 	
 	public static void Logd(String tag, String msg) {
@@ -583,117 +566,24 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 		this.retrievePageTask = null;
 	}
 	
-	public void readText() {
+	public void readText(Page page) {
 		this.main_info.setVisibility(View.VISIBLE);
         this.main_noInfo.setVisibility(View.GONE);
-
-		this.sentences.clear();
-		this.linksIndexed.clear();		
-		this.initLanguage();
-		
-		// for now external reference must be remove before split with . because of long ref
-		this.textToRead = this.parseRef(this.textToRead);
-		splitSentence = this.textToRead.split("\\. ");
-		int idx = 0;
-		// special language
-		if (splitSentence.length == 0) {
-			splitSentence = new String[1];
-			splitSentence[0] = this.textToRead;
-		} else {
-			for(String sentence : splitSentence) {
-				this.currentSentence = new String(sentence);
-				this.parseLinks(idx);
-				this.parseBoldAndOthers(idx);
-				this.parseModel(idx);
-				this.parseMenu(idx);			
-				if (currentSentence.trim().length() > 0 && 
-						!currentSentence.contains("{") && 
-						!currentSentence.contains("}") &&
-						!currentSentence.contains("|") && 
-						!currentSentence.contains("[") && 
-						!currentSentence.contains("]") &&
-						!currentSentence.contains("<") &&
-						!currentSentence.contains(">") &&
-						!currentSentence.contains("&") &&
-						!currentSentence.contains("/") &&
-						!currentSentence.contains("_")) {
-					
-					this.sentences.put(idx, currentSentence);								
-				}			
-							
-				idx++;
-			}
-		}		
-		
-		this.textSize = idx;		
-		this.readCursor = 0;
-		this.mSeekText.setVisibility(View.VISIBLE);
-		this.mSeekText.setMax(this.textSize);
-		this.mSeekText.setProgress(0);
-		
-		this.readAtPosition();
-//		Toast.makeText(this, "Play", Toast.LENGTH_SHORT).show();
-		
-//		mTts.speak(this.textToRead,
-//	            TextToSpeech.QUEUE_ADD,  // Drop allpending entries in the playback queue.
-//	            null);
-	}		
-	
-	private void parseBoldAndOthers(int idx) {
-		// http://fr.wikipedia.org/wiki/Aide:Syntaxe
-		// bold italic
-		this.currentSentence = this.currentSentence.replaceAll("'''''", "");
-		// bold
-		this.currentSentence = this.currentSentence.replaceAll("'''", "");
-		// italic
-		this.currentSentence = this.currentSentence.replaceAll("''", "");				
-		// poem
-		this.currentSentence = this.currentSentence.replaceAll("<poem>", "");
-		this.currentSentence = this.currentSentence.replaceAll("</poem>", "");
-		// Puces
-		this.currentSentence = this.currentSentence.replaceAll("### ", "");
-		this.currentSentence = this.currentSentence.replaceAll("## ", "");
-		this.currentSentence = this.currentSentence.replaceAll("# ", "");		
-		this.currentSentence = this.currentSentence.replaceAll("\\*\\*\\* ", "");
-		this.currentSentence = this.currentSentence.replaceAll("\\*\\* ", "");
-		this.currentSentence = this.currentSentence.replaceAll("\\* ", "");
-		this.currentSentence = this.currentSentence.replaceAll("#\\* ", "");
-		// Others
-		this.currentSentence = this.currentSentence.replaceAll("<br />", "");
-		this.currentSentence = this.currentSentence.replaceAll("<center>", "");
-		this.currentSentence = this.currentSentence.replaceAll("</center>", "");
-		// Boites déroulante, tableaux, <span color, 
-		this.currentSentence = this.currentSentence.replaceAll("<small>", "");
-		this.currentSentence = this.currentSentence.replaceAll("</small>", "");
-		this.currentSentence = this.currentSentence.replaceAll("<big>", "");
-		this.currentSentence = this.currentSentence.replaceAll("</big>", "");
-		this.currentSentence = this.currentSentence.replaceAll("<u>", "");
-		this.currentSentence = this.currentSentence.replaceAll("</u>", "");
-		this.currentSentence = this.currentSentence.replaceAll("<s>", "");
-		this.currentSentence = this.currentSentence.replaceAll("</s>", "");
-		// Indice, exposant
-		// liens direct http:// sans []
-		// Liens vers catégories, images
-		// Dates
-		// Unités
-		// Mots magique
-		//{{{
-		this.currentSentence = this.currentSentence.replaceAll("\\{\\{\\{", "");
-		this.currentSentence = this.currentSentence.replaceAll("\\}\\}\\}", "");
-		// Dashes! (with no space)		
-		this.currentSentence = this.currentSentence.replaceAll("(?<=[\\w&&[^\\s]])[-](?=[\\w&&[^\\s]])", "");
-		
-	}
-
-	private void parseMenu(int idx) {
-		if (this.currentSentence.contains("")) {
-			// Only remove for now
-			this.currentSentence = this.currentSentence.replaceAll("======", "");
-			this.currentSentence = this.currentSentence.replaceAll("=====", "");
-			this.currentSentence = this.currentSentence.replaceAll("====", "");
-			this.currentSentence = this.currentSentence.replaceAll("===", "");
-			this.currentSentence = this.currentSentence.replaceAll("==", "");
-		}		
+        if (page != null)  {
+        	this.page = page;
+    		this.initLanguage();
+    		this.readCursor = 0;
+    		this.mSeekText.setVisibility(View.VISIBLE);
+    		if (this.page.splitSentence != null) {
+    			this.mSeekText.setMax(this.page.splitSentence.length);
+    		} else {
+    			this.mSeekText.setMax(0);
+    		}
+    		
+    		this.mSeekText.setProgress(0);
+    		
+    		this.readAtPosition();
+        }
 	}
 
 	private void initLanguage() {						
@@ -711,8 +601,8 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 		this.retrieveImagesTask = null;
 		int idx = 0;
 		List<ImageInfo> newImages = new ArrayList<ImageInfo>();
-		if (this.splitSentence != null) {
-			for(String sentence : this.splitSentence) {
+		if (this.page != null && this.page.splitSentence != null) {
+			for(String sentence : this.page.splitSentence) {
 				
 				List<ImageInfo> iis = new ArrayList<ImageInfo>();
 				
@@ -1075,13 +965,13 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 		}
 
 		private void readAtPosition() {
-	    	if (this.readCursor < this.textSize) {
+	    	if (this.page != null && this.page.splitSentence != null && this.readCursor < this.page.splitSentence.length) {
 	    		this.mSeekText.setProgress(this.readCursor);
 	    		
 	    		int firstListIdx = 0;
-	    		if (this.linksIndexed != null && this.linksIndexed.size() > 0) {
-	    			if (this.linksIndexed.containsKey(this.readCursor)) {
-	    				List<Link> currentLinks = this.linksIndexed.get(this.readCursor);
+	    		if (this.page.linksIndexed != null && this.page.linksIndexed.size() > 0) {
+	    			if (this.page.linksIndexed.containsKey(this.readCursor)) {
+	    				List<Link> currentLinks = this.page.linksIndexed.get(this.readCursor);
 		    			if (currentLinks.size() > 0) {
 		    				Link l = currentLinks.get(currentLinks.size() - 1);
 		    				this.linkTargetCursor = l.idx;
@@ -1091,9 +981,9 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	    			}
 	    		}
 	    			    		
-	    		if (this.links != null) {
+	    		if (this.page.links != null) {
 	    			boolean needSend = false;
-	    			if (this.resetLinkCursor && this.linksIndexed.containsKey(this.readCursor)) {
+	    			if (this.resetLinkCursor && this.page.linksIndexed.containsKey(this.readCursor)) {
 	    				if (this.linkCursor != firstListIdx) {
 	    					this.linkCursor = firstListIdx;
 	    					needSend = true;
@@ -1109,7 +999,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	    			
 	    			if (needSend) {
 	    				this.linkShown = System.currentTimeMillis();
-    	    			this.currentLink = links.get(this.linkCursor);
+    	    			this.currentLink = this.page.links.get(this.linkCursor);
     	    			Bundle bundle = new Bundle();
         				bundle.putString(LINK_LABEL, this.currentLink.label);
         				Message message = new Message();
@@ -1153,8 +1043,8 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	    			}
 	    		}
 	    		
-		    	if (this.sentences.containsKey(this.readCursor)) {
-		    		String sentence = this.sentences.get(this.readCursor);		    	
+		    	if (this.page.sentences.containsKey(this.readCursor)) {
+		    		String sentence = this.page.sentences.get(this.readCursor);		    	
 			    	this.reading = true;
 		    		mTts.speak(sentence,
 				            TextToSpeech.QUEUE_ADD,  // Drop allpending entries in the playback queue.
@@ -1178,104 +1068,8 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 			}			
 		}
 		
-		private List<Link> GetSentenceLinks() {			
-			List<String> linkFound = getTagValues(this.currentSentence, LINK_REGEX);
-			List<Link> newLinks = new ArrayList<Link>();
-			for(String linkStr : linkFound) {
-				Link link = null;
-				if (linkStr.contains("|")) {
-					String[] linkStrSplit = linkStr.split("\\|");
-					if (linkStrSplit.length == 2) {
-						link = new Link();
-						link.link = linkStrSplit[0];
-						link.label = linkStrSplit[1];						
-					}
-				} else {
-					link = new Link();
-					link.label = linkStr;
-					link.link = linkStr;
-				}
+		
 				
-				String replaceString = "";
-				if (link != null) {
-					newLinks.add(link);
-					this.links.add(link);
-					link.idx = this.links.size() - 1;
-					replaceString = link.label;
-				}
-				
-				this.currentSentence = this.currentSentence.replace("[[" + linkStr + "]]", replaceString);
-			}
-
-			return newLinks;
-		}
-		
-		public void parseLinks(int idx) {
-			this.linksIndexed.put(idx, this.GetSentenceLinks());
-		}
-		
-		private String removeRef(String text) {			
-			String retText = text;
-			List<String> linkFound = getTagValues(retText, REF_REGEX);
-			for(String linkStr : linkFound) {
-				retText = retText.replace("<ref" + linkStr + "/ref>", "");
-			}
-			linkFound = getTagValues(retText, REF2_REGEX);
-			for(String linkStr : linkFound) {
-				retText = retText.replace("<ref" + linkStr + "/>", "");
-			}
-			
-			return retText;
-		}
-		
-		public String parseRef(String text) {
-			return this.removeRef(text);
-		}
-		
-		private static final Pattern LINK_REGEX = Pattern.compile("\\[\\[(.+?)\\]\\]");
-		private static final Pattern REF_REGEX = Pattern.compile("<ref(.+?)/ref>");
-		private static final Pattern REF2_REGEX = Pattern.compile("<ref(.+?)/>");
-		private static final Pattern MODEL_REGEX = Pattern.compile("\\{\\{(.+?)\\}\\}");
-		
-		private void parseModel(int idx) {
-			// Simple replace for now, see model here: http://fr.wikipedia.org/wiki/Aide:Syntaxe		
-			// {{{ removed before
-			List<String> linkFound = getTagValues(this.currentSentence, MODEL_REGEX);			
-			for(String linkStr : linkFound) {
-				String replaceString = "";
-				if (linkStr.contains("|")) {
-					String[] linkStrSplit = linkStr.split("\\|");
-					boolean firstPassed = false;
-					for (String val : linkStrSplit) {
-						if (!firstPassed) {
-							if (!val.equals("lang")) {
-								// todo: read with proper language
-								firstPassed = true;
-							}							
-						} else {
-							replaceString += val + " ";
-						}						
-					}
-				} else {
-					// exposant or number (for now)
-					replaceString = linkStr;
-					if (replaceString.contains("formatnum:")) {
-						replaceString = replaceString.replace("formatnum:", "");
-					}										
-				}
-				
-				this.currentSentence = this.currentSentence.replace("{{" + linkStr + "}}", replaceString);
-			}
-		}
-
-		private static List<String> getTagValues(final String str, final Pattern regEx) {
-		    final List<String> tagValues = new ArrayList<String>();
-		    final Matcher matcher = regEx.matcher(str);
-		    while (matcher.find()) {
-		        tagValues.add(matcher.group(1));
-		    }
-		    return tagValues;
-		}
 		
 		public String getWikipediaLanguageLc() {
 			String lg = currentLang.getLanguage().toLowerCase();
