@@ -60,7 +60,7 @@ import android.widget.ViewSwitcher.ViewFactory;
 
 public class WikitalkActivity extends Activity implements TextToSpeech.OnInitListener, OnUtteranceCompletedListener, ViewFactory  {
 	
-	private static boolean DEBUG = true;
+	private static boolean DEBUG = false;
     private static final String DEFAULT_LANG = "Default";
 
 	private static final String LINK_LABEL = "LinkLabel";
@@ -132,8 +132,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
     
     private Animation fadeOutAnimation;
     private SearchView mSearch;
-    
-    private AdRequest adRequest;
+        
     private AdView adView;
     
 	public WikitalkActivity() {
@@ -341,12 +340,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 				return false;
 			}
 		});
-        
-        this.adRequest = new AdRequest();
-        if (DEBUG) {
-        	adRequest.addTestDevice(AdRequest.TEST_EMULATOR);               // Emulator
-            adRequest.addTestDevice(SGS_VCR);                      // Test Android Device
-        }        
+      
         this.adView = (AdView) findViewById(R.id.adView);
         
         // Must be kept at end of method
@@ -370,6 +364,20 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
           
           search(query);
         }
+    }
+    
+    private AdRequest getRequest(String keyWord) {
+    	AdRequest adRequest = new AdRequest();
+    	if (keyWord != null && keyWord.length() > 0) {
+    		adRequest.addKeyword(keyWord);
+    	}
+    	
+    	 if (DEBUG) {
+         	adRequest.addTestDevice(AdRequest.TEST_EMULATOR);               // Emulator
+            adRequest.addTestDevice(SGS_VCR);                      // Test Android Device
+         }        
+    	
+    	return adRequest;
     }
     
 //    @Override
@@ -777,8 +785,8 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	}
 	
 	public void search(String toSearch) {
-		if (toSearch != null && this.status == Status.Ready) {
-			this.adView.loadAd(this.adRequest);
+		if (toSearch != null && this.status == Status.Ready) {			
+			this.adView.loadAd(this.getRequest(toSearch));
 			this.pauseRead();
 			this.initData();
 			this.initWidgets();

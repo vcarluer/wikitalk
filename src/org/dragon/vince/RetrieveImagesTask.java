@@ -51,7 +51,7 @@ public class RetrieveImagesTask extends AsyncTask<String, Void, List<ImageInfo>>
 		if (response != null) {
 			StatusLine status = response.getStatusLine();
 	    	if (status.getStatusCode() != 200) {
-	    	    Log.d(WikitalkActivity.WIKITALK, "HTTP error, invalid server status code: " + response.getStatusLine());  
+	    	    WikitalkActivity.Logd(WikitalkActivity.WIKITALK, "HTTP error, invalid server status code: " + response.getStatusLine());  
 	    	} else {
 	    		HttpEntity entity = response.getEntity();
 	    		try {
