@@ -45,6 +45,7 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.SearchView;
+import android.widget.SearchView.OnQueryTextListener;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.Spinner;
@@ -123,6 +124,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
     private ImageView mMediaInfo;
     
     private Animation fadeOutAnimation;
+    private SearchView mSearch;
     
 	public WikitalkActivity() {
 		this.sentences = new HashMap<Integer, String>();
@@ -309,6 +311,21 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
         this.fadeOutAnimation = new AlphaAnimation(1.00f, 0.00f);
         this.fadeOutAnimation.setDuration(1000);
         this.fadeOutAnimation.setAnimationListener(new FadeOutAnimationListener(this.mMediaInfo));
+        
+        this.mSearch = (SearchView) findViewById(R.id.main_search_text);
+        this.mSearch.setIconifiedByDefault(false);
+        this.mSearch.setOnQueryTextListener(new OnQueryTextListener() {
+			
+			public boolean onQueryTextSubmit(String query) {
+				search(query);
+				return true;
+			}
+			
+			public boolean onQueryTextChange(String newText) {
+				// TODO Auto-generated method stub
+				return false;
+			}
+		});
         
         // Must be kept at end of method
         // Get the intent, verify the action and get the query
