@@ -7,7 +7,7 @@
     
     <item android:id="@+id/menu_lang"
           android:icon="@android:drawable/ic_menu_preferences"
-          android:title="@string/search"
+          android:title="@string/language"
           android:showAsAction="ifRoom">
 	    
    	</item>

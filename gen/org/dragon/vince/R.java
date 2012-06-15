@@ -54,6 +54,7 @@ public final class R {
         public static final int app_name=0x7f050000;
         public static final int imgleft=0x7f050001;
         public static final int imgright=0x7f050002;
+        public static final int language=0x7f050006;
         public static final int search=0x7f050003;
         public static final int search_voice=0x7f050004;
         public static final int voice_prompt=0x7f050005;
