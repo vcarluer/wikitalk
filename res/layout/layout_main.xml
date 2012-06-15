@@ -17,6 +17,7 @@
             android:layout_width="75dip"
             android:layout_height="75dip"
             android:layout_centerInParent="true"
+            android:contentDescription="@string/search_voice"
             android:src="@android:drawable/ic_btn_speak_now" />
         
        	<SearchView 

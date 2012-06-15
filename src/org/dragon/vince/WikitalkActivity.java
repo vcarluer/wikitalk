@@ -587,8 +587,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
         this.main_noInfo.setVisibility(View.GONE);
 
 		this.sentences.clear();
-		this.linksIndexed.clear();
-		this.mTitle.setText(this.currentSearch);
+		this.linksIndexed.clear();		
 		this.initLanguage();
 		
 		// for now external reference must be remove before split with . because of long ref
@@ -654,7 +653,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 		this.currentSentence = this.currentSentence.replaceAll("</poem>", "");
 		// Puces
 		this.currentSentence = this.currentSentence.replaceAll("# ", "");
-		this.currentSentence = this.currentSentence.replaceAll("* ", "");
+		this.currentSentence = this.currentSentence.replaceAll("\\* ", "");
 	}
 
 	private void parseMenu(int idx) {
@@ -751,6 +750,8 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 		
 		info = Uri.decode(info);
 		this.mImgInfo.setText(info);
+		// For accessibility
+		this.mImage.setContentDescription(info);
 	}
 	
 	public void previousImage() {
@@ -1239,4 +1240,10 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
             // iView.setBackgroundColor(0xFF000000);
             return iView;
       }
+
+		public void setCurrentTitle(String title) {
+			if (title != null && this.mTitle != null && title.length() > 0) {
+				this.mTitle.setText(title);
+			}			
+		}
 }

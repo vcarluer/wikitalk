@@ -78,7 +78,20 @@ public class RetrievePageTask extends AsyncTask<String, Void, String> {
 					this.pageId = pageNode.getNodeValue();
 					 // Only first one for now
 					 break;
-				}
+				}								
+			}
+			
+			for (int i = 0; i < nodes.getLength(); i++) {
+				Node titleNode = nodes.item(i).getAttributes().getNamedItem("title");
+				// Handle here multiple results (take first or propose)
+				if(titleNode != null) {
+					String title = titleNode.getNodeValue();
+					if (title != null && title.length() > 0) {
+						this.mainActivity.setCurrentTitle(title);
+						 // Only first one for now
+						break;
+					}										 
+				}								
 			}
 			
 			// Use pageNode here to get image only from node with pageid?
