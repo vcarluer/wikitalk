@@ -683,6 +683,8 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 		//{{{
 		this.currentSentence = this.currentSentence.replaceAll("\\{\\{\\{", "");
 		this.currentSentence = this.currentSentence.replaceAll("\\}\\}\\}", "");
+		// Dashes! (with no space)		
+		this.currentSentence = this.currentSentence.replaceAll("(?<=[\\w&&[^\\s]])[-](?=[\\w&&[^\\s]])", "");
 		
 	}
 
