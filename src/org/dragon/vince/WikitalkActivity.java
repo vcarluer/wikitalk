@@ -1225,8 +1225,11 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 						}						
 					}
 				} else {
-					// exposant
+					// exposant or number (for now)
 					replaceString = linkStr;
+					if (replaceString.contains("formatnum:")) {
+						replaceString = replaceString.replace("formatnum:", "");
+					}										
 				}
 				
 				this.currentSentence = this.currentSentence.replace("{{" + linkStr + "}}", replaceString);
