@@ -1162,6 +1162,8 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 			if (this.images != null && this.images.size() > 0) {
 				this.mImgPrev.setVisibility(View.VISIBLE);
 				this.mImgNext.setVisibility(View.VISIBLE);
+				
+				this.nextImage();
 			}
 		}
 		
