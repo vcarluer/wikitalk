@@ -653,16 +653,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 			RetrieveImageTask retrieveImage = new RetrieveImageTask(this);
 			ImageInfo ii = this.images.get(this.imageCursor);
 			this.handlerProgressImage.sendMessage(new Message());
-			retrieveImage.execute(ii.thumbUrl);			
-		}
-	}
-
-	private void showFullImage() {
-		if (this.images.size() > 0 && this.images.size() > this.imageCursor && this.statusImage == StatusImage.Ready) {
-			this.statusImage = statusImage.Working;
-			RetrieveImageTask retrieveImage = new RetrieveImageTask(this);
-			ImageInfo ii = this.images.get(this.imageCursor);
-			retrieveImage.execute(ii.url);			
+			retrieveImage.execute(ii);			
 		}
 	}
 	
@@ -670,12 +661,12 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 		return this.imageShown;
 	}
 	
-	public void showImage(Bitmap bitmap) {
+	public void showImage(ImageInfo imageInfo) {
 		if (this.status == Status.Ready) {
 			this.mProgressLoadImage.setVisibility(View.GONE);
 			this.statusImage = statusImage.Ready;
 			this.imageShown = System.currentTimeMillis();
-			Drawable drawable = new BitmapDrawable(bitmap);
+			Drawable drawable = new BitmapDrawable(imageInfo.bitmap);
 			this.mImage.setImageDrawable(drawable);
 			if (this.images.size() > 0 && this.images.size() > this.imageCursor) {			
 				ImageInfo ii = this.images.get(this.imageCursor);

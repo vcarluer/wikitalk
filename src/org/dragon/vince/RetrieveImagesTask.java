@@ -71,58 +71,11 @@ public class RetrieveImagesTask extends AsyncTask<String, Void, List<ImageInfo>>
 				String titleBase = nodes.item(i).getAttributes().getNamedItem("title").getNodeValue();
 				int pos = titleBase.indexOf(":");				
 				titleBase = titleBase.substring(pos + 1);
-				String title = Uri.encode(titleBase);
-				WindowManager wm = (WindowManager) this.mainActivity.getSystemService(Context.WINDOW_SERVICE);
-				Display display = wm.getDefaultDisplay();
-				Point size = new Point();
-				display.getSize(size);
-				int width = size.x;
-				int height = size.y;
-								
-				int imgFormat = width; // Always width?
-				String imageUrl = "http://" + this.mainActivity.getLanguageLc() + ".wikipedia.org/w/api.php?action=query&titles=Image:" + title +"&prop=imageinfo&iiprop=url&iiurlwidth=" + String.valueOf(imgFormat) + "&format=xml";
-				uri = new HttpGet(imageUrl);
-				
-				try {
-					response = client.execute(uri);
-				} catch (ClientProtocolException e) {
-					e.printStackTrace();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-				
-				if (response != null) {
-					StatusLine status = response.getStatusLine();
-			    	if (status.getStatusCode() != 200) {
-			    	    Log.d(WikitalkActivity.WIKITALK, "HTTP error, invalid server status code: " + response.getStatusLine());  
-			    	} else {
-			    		HttpEntity entity = response.getEntity();
-			    		try {
-							line = EntityUtils.toString(entity);
-							if (line != null) {
-								uri = null;
-								
-								Document doc2 = XmlHelper.xmlfromString(line);
-								NodeList nodes2 = doc2.getElementsByTagName("ii"); 
-								 for (int j = 0; j < nodes2.getLength(); j++) {
-									 ImageInfo ii = new ImageInfo();
-									 // not encoded title?
-									 ii.name = titleBase;
-									 ii.url = nodes2.item(j).getAttributes().getNamedItem("url").getNodeValue();
-									 ii.thumbUrl = nodes2.item(j).getAttributes().getNamedItem("thumburl").getNodeValue();									 
-									 
-									 images.add(ii);
-									 // To link with ditcionnary
-									 ii.idx = images.size() - 1;
-								 }
-							}
-						} catch (ParseException e) {
-							e.printStackTrace();
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
-			    	}
-				}
+				ImageInfo ii = new ImageInfo();
+				ii.name = titleBase;
+				images.add(ii);
+				// To link with ditcionnary
+				ii.idx = images.size() - 1;
 			}
 		}
 		
