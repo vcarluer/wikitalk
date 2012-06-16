@@ -14,10 +14,8 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import android.app.Activity;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.util.Log;
 
 public class RetrievePageTask extends AsyncTask<String, Void, Page> {
 	private WikitalkActivity mainActivity;

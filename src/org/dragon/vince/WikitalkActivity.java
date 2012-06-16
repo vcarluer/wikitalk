@@ -4,12 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import com.google.ads.AdRequest;
-import com.google.ads.AdView;
 
 import android.app.Activity;
 import android.app.SearchManager;
@@ -39,7 +33,6 @@ import android.view.ViewGroup.LayoutParams;
 import android.view.WindowManager;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
-import android.view.animation.Animation.AnimationListener;
 import android.view.animation.AnimationUtils;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
@@ -59,6 +52,9 @@ import android.widget.SpinnerAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ViewSwitcher.ViewFactory;
+
+import com.google.ads.AdRequest;
+import com.google.ads.AdView;
 
 public class WikitalkActivity extends Activity implements TextToSpeech.OnInitListener, OnUtteranceCompletedListener, ViewFactory  {
 	
@@ -97,11 +93,9 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	private boolean reading;
 	private RelativeLayout mainLayout;
 		
-	private String currentSentence;
 	private Link currentLink;
 	
 	private TextView mImgInfo;	
-	private String currentSearch;
 	private long imageShown;
 	private String langPref;
 	
@@ -512,8 +506,6 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	    
     private void initData() {
     	this.currentLink = null;
-    	this.currentSearch = "";
-    	this.currentSentence = "";
     	this.readCursor = 0;
     	this.imageCursor = -1;
     	this.imageTargetCursor = -1;
@@ -682,7 +674,6 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 			this.initData();
 			this.initWidgets();
 			this.mTitle.setText(toSearch);
-			this.currentSearch = toSearch;
 			this.setCurrentLang();
 			
 			this.retrievePageTask = new RetrievePageTask(this);			
@@ -881,10 +872,6 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	                });
 	            }	            
 	        }
-
-	        private void showToast(String text) {
-	            Toast.makeText(WikitalkActivity.this, text, 1000).show();
-	        }
 	    }
 	    
 	    public static String capitalizeFirstLetters ( String s ) {
@@ -973,7 +960,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	    				}
 	    			}
 	    			
-	    			if (needSend) {
+	    			if (needSend && this.page != null && this.page.links.size() > this.linkCursor) {
 	    				this.linkShown = System.currentTimeMillis();
     	    			this.currentLink = this.page.links.get(this.linkCursor);
     	    			Bundle bundle = new Bundle();

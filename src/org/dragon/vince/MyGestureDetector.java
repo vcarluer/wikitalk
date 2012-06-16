@@ -3,7 +3,6 @@ package org.dragon.vince;
 import android.util.DisplayMetrics;
 import android.view.GestureDetector.SimpleOnGestureListener;
 import android.view.MotionEvent;
-import android.widget.Toast;
 
 public class MyGestureDetector  extends SimpleOnGestureListener {
 	private static final int SWIPE_MIN_DISTANCE = 100; // original: 120

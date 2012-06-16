@@ -24,7 +24,6 @@ import android.graphics.BitmapFactory;
 import android.graphics.Point;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.util.Log;
 import android.view.Display;
 import android.view.WindowManager;
 

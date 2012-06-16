@@ -15,13 +15,7 @@ import org.apache.http.util.EntityUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 
-import android.content.Context;
-import android.graphics.Point;
-import android.net.Uri;
 import android.os.AsyncTask;
-import android.util.Log;
-import android.view.Display;
-import android.view.WindowManager;
 
 public class RetrieveImagesTask extends AsyncTask<String, Void, ImageRepository> {
 	private WikitalkActivity mainActivity;
