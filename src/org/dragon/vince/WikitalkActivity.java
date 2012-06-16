@@ -529,7 +529,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
     }
 	
 	private void initWidgets() {		
-		this.mImage.setImageDrawable(null);
+		this.mImage.setImageResource(R.drawable.dummy);
 		this.mLinkInfo.setText("");
 		this.mImgInfo.setText("");
 		this.mLinkImage.setVisibility(View.GONE);		
