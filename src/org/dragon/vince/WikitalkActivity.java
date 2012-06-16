@@ -79,8 +79,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
     private TextView mTitle;
     private Handler mHandler;
     private Spinner mSupportedLanguageView;
-	private List<ImageInfo> images;
-	private Map<Integer, List<ImageInfo>> imagesIndexed;
+    private ImageRepository imageRepository;
 	private int imageCursor;
 	private int imageTargetCursor;
 	private int readCursor;
@@ -137,7 +136,6 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
     
 	public WikitalkActivity() {
 		this.hashAudio = new HashMap<String, String>();
-		this.imagesIndexed = new HashMap<Integer, List<ImageInfo>>(); 
 	}
 	
 	/** Called when the activity is first created. */
@@ -519,7 +517,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
     	this.readCursor = 0;
     	this.imageCursor = -1;
     	this.imageTargetCursor = -1;
-    	this.imagesIndexed.clear();
+    	this.imageRepository = null;
     	this.linkCursor = -1;
     	this.linkTargetCursor = -1;
     	this.resetImageCursor = false;
@@ -597,38 +595,16 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
         }
 	}
 
-	public void setImages(List<ImageInfo> fetchedImages) {
+	public void setImages(ImageRepository fetchedImages) {
 		this.retrieveImagesTask = null;
-		int idx = 0;
-		List<ImageInfo> newImages = new ArrayList<ImageInfo>();
-		if (this.page != null && this.page.splitSentence != null) {
-			for(String sentence : this.page.splitSentence) {
-				
-				List<ImageInfo> iis = new ArrayList<ImageInfo>();
-				
-				for(ImageInfo ii : fetchedImages) {
-					if (sentence.toUpperCase().contains(ii.name.toUpperCase())) {
-						newImages.add(ii);
-						ii.idx = newImages.size() - 1;
-						iis.add(ii);					
-					}
-				}
-				
-				if (iis.size() > 0) {
-					this.imagesIndexed.put(idx, iis);
-				}
-				
-				idx++;
-			}
-			
-			this.images = newImages;
-			this.endSearchImage();
-		}
+		this.imageRepository = fetchedImages;
+		this.endSearchImage();
 	}
 
 	private void showImage() {
-		if (this.images.size() > 0 && this.images.size() > this.imageCursor && this.retrieveImagesTask == null) {
-			ImageInfo ii = this.images.get(this.imageCursor);
+		if (this.imageRepository != null && this.imageRepository.images.size() > 0 && 
+				this.imageRepository.images.size() > this.imageCursor && this.retrieveImagesTask == null) {
+			ImageInfo ii = this.imageRepository.images.get(this.imageCursor);
 			this.handlerProgressImage.sendMessage(new Message());
 			this.getNewRetrieveImage().execute(ii);			
 		}
@@ -643,15 +619,15 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 		this.mProgressLoadImage.setVisibility(View.GONE);
 		if (this.retrieveImagesTask == null) {						
 			if (imageInfo.bitmap != null) {
-				if (this.images.size() > 0) {
+				if (this.imageRepository != null && this.imageRepository.images.size() > 0) {
 					this.imageShown = System.currentTimeMillis();
 					Drawable drawable = new BitmapDrawable(imageInfo.bitmap);
 					this.mImage.setImageDrawable(drawable);
-					if (this.images.size() > 0 && this.images.size() > this.imageCursor) {								
+					if (this.imageRepository.images.size() > 0 && this.imageRepository.images.size() > this.imageCursor) {								
 						this.showImageInfo(imageInfo.name);
 					}
 					
-					Toast.makeText(this, String.valueOf(this.imageCursor + 1) + "/" + String.valueOf(this.images.size()), Toast.LENGTH_SHORT).show();
+					Toast.makeText(this, String.valueOf(this.imageCursor + 1) + "/" + String.valueOf(this.imageRepository.images.size()), Toast.LENGTH_SHORT).show();
 				}				
 			}			
 		}		
@@ -674,10 +650,10 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	}
 	
 	public void previousImage() {
-		if (this.images != null && this.retrieveImageTask == null) {
+		if (this.imageRepository != null && this.imageRepository.images != null && this.retrieveImageTask == null) {
 			this.imageCursor--;
 			if (this.imageCursor < 0) {
-				this.imageCursor = this.images.size() - 1;
+				this.imageCursor = this.imageRepository.images.size() - 1;
 			}
 			
 			this.resetImageCursor = false;
@@ -686,9 +662,9 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	}
 	
 	public void nextImage() {
-		if (this.images != null && this.retrieveImageTask == null) {
+		if (this.imageRepository != null && this.imageRepository.images != null && this.retrieveImageTask == null) {
 			this.imageCursor++;
-			if (this.imageCursor >= this.images.size()) {
+			if (this.imageCursor >= this.imageRepository.images.size()) {
 				this.imageCursor = 0;
 			}
 			
@@ -1009,10 +985,10 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	    		}	
 	    		
 	    		firstListIdx = 0;
-	    		if (this.imagesIndexed != null && this.imagesIndexed.size() > 0) {
-	    			if (this.imagesIndexed.containsKey(this.readCursor)) {
+	    		if (this.imageRepository != null && this.imageRepository.imagesIndexed != null && this.imageRepository.imagesIndexed.size() > 0) {
+	    			if (this.imageRepository.imagesIndexed.containsKey(this.readCursor)) {
 		    			// only first one
-	    				List<ImageInfo> iis = this.imagesIndexed.get(this.readCursor);
+	    				List<ImageInfo> iis = this.imageRepository.imagesIndexed.get(this.readCursor);
 	    				if (iis.size() > 0) {
 	    					ImageInfo ii = iis.get(iis.size() - 1);
 		    				this.imageTargetCursor = ii.idx;
@@ -1022,9 +998,10 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 		    		}
 	    		}
 	    		
-	    		if (this.retrieveImageTask == null && this.images != null && this.images.size() > 0) {
+	    		if (this.retrieveImageTask == null && this.imageRepository != null && 
+	    				this.imageRepository.images != null && this.imageRepository.images.size() > 0) {
 	    			boolean needShow = false;
-	    			if (this.resetImageCursor && this.imagesIndexed.containsKey(this.readCursor)) {
+	    			if (this.resetImageCursor && this.imageRepository.imagesIndexed.containsKey(this.readCursor)) {
 	    				if (this.imageCursor != firstListIdx) {
 	    					this.imageCursor = firstListIdx;
 	    					needShow = true;
@@ -1102,7 +1079,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 		
 		public void endSearchImage() {
 			this.mProgressImage.setVisibility(View.GONE);
-			if (this.images != null && this.images.size() > 0) {
+			if (this.imageRepository != null && this.imageRepository.images != null && this.imageRepository.images.size() > 0) {
 				this.mImgPrev.setVisibility(View.VISIBLE);
 				this.mImgNext.setVisibility(View.VISIBLE);
 				
@@ -1135,5 +1112,9 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 			if (title != null && this.mTitle != null && title.length() > 0) {
 				this.mTitle.setText(title);
 			}			
+		}
+		
+		public Page getPage() {
+			return this.page;
 		}
 }

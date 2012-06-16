@@ -23,7 +23,7 @@ import android.util.Log;
 import android.view.Display;
 import android.view.WindowManager;
 
-public class RetrieveImagesTask extends AsyncTask<String, Void, List<ImageInfo>> {
+public class RetrieveImagesTask extends AsyncTask<String, Void, ImageRepository> {
 	private WikitalkActivity mainActivity;
 	
 	public RetrieveImagesTask(WikitalkActivity activity) {
@@ -31,7 +31,7 @@ public class RetrieveImagesTask extends AsyncTask<String, Void, List<ImageInfo>>
 	}
 	
 	@Override
-	protected List<ImageInfo> doInBackground(String... params) {
+	protected ImageRepository doInBackground(String... params) {
 		List<ImageInfo> images = new ArrayList<ImageInfo>();
 		String line = null;
     	String pageId = params[0];
@@ -79,11 +79,39 @@ public class RetrieveImagesTask extends AsyncTask<String, Void, List<ImageInfo>>
 			}
 		}
 		
-		return images;
+		ImageRepository ir = new ImageRepository();
+		if (images != null) {
+			int idx = 0;
+			List<ImageInfo> newImages = new ArrayList<ImageInfo>();
+			if (this.mainActivity.getPage() != null && this.mainActivity.getPage().splitSentence != null) {
+				for(String sentence : this.mainActivity.getPage().splitSentence) {
+					
+					List<ImageInfo> iis = new ArrayList<ImageInfo>();
+					
+					for(ImageInfo ii : images) {
+						if (sentence.toUpperCase().contains(ii.name.toUpperCase())) {
+							newImages.add(ii);
+							ii.idx = newImages.size() - 1;
+							iis.add(ii);					
+						}
+					}
+					
+					if (iis.size() > 0) {
+						ir.imagesIndexed.put(idx, iis);
+					}
+					
+					idx++;
+				}
+				
+				ir.images = newImages;
+			}
+		}
+		
+		return ir;
 	}
 
 	@Override
-	protected void onPostExecute(List<ImageInfo> result) {
+	protected void onPostExecute(ImageRepository result) {
 		super.onPostExecute(result);
 		this.mainActivity.setImages(result);
 	}
