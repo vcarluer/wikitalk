@@ -8,9 +8,9 @@ public class MyGestureDetector  extends SimpleOnGestureListener {
 	private static final int SWIPE_MIN_DISTANCE = 100; // original: 120
     private static final int SWIPE_MAX_OFF_PATH = 250;
     private static final int SWIPE_THRESHOLD_VELOCITY = 200;
-	private WikitalkActivity mainActivity;
+	private DanyActivity mainActivity;
 	    
-	 public MyGestureDetector(WikitalkActivity activity) {
+	 public MyGestureDetector(DanyActivity activity) {
 		 this.mainActivity = activity;
 	 }
 	    

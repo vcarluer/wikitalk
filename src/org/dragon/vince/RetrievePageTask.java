@@ -18,9 +18,9 @@ import android.net.Uri;
 import android.os.AsyncTask;
 
 public class RetrievePageTask extends AsyncTask<String, Void, Page> {
-	private WikitalkActivity mainActivity;
+	private DanyActivity mainActivity;
 	
-	public RetrievePageTask(WikitalkActivity activity) {
+	public RetrievePageTask(DanyActivity activity) {
 		this.mainActivity = activity;		
 	}
 	
@@ -43,7 +43,7 @@ public class RetrievePageTask extends AsyncTask<String, Void, Page> {
 		if (response != null) {
 			StatusLine status = response.getStatusLine();
 	    	if (status.getStatusCode() != 200) {
-	    		WikitalkActivity.Logd(WikitalkActivity.WIKITALK, "HTTP error, invalid server status code: " + response.getStatusLine());  
+	    		DanyActivity.Logd(DanyActivity.DANY, "HTTP error, invalid server status code: " + response.getStatusLine());  
 	    	} else {
 	    		HttpEntity entity = response.getEntity();
 	    		try {

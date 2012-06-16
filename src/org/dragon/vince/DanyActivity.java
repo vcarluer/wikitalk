@@ -56,9 +56,9 @@ import android.widget.ViewSwitcher.ViewFactory;
 import com.google.ads.AdRequest;
 import com.google.ads.AdView;
 
-public class WikitalkActivity extends Activity implements TextToSpeech.OnInitListener, OnUtteranceCompletedListener, ViewFactory  {
+public class DanyActivity extends Activity implements TextToSpeech.OnInitListener, OnUtteranceCompletedListener, ViewFactory  {
 	
-	private static boolean DEBUG = true;
+	private static boolean DEBUG = false;
     private static final String DEFAULT_LANG = "Default";
 
 	private static final String LINK_LABEL = "LinkLabel";
@@ -67,7 +67,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	private static final String SGS_VCR = "703A6FB6180B55E158105A7D9481857A";
 	private static final String AdMobPublisherId = "a14fdb0fed6cda1";
     
-	static final String WIKITALK = "wikitalk";
+	static final String DANY = "dany";
     private TextToSpeech mTts;    
     private ImageSwitcher mImage;
     private Button mImgNext;
@@ -128,7 +128,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
     
     private Page page;
     
-	public WikitalkActivity() {
+	public DanyActivity() {
 		this.hashAudio = new HashMap<String, String>();
 	}
 	
@@ -497,10 +497,10 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
             // Allow the user to press the button for the app to speak again.
             // Greet the user.            	
         	this.mTts.setOnUtteranceCompletedListener(this);
-        	this.hashAudio.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, WIKITALK);
+        	this.hashAudio.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, DANY);
         } else {
             // Initialization failed.
-            Loge(WIKITALK, "Could not initialize TextToSpeech.");
+            Loge(DANY, "Could not initialize TextToSpeech.");
         }
 	}    
 	    
@@ -582,7 +582,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
         if (result == TextToSpeech.LANG_MISSING_DATA ||
             result == TextToSpeech.LANG_NOT_SUPPORTED) {
            // Lanuage data is missing or the language is not supported.
-            Loge(WIKITALK, "Language is not available.");
+            Loge(DANY, "Language is not available.");
             Toast.makeText(this, getString(R.string.language_not_available), Toast.LENGTH_SHORT).show();
         }
 	}
@@ -756,7 +756,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	    }
 
 	    private void refreshVoiceSettings() {
-	        Logi(WIKITALK, "Sending broadcast");
+	        Logi(DANY, "Sending broadcast");
 	        sendOrderedBroadcast(RecognizerIntent.getVoiceDetailsIntent(this), null,
 	                new SupportedLanguageBroadcastReceiver(), null, Activity.RESULT_OK, null, null);
 	    }
@@ -832,7 +832,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 	    private class SupportedLanguageBroadcastReceiver extends BroadcastReceiver {
 
 	        public void onReceive(Context context, final Intent intent) {
-	            Logi(WIKITALK, "Receiving broadcast " + intent);
+	            Logi(DANY, "Receiving broadcast " + intent);
 
 	            final Bundle extra = getResultExtras(false);
 

@@ -28,9 +28,9 @@ import android.view.Display;
 import android.view.WindowManager;
 
 public class RetrieveImageTask extends AsyncTask<ImageInfo, Void, ImageInfo> {
-	private WikitalkActivity mainActivity;
+	private DanyActivity mainActivity;
 
-	public RetrieveImageTask(WikitalkActivity activity) {
+	public RetrieveImageTask(DanyActivity activity) {
 		this.mainActivity = activity;
 	}
 	
@@ -71,7 +71,7 @@ public class RetrieveImageTask extends AsyncTask<ImageInfo, Void, ImageInfo> {
 				if (response != null) {
 					StatusLine status = response.getStatusLine();
 			    	if (status.getStatusCode() != 200) {
-			    		WikitalkActivity.Logd(WikitalkActivity.WIKITALK, "HTTP error, invalid server status code: " + response.getStatusLine());  
+			    		DanyActivity.Logd(DanyActivity.DANY, "HTTP error, invalid server status code: " + response.getStatusLine());  
 			    	} else {
 			    		HttpEntity entity = response.getEntity();
 			    		try {
