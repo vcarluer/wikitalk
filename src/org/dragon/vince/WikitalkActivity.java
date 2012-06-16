@@ -618,7 +618,7 @@ public class WikitalkActivity extends Activity implements TextToSpeech.OnInitLis
 		this.retrieveImageTask = null;
 		this.mProgressLoadImage.setVisibility(View.GONE);
 		if (this.retrieveImagesTask == null) {						
-			if (imageInfo.bitmap != null) {
+			if (imageInfo != null && imageInfo.bitmap != null) {
 				if (this.imageRepository != null && this.imageRepository.images.size() > 0) {
 					this.imageShown = System.currentTimeMillis();
 					Drawable drawable = new BitmapDrawable(imageInfo.bitmap);
