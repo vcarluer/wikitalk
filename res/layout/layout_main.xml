@@ -4,7 +4,7 @@
     android:gravity="center"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-     >
+     >     
      <RelativeLayout 
         android:id="@+id/main_noinfo"
         android:layout_width="match_parent"    
@@ -19,13 +19,25 @@
             android:layout_centerInParent="true"
             android:contentDescription="@string/search_voice"
             android:src="@android:drawable/ic_btn_speak_now" />
-        
-       	<SearchView 
-            android:id="@+id/main_search_text"
-            android:layout_width="match_parent"
+               	
+       	<LinearLayout 
+       	    android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
-            android:layout_centerHorizontal="true"></SearchView>
+            android:layout_centerHorizontal="true"
+            android:gravity="center">
+       	    <ImageView 
+       	        android:id="@+id/main_img_search"
+       	        android:layout_width="wrap_content"
+       	        android:layout_height="wrap_content"
+       	        android:src="@android:drawable/ic_menu_search"/>
+       	   	<EditText android:id="@+id/main_text_search"
+       	   	    android:inputType="text"
+       	   	    android:hint="@string/search"
+       	   	    android:layout_width="fill_parent"
+       	   	    android:layout_height="wrap_content"
+       	   	    android:gravity="left" />
+       	</LinearLayout>
         
 
     </RelativeLayout>
@@ -99,6 +111,5 @@
 	        android:alpha="0.25"
 	        android:text="@string/imgright"/>  
     </RelativeLayout>
-      
 
 </RelativeLayout>

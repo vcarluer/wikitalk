@@ -21,7 +21,10 @@ import android.speech.RecognizerIntent;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.TextToSpeech.OnUtteranceCompletedListener;
 import android.util.Log;
+import android.view.ContextMenu;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.view.GestureDetector;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -29,6 +32,7 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnLongClickListener;
 import android.view.ViewGroup.LayoutParams;
 import android.view.WindowManager;
 import android.view.animation.AlphaAnimation;
@@ -39,6 +43,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageSwitcher;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -118,7 +123,8 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
     private ImageView mMediaInfo;
     
     private Animation fadeOutAnimation;
-    private SearchView mSearch;
+    private ImageView mSearchImage;
+    private EditText mSearchText;
         
     private AdView adView;
     
@@ -173,6 +179,13 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 			}
 		});
         
+        this.mImage.setOnLongClickListener(new OnLongClickListener() {
+			public boolean onLongClick(View v) {
+				startVoiceRecognitionActivity();
+				return true;
+			}
+		});
+        
         this.mProgressLoadImage = (ProgressBar) findViewById(R.id.progressLoadImage);
         
         this.mImgInfo = (TextView) findViewById(R.id.imgText);
@@ -203,15 +216,36 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 			}
 		});
         
+        this.mImgPrev.setOnLongClickListener(new OnLongClickListener() {
+			public boolean onLongClick(View v) {
+				startVoiceRecognitionActivity();
+				return true;
+			}
+		});
+        
         this.mImgNext = (Button) findViewById(R.id.imgNext);
         this.mImgNext.setOnClickListener(new View.OnClickListener() {
 			
 			public void onClick(View v) {
 				nextImage();				
 			}
-		});             
+		});  
         
-        this.mTitle = (TextView) findViewById(R.id.txtTitle);                
+        this.mImgNext.setOnLongClickListener(new OnLongClickListener() {
+			public boolean onLongClick(View v) {
+				startVoiceRecognitionActivity();
+				return true;
+			}
+		});
+        
+        this.mTitle = (TextView) findViewById(R.id.txtTitle); 
+        this.mTitle.setOnLongClickListener(new OnLongClickListener() {
+			
+			public boolean onLongClick(View v) {
+				startVoiceRecognitionActivity();
+				return true;
+			}
+		});
         
         mHandler = new Handler();
      // Check to see if a recognition activity is present
@@ -245,6 +279,13 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 			}
 		});
         
+        this.mLinkInfo.setOnLongClickListener(new OnLongClickListener() {			
+			public boolean onLongClick(View v) {
+				startVoiceRecognitionActivity();
+				return true;
+			}
+		});
+        
         this.mLinkImage = (ImageView) findViewById(R.id.linkImage);
         this.mLinkImage.setVisibility(View.GONE);
         this.mLinkImage.setOnClickListener(new OnClickListener() {
@@ -253,6 +294,13 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 				if (currentLink != null) {
 					search(currentLink.link);
 				}
+			}
+		});
+        
+        this.mLinkImage.setOnLongClickListener(new OnLongClickListener() {			
+			public boolean onLongClick(View v) {
+				startVoiceRecognitionActivity();
+				return true;
 			}
 		});
         
@@ -274,6 +322,19 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
         
         this.main_info = (RelativeLayout) findViewById(R.id.main_info);
         this.main_noInfo = (RelativeLayout) findViewById(R.id.main_noinfo);
+        this.main_info.setOnLongClickListener(new OnLongClickListener() {			
+			public boolean onLongClick(View v) {
+				startVoiceRecognitionActivity();
+				return true;
+			}
+		});
+        this.main_noInfo.setOnLongClickListener(new OnLongClickListener() {			
+			public boolean onLongClick(View v) {
+				startVoiceRecognitionActivity();
+				return true;
+			}
+		});
+        
         this.main_Search = (ImageView) findViewById(R.id.main_search);
         this.main_Search.setOnClickListener(new OnClickListener() {
 			
@@ -282,8 +343,15 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 			}
 		});
         
+        this.main_Search.setOnLongClickListener(new OnLongClickListener() {			
+			public boolean onLongClick(View v) {
+				startVoiceRecognitionActivity();
+				return true;
+			}
+		});
+        
         this.main_info.setVisibility(View.GONE);
-        this.main_noInfo.setVisibility(View.VISIBLE);
+        this.main_noInfo.setVisibility(View.VISIBLE);        
         
         this.mSeekText = (SeekBar) findViewById(R.id.txtSeekBar);
         this.mSeekText.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
@@ -308,30 +376,57 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 			}
 		});
         
+        this.mSeekText.setOnLongClickListener(new OnLongClickListener() {			
+			public boolean onLongClick(View v) {
+				startVoiceRecognitionActivity();
+				return true;
+			}
+		});
+        
         this.mMediaInfo = (ImageView) findViewById(R.id.media_readInfo);
         
         this.fadeOutAnimation = new AlphaAnimation(1.00f, 0.00f);
         this.fadeOutAnimation.setDuration(1000);
         this.fadeOutAnimation.setAnimationListener(new FadeOutAnimationListener(this.mMediaInfo));
         
-        this.mSearch = (SearchView) findViewById(R.id.main_search_text);
-        this.mSearch.setIconifiedByDefault(false);
-        this.mSearch.setOnQueryTextListener(new OnQueryTextListener() {
-			
-			public boolean onQueryTextSubmit(String query) {
-				search(query);
-				InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
-				imm.hideSoftInputFromWindow(mSearch.getWindowToken(), 0);
+        this.mSearchText = (EditText) findViewById(R.id.main_text_search);        
+        this.mSearchText.setOnKeyListener(new  View.OnKeyListener() {			
+			public boolean onKey(View v, int keyCode, KeyEvent event) {
+				// If the event is a key-down event on the "enter" button
+		        if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
+		            (keyCode == KeyEvent.KEYCODE_ENTER)) {
+		          // Perform action on key press
+		        	search(mSearchText.getText().toString());
+		        	InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+					imm.hideSoftInputFromWindow(mSearchText.getWindowToken(), 0);
+		          return true;
+		        }
+		        return false;
+			}
+		});
+        
+        this.mSearchText.setOnLongClickListener(new OnLongClickListener() {			
+			public boolean onLongClick(View v) {
+				startVoiceRecognitionActivity();
 				return true;
 			}
-			
-			public boolean onQueryTextChange(String newText) {
-				// TODO Auto-generated method stub
-				return false;
+		});
+        
+        this.mSearchImage = (ImageView) findViewById(R.id.main_img_search);
+        this.mSearchImage.setOnLongClickListener(new OnLongClickListener() {			
+			public boolean onLongClick(View v) {
+				startVoiceRecognitionActivity();
+				return true;
 			}
 		});
       
         this.adView = (AdView) findViewById(R.id.adView);
+        this.adView.setOnLongClickListener(new OnLongClickListener() {			
+			public boolean onLongClick(View v) {
+				startVoiceRecognitionActivity();
+				return true;
+			}			
+		});
         
         // Must be kept at end of method
         // Get the intent, verify the action and get the query
