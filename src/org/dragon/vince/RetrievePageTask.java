@@ -27,11 +27,12 @@ public class RetrievePageTask extends AsyncTask<String, Void, Page> {
 	@Override	
 	protected Page doInBackground(String... params) {
 		String text = null;
-    	String search = Uri.encode(params[0]);
-    	HttpGet uri = new HttpGet("http://" + this.mainActivity.getWikipediaLanguageLc() + ".wikipedia.org/w/api.php?format=xml&action=query&titles=" + search + "&prop=revisions&rvprop=content");
-    	// close client request?
-    	DefaultHttpClient client = new DefaultHttpClient();
+		DefaultHttpClient client = new DefaultHttpClient();
     	HttpResponse response = null;
+		String search = Uri.encode(params[0]);
+		String keyword = null;
+    	// Open search and take first result, always
+		HttpGet uri = new HttpGet("http://" + this.mainActivity.getWikipediaLanguageLc() + ".wikipedia.org/w/api.php?action=opensearch&search=" + search + "&limit=1&namespace=0&format=xml");
 		try {
 			response = client.execute(uri);
 		} catch (ClientProtocolException e) {
@@ -39,7 +40,7 @@ public class RetrievePageTask extends AsyncTask<String, Void, Page> {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+    	
 		if (response != null) {
 			StatusLine status = response.getStatusLine();
 	    	if (status.getStatusCode() != 200) {
@@ -47,7 +48,7 @@ public class RetrievePageTask extends AsyncTask<String, Void, Page> {
 	    	} else {
 	    		HttpEntity entity = response.getEntity();
 	    		try {
-					text = EntityUtils.toString(entity);															
+	    			text = EntityUtils.toString(entity);															
 				} catch (ParseException e) {
 					e.printStackTrace();
 				} catch (IOException e) {
@@ -56,61 +57,106 @@ public class RetrievePageTask extends AsyncTask<String, Void, Page> {
 	    	}
 		}
 		
-		Page page = new Page();
-		page.workedText = "";
-		if (text != null) {
-			
+		if (text != null) {			
 			Document doc = XmlHelper.xmlfromString(text);
-			NodeList nodes = doc.getElementsByTagName("page");
-			Node pageNode = null;
+			NodeList nodes = doc.getElementsByTagName("Text");			
 			for (int i = 0; i < nodes.getLength(); i++) {
-				pageNode = nodes.item(i).getAttributes().getNamedItem("pageid");
+				keyword = Uri.encode(nodes.item(i).getTextContent());
 				// Handle here multiple results (take first or propose)
-				if(pageNode != null) {
-					page.id = pageNode.getNodeValue();
+				if(keyword != null) {					
 					 // Only first one for now
 					 break;
 				}								
 			}
-			
-			for (int i = 0; i < nodes.getLength(); i++) {
-				Node titleNode = nodes.item(i).getAttributes().getNamedItem("title");
-				// Handle here multiple results (take first or propose)
-				if(titleNode != null) {
-					String title = titleNode.getNodeValue();
-					if (title != null && title.length() > 0) {
-						page.title = title;
-						page.workedText = title + ". ";
-						 // Only first one for now
-						break;
-					}										 
-				}								
-			}
-			
-			// Use pageNode here to get image only from node with pageid?
-			nodes = doc.getElementsByTagName("rev"); 	
-			if (nodes != null && nodes.getLength() > 0) {
-				for (int i = 0; i < nodes.getLength(); i++) {
-					 String line = nodes.item(i).getTextContent();
-					 if (line.contains("#REDIRECT")) {					 
-						 int posS = line.indexOf("[[");
-						 if (posS > -1) {
-							 posS = posS + 2;
-						 }
-						 
-						 int posE = line.indexOf("]]");
-						 if (posE > -1 && posS > -1) {
-							 String redirect = line.substring(posS, posE);
-							 page.redirect = redirect;
-						 }
-					 } else {
-						 page.workedText += line;						 						 
-					 }			 			 
-				}	 
-			}
 		}
 		
-		page.parseOriginalText();		
+		Page page = new Page();
+		page.workedText = "";
+		if (keyword != null && keyword != "")
+		{
+			// Get page text
+			text = null;
+	    	uri = new HttpGet("http://" + this.mainActivity.getWikipediaLanguageLc() + ".wikipedia.org/w/api.php?format=xml&action=query&titles=" + keyword + "&prop=revisions&rvprop=content");
+	    	// close client request?	    	
+			try {
+				response = client.execute(uri);
+			} catch (ClientProtocolException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
+			if (response != null) {
+				StatusLine status = response.getStatusLine();
+		    	if (status.getStatusCode() != 200) {
+		    		DanyActivity.Logd(DanyActivity.DANY, "HTTP error, invalid server status code: " + response.getStatusLine());  
+		    	} else {
+		    		HttpEntity entity = response.getEntity();
+		    		try {
+						text = EntityUtils.toString(entity);															
+					} catch (ParseException e) {
+						e.printStackTrace();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+		    	}
+			}
+									
+			if (text != null) {
+				
+				Document doc = XmlHelper.xmlfromString(text);
+				NodeList nodes = doc.getElementsByTagName("page");
+				Node pageNode = null;
+				for (int i = 0; i < nodes.getLength(); i++) {
+					pageNode = nodes.item(i).getAttributes().getNamedItem("pageid");
+					// Handle here multiple results (take first or propose)
+					if(pageNode != null) {
+						page.id = pageNode.getNodeValue();
+						 // Only first one for now
+						 break;
+					}								
+				}
+				
+				for (int i = 0; i < nodes.getLength(); i++) {
+					Node titleNode = nodes.item(i).getAttributes().getNamedItem("title");
+					// Handle here multiple results (take first or propose)
+					if(titleNode != null) {
+						String title = titleNode.getNodeValue();
+						if (title != null && title.length() > 0) {
+							page.title = title;
+							page.workedText = title + ". ";
+							 // Only first one for now
+							break;
+						}										 
+					}								
+				}
+				
+				// Use pageNode here to get image only from node with pageid?
+				nodes = doc.getElementsByTagName("rev"); 	
+				if (nodes != null && nodes.getLength() > 0) {
+					for (int i = 0; i < nodes.getLength(); i++) {
+						 String line = nodes.item(i).getTextContent();
+						 if (line.contains("#REDIRECT")) {					 
+							 int posS = line.indexOf("[[");
+							 if (posS > -1) {
+								 posS = posS + 2;
+							 }
+							 
+							 int posE = line.indexOf("]]");
+							 if (posE > -1 && posS > -1) {
+								 String redirect = line.substring(posS, posE);
+								 page.redirect = redirect;
+							 }
+						 } else {
+							 page.workedText += line;						 						 
+						 }			 			 
+					}	 
+				}
+			}
+			
+			page.parseOriginalText();		
+		}
+		
 		return page;
 	}
 	
@@ -122,16 +168,23 @@ public class RetrievePageTask extends AsyncTask<String, Void, Page> {
 		if (result.redirect != null) {
 			this.mainActivity.search(result.redirect);
 		} else {
-			if (result.id != null) {
-				 this.mainActivity.beginSearchImages();
-				 this.mainActivity.getNewRetrieveImages().execute(result.id);
-			 }
-			if (result.title != null) {
-				this.mainActivity.setCurrentTitle(result.title);
+			if (result.workedText != "")
+			{
+				if (result.id != null) {
+					 this.mainActivity.beginSearchImages();
+					 this.mainActivity.getNewRetrieveImages().execute(result.id);
+				 }
+				if (result.title != null) {
+					this.mainActivity.setCurrentTitle(result.title);
+				}
+				
+				this.mainActivity.readText(result);
+				this.mainActivity.showReadImage();
 			}
-			
-			this.mainActivity.readText(result);
-			this.mainActivity.showReadImage();
+			else
+			{
+				
+			}			
 		}						
 		 						
 		super.onPostExecute(result);
