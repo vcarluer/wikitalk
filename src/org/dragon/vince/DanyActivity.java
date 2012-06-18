@@ -58,7 +58,7 @@ import com.google.ads.AdView;
 
 public class DanyActivity extends Activity implements TextToSpeech.OnInitListener, OnUtteranceCompletedListener, ViewFactory  {
 	
-	private static boolean DEBUG = false;
+	private static boolean DEBUG = true;
     private static final String DEFAULT_LANG = "Default";
 
 	private static final String LINK_LABEL = "LinkLabel";
@@ -266,6 +266,8 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
         
         this.mImage.setOnTouchListener(this.gestureListener);
         this.mainLayout.setOnTouchListener(this.gestureListener);
+        this.mImgNext.setOnTouchListener(this.gestureListener);
+        this.mImgPrev.setOnTouchListener(this.gestureListener);
         
         this.mSearchBar = (ProgressBar) findViewById(R.id.searchProgress);
         this.mProgressImage = (ProgressBar) findViewById(R.id.progressImage);
