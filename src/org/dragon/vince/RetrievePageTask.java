@@ -178,8 +178,7 @@ public class RetrievePageTask extends AsyncTask<String, Void, Page> {
 					this.mainActivity.setCurrentTitle(result.title);
 				}
 				
-				this.mainActivity.readText(result);
-				this.mainActivity.showReadImage();
+				this.mainActivity.readText(result);				
 				this.mainActivity.setHasResult(true);
 			}
 			else

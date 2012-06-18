@@ -84,6 +84,7 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 	private int imageCursor;
 	private int imageTargetCursor;
 	private int readCursor;
+	private int targetReadCursor;
 	private int linkCursor;
 	private int linkTargetCursor;
 	private long linkShown;	
@@ -608,7 +609,8 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 	    
     private void initData() {
     	this.currentLink = null;
-    	this.readCursor = 0;
+    	this.readCursor = -1;
+    	this.targetReadCursor = -1;
     	this.imageCursor = -1;
     	this.imageTargetCursor = -1;
     	this.imageRepository = null;
@@ -664,7 +666,6 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
         if (page != null)  {
         	this.page = page;
     		this.initLanguage();
-    		this.readCursor = 0;
     		this.mSeekText.setVisibility(View.VISIBLE);
     		if (this.page.splitSentence != null) {
     			this.mSeekText.setMax(this.page.splitSentence.length);
@@ -673,8 +674,9 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
     		}
     		
     		this.mSeekText.setProgress(0);
-    		
-    		this.readAtPosition();
+    		    		 
+    		this.targetReadCursor = 0;
+    		this.resumeRead();
         }
 	}
 
@@ -1019,7 +1021,9 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 	    
 	    public void resumeRead() {
 	    	this.showReadImage();
-	    	this.readAtPosition();
+	    	this.reading = true;
+	    	this.readCursor--;
+	    	this.step();
 	    }
 	    
 	    public void showReadImage() {
@@ -1030,7 +1034,9 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 		}
 
 		private void readAtPosition() {
-	    	if (this.page != null && this.page.splitSentence != null && this.readCursor < this.page.splitSentence.length) {
+			// todo: last test can remove last links and images...
+			int nextStep = 500;
+			if (this.page != null && this.page.splitSentence != null && this.readCursor < this.page.splitSentence.length) {	    		
 	    		this.mSeekText.setProgress(this.readCursor);
 	    		
 	    		int firstListIdx = 0;
@@ -1109,34 +1115,33 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 	    			}
 	    		}
 	    		
-		    	if (this.page.sentences.containsKey(this.readCursor)) {
-		    		String sentence = this.page.sentences.get(this.readCursor);		    	
-			    	this.reading = true;
-		    		mTts.speak(sentence,
-				            TextToSpeech.QUEUE_ADD,  // Drop allpending entries in the playback queue.
-				            this.hashAudio);
-		    	} else {
-		    		this.readCursor++;		    		
-		    		this.readAtPosition();		    				    	
-		    	}
+	    		if (this.readCursor < this.targetReadCursor)
+	    		{
+	    			this.readCursor = this.targetReadCursor;
+	    			if (this.page.sentences.containsKey(this.readCursor)) {
+			    		String sentence = this.page.sentences.get(this.readCursor);		    	
+				    	this.reading = true;
+			    		mTts.speak(sentence,
+					            TextToSpeech.QUEUE_ADD,  // Drop allpending entries in the playback queue.
+					            this.hashAudio);
+			    	} else {
+			    		this.readNext();
+			    		nextStep = 0;
+			    	}
+	    		}
 	    	}
+	    	
+	    	this.stepNext(nextStep);
 	    }
 	    
 	    public void readNext() {
-	    	this.readCursor++;
-	    	this.readAtPosition();
+	    	this.targetReadCursor++;
 	    }
 
 		public void onUtteranceCompleted(String utteranceId) {
-			if (this.reading) {
-				this.reading = false;
-				this.readNext();
-			}			
+			this.readNext();
 		}
-		
-		
 				
-		
 		public String getWikipediaLanguageLc() {
 			String lg = currentLang.getLanguage().toLowerCase();
 			// Chinese
@@ -1193,7 +1198,6 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
             iView.setLayoutParams(new
                         ImageSwitcher.LayoutParams(
                                     LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT));
-            // iView.setBackgroundColor(0xFF000000);
             return iView;
       }
 
@@ -1213,5 +1217,20 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 			} else {
 				this.noResult.setVisibility(View.VISIBLE);
 			}
+		}
+
+		public void step() {
+			if (this.reading) {
+				this.readAtPosition();				
+			}			
+		}
+		
+		private void stepNext() {
+			this.stepNext(500);
+		}
+		
+		private void stepNext(int stepTime) {
+			StepAsync step = new StepAsync(this);
+			step.execute(stepTime);
 		}
 }
