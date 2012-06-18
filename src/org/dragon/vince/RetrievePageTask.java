@@ -180,10 +180,11 @@ public class RetrievePageTask extends AsyncTask<String, Void, Page> {
 				
 				this.mainActivity.readText(result);
 				this.mainActivity.showReadImage();
+				this.mainActivity.setHasResult(true);
 			}
 			else
 			{
-				
+				this.mainActivity.setHasResult(false);
 			}			
 		}						
 		 						

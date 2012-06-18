@@ -134,6 +134,8 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
     
     private Page page;
     
+    private ImageView noResult;
+    
 	public DanyActivity() {
 		this.hashAudio = new HashMap<String, String>();
 	}
@@ -427,6 +429,9 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 				return true;
 			}			
 		});
+        
+        this.noResult = (ImageView) findViewById(R.id.no_result);
+        this.noResult.setVisibility(View.GONE);
         
         // Must be kept at end of method
         // Get the intent, verify the action and get the query
@@ -1200,5 +1205,13 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 		
 		public Page getPage() {
 			return this.page;
+		}
+		
+		public void setHasResult(boolean hasResult) {
+			if (hasResult) {
+				this.noResult.setVisibility(View.GONE);
+			} else {
+				this.noResult.setVisibility(View.VISIBLE);
+			}
 		}
 }
