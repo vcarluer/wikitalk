@@ -12,14 +12,6 @@
         android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true" />
 	
-	<SeekBar
-	    android:id="@+id/txtSeekBar"
-	    android:layout_width="match_parent"
-	    android:layout_height="wrap_content"
-	    android:layout_alignParentTop="true"
-	    android:layout_centerHorizontal="true"
-	    android:visibility="gone" />
-	
 	<TextView
         android:id="@+id/txtTitle"
         android:layout_width="match_parent"
@@ -29,7 +21,12 @@
         android:layout_centerHorizontal="true"
         android:gravity="center"
         android:textAppearance="?android:attr/textAppearanceLarge" />
-
 	
+	<SeekBar
+	    android:id="@+id/txtSeekBar"
+	    android:layout_width="match_parent"
+	    android:layout_height="wrap_content"
+	    android:layout_below="@id/txtTitle"
+	    android:visibility="gone" />
 
 </RelativeLayout>

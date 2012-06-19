@@ -14,6 +14,7 @@ import android.content.res.Configuration;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -363,7 +364,8 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
         		resetImageCursor = true;
         		resetLinkCursor = true;
         		pauseRead();
-				readCursor = seekBar.getProgress();
+				targetReadCursor = seekBar.getProgress();
+				readCursor = targetReadCursor - 1;
 				resumeRead();
 			}
 			
@@ -702,7 +704,7 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 				this.imageRepository.images.size() > this.imageCursor && this.retrieveImagesTask == null) {
 			ImageInfo ii = this.imageRepository.images.get(this.imageCursor);
 			this.handlerProgressImage.sendMessage(new Message());
-			this.getNewRetrieveImage().execute(ii);			
+			this.getNewRetrieveImage().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, ii);			
 		}
 	}
 	
@@ -785,7 +787,7 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 			this.main_info.setVisibility(View.GONE);
 	        this.main_noInfo.setVisibility(View.VISIBLE);
 
-			this.retrievePageTask.execute(toSearch);
+			this.retrievePageTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, toSearch);
 		}
 	}
 	
@@ -1012,6 +1014,7 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 	    	this.mMediaInfo.setVisibility(View.VISIBLE);
 	    	this.mMediaInfo.setAlpha(0.5f);
 	    	this.reading = false;
+	    	this.readCursor = this.targetReadCursor - 1;
 	    	if (this.mTts.isSpeaking()) {
 	    		this.mTts.stop();
 	    	}
@@ -1021,8 +1024,7 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 	    
 	    public void resumeRead() {
 	    	this.showReadImage();
-	    	this.reading = true;
-	    	this.readCursor--;
+	    	this.reading = true;	    	
 	    	this.step();
 	    }
 	    
@@ -1139,7 +1141,9 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 	    }
 
 		public void onUtteranceCompleted(String utteranceId) {
-			this.readNext();
+			if (this.reading) {
+				this.readNext();
+			}			
 		}
 				
 		public String getWikipediaLanguageLc() {
@@ -1231,6 +1235,6 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 		
 		private void stepNext(int stepTime) {
 			StepAsync step = new StepAsync(this);
-			step.execute(stepTime);
+			step.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, stepTime);
 		}
 }

@@ -40,8 +40,8 @@ public final class R {
         public static final int supported_languages=0x7f070018;
         public static final int supported_languages_layout=0x7f070017;
         public static final int top_header=0x7f070015;
-        public static final int txtSeekBar=0x7f070004;
-        public static final int txtTitle=0x7f070005;
+        public static final int txtSeekBar=0x7f070005;
+        public static final int txtTitle=0x7f070004;
         public static final int wikiImage=0x7f070011;
     }
     public static final class layout {
