@@ -8,4 +8,5 @@
 	<string name="voice_prompt">Ask to Dany</string>	
 	<string name="language">Language</string>
 	<string name="language_not_available">Language is not available</string>
+	<string name="search_geolocate">Geolocation search</string>
 </resources>

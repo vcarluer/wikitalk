@@ -17,7 +17,7 @@ import org.w3c.dom.NodeList;
 import android.net.Uri;
 import android.os.AsyncTask;
 
-public class RetrievePageTask extends AsyncTask<String, Void, Page> {
+public class RetrievePageTask extends AsyncTask<SearchParam, Void, Page> {
 	private DanyActivity mainActivity;
 	
 	public RetrievePageTask(DanyActivity activity) {
@@ -25,60 +25,66 @@ public class RetrievePageTask extends AsyncTask<String, Void, Page> {
 	}
 	
 	@Override	
-	protected Page doInBackground(String... params) {
+	protected Page doInBackground(SearchParam... params) {
 		String text = null;
 		DefaultHttpClient client = new DefaultHttpClient();
     	HttpResponse response = null;
-		String search = Uri.encode(params[0]);
+		SearchParam param = params[0];
+    	String search = Uri.encode(param.searchWord);
 		String keyword = null;
-    	// Open search and take first result, always		
-		HttpGet uri = null;
-		try {
-			uri = new HttpGet("http://" + this.mainActivity.getWikipediaLanguageLc() + ".wikipedia.org/w/api.php?action=opensearch&search=" + search + "&limit=1&namespace=0&format=xml");
-			response = client.execute(uri);
-		} catch (ClientProtocolException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (IllegalStateException e) {
-			e.printStackTrace();
-		}
-    	
-		if (response != null) {
-			StatusLine status = response.getStatusLine();
-	    	if (status.getStatusCode() != 200) {
-	    		DanyActivity.Logd(DanyActivity.DANY, "HTTP error, invalid server status code: " + response.getStatusLine());  
-	    	} else {
-	    		HttpEntity entity = response.getEntity();
-	    		try {
-	    			text = EntityUtils.toString(entity);															
-				} catch (ParseException e) {
-					e.printStackTrace();
-				} catch (IOException e) {
-					e.printStackTrace();
+		if (param.isStrictSearch) {
+			keyword = search;
+		} else {
+			// Open search and take first result, always		
+			HttpGet uri = null;
+			try {
+				uri = new HttpGet("http://" + this.mainActivity.getWikipediaLanguageLc() + ".wikipedia.org/w/api.php?action=opensearch&search=" + search + "&limit=1&namespace=0&format=xml");
+				response = client.execute(uri);
+			} catch (ClientProtocolException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			} catch (IllegalStateException e) {
+				e.printStackTrace();
+			}
+	    	
+			if (response != null) {
+				StatusLine status = response.getStatusLine();
+		    	if (status.getStatusCode() != 200) {
+		    		DanyActivity.Logd(DanyActivity.DANY, "HTTP error, invalid server status code: " + response.getStatusLine());  
+		    	} else {
+		    		HttpEntity entity = response.getEntity();
+		    		try {
+		    			text = EntityUtils.toString(entity);															
+					} catch (ParseException e) {
+						e.printStackTrace();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+		    	}
+			}
+			
+			if (text != null) {			
+				Document doc = XmlHelper.xmlfromString(text);
+				NodeList nodes = doc.getElementsByTagName("Text");			
+				for (int i = 0; i < nodes.getLength(); i++) {
+					keyword = Uri.encode(nodes.item(i).getTextContent());
+					// Handle here multiple results (take first or propose)
+					if(keyword != null) {					
+						 // Only first one for now
+						 break;
+					}								
 				}
-	    	}
-		}
-		
-		if (text != null) {			
-			Document doc = XmlHelper.xmlfromString(text);
-			NodeList nodes = doc.getElementsByTagName("Text");			
-			for (int i = 0; i < nodes.getLength(); i++) {
-				keyword = Uri.encode(nodes.item(i).getTextContent());
-				// Handle here multiple results (take first or propose)
-				if(keyword != null) {					
-					 // Only first one for now
-					 break;
-				}								
 			}
 		}
-		
+
 		Page page = new Page();
 		page.workedText = "";
 		if (keyword != null && keyword != "")
 		{
 			// Get page text
-			text = null;	    	
+			text = null;	   
+			HttpGet uri = null;
 	    	// close client request?	    	
 			try {
 				uri = new HttpGet("http://" + this.mainActivity.getWikipediaLanguageLc() + ".wikipedia.org/w/api.php?format=xml&action=query&titles=" + keyword + "&prop=revisions&rvprop=content");

@@ -4,7 +4,12 @@
           android:icon="@android:drawable/ic_btn_speak_now"
           android:title="@string/search_voice"
           android:showAsAction="ifRoom" />
-    
+    <item android:id="@+id/menu_geosearch"
+          android:icon="@android:drawable/ic_menu_mylocation"
+          android:title="@string/search_geolocate"
+          android:showAsAction="ifRoom">
+	    
+   	</item>
     <item android:id="@+id/menu_lang"
           android:icon="@android:drawable/ic_menu_preferences"
           android:title="@string/language"

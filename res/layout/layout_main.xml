@@ -19,6 +19,16 @@
             android:layout_centerInParent="true"
             android:contentDescription="@string/search_voice"
             android:src="@android:drawable/ic_btn_speak_now" />
+        <ImageView
+            android:id="@+id/main_search_geolocate"
+            android:layout_width="75dip"
+            android:layout_height="75dip"
+            android:layout_below="@id/main_search"
+            android:layout_centerInParent="true"
+            android:layout_marginTop="37dip"
+            android:contentDescription="@string/search_geolocate"
+            android:src="@android:drawable/ic_menu_mylocation" />
+        
                	
        	<LinearLayout 
        	    android:layout_width="match_parent"

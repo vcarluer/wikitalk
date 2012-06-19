@@ -137,14 +137,16 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
     private RetrievePageTask retrievePageTask;
     private RetrieveImagesTask retrieveImagesTask;
     private RetrieveImageTask retrieveImageTask;
+    private RetrievePoiTask retrievePoiTask;
     
     private Page page;
     
     private ImageView noResult;
     
  // Acquire a reference to the system Location Manager
-//    private LocationManager locationManager;
-//    private Location location;
+    private LocationManager locationManager;
+    private Location location;
+    private ImageView searchGeolocation;
 
 	public DanyActivity() {
 		this.hashAudio = new HashMap<String, String>();
@@ -444,9 +446,22 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
         this.noResult = (ImageView) findViewById(R.id.no_result);
         this.noResult.setVisibility(View.GONE);
         
-//        this.locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+        this.locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
 //        // LocationProvider locationProvider = this.locationManager.getProvider(LocationManager.GPS_PROVIDER);
-//        this.location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+        this.location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+        this.searchGeolocation = (ImageView) findViewById(R.id.main_search_geolocate);
+        this.searchGeolocation.setOnClickListener(new OnClickListener() {
+			public void onClick(View v) {
+				geolocation();
+			}
+		});
+        
+        this.searchGeolocation.setOnLongClickListener(new OnLongClickListener() {
+			public boolean onLongClick(View v) {
+				startVoiceRecognitionActivity();
+				return true;
+			}
+		});
         
         // Must be kept at end of method
         // Get the intent, verify the action and get the query
@@ -548,6 +563,9 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
            case R.id.menu_speak:
         	   startVoiceRecognitionActivity();
         	   return true;
+           case R.id.menu_geosearch:
+        	   geolocation();
+        	   return true;
            default:
                return super.onOptionsItemSelected(item);
        }
@@ -564,6 +582,7 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
      */
     private void startVoiceRecognitionActivity() {
     	pauseRead();
+    	this.cancelGeolocation();
     	
     	Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
 
@@ -783,15 +802,40 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 		}			
 	}
 	
-	public void search(String toSearch) {
-		if (toSearch != null) {
+	public void geolocation() {
+		if (this.location != null) {
 			this.cancelAllAsync();
-			
-			this.adView.loadAd(this.getRequest(toSearch));
 			this.pauseRead();
 			this.initData();
 			this.initWidgets();
-			this.mTitle.setText(toSearch);
+			this.mTitle.setText("Geolocation search");
+			this.setCurrentLang();
+			
+			this.mSearchBar.setVisibility(View.VISIBLE);
+			this.main_info.setVisibility(View.GONE);
+	        this.main_noInfo.setVisibility(View.VISIBLE);
+			
+			this.retrievePoiTask = new RetrievePoiTask(this);
+			this.retrievePoiTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, this.location);
+		}
+	}
+	
+	public void search(String toSearch) {
+		SearchParam search = new SearchParam();
+		search.searchWord = toSearch;
+		search.isStrictSearch = false;
+		this.search(search);
+	}
+	
+	public void search(SearchParam toSearch) {
+		if (toSearch != null) {
+			this.cancelAllAsync();
+			
+			this.adView.loadAd(this.getRequest(toSearch.searchWord));
+			this.pauseRead();
+			this.initData();
+			this.initWidgets();
+			this.mTitle.setText(toSearch.searchWord);
 			this.setCurrentLang();
 			
 			this.retrievePageTask = new RetrievePageTask(this);			
@@ -804,6 +848,8 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 	}
 	
 	private void cancelAllAsync() {
+		this.cancelGeolocation();
+		
 		if (this.retrievePageTask != null) {
 			this.retrievePageTask.cancel(true);
 		}
@@ -811,6 +857,12 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 		this.cancelImagesAsync();
 	}
 	
+	private void cancelGeolocation() {
+		if (this.retrievePoiTask != null) {
+			this.retrievePoiTask.cancel(true);
+		}
+	}
+
 	public void cancelImagesAsync() {
 		if (this.retrieveImagesTask != null) {
 			this.retrieveImagesTask.cancel(true);
@@ -1299,5 +1351,9 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 		private void stepNext(int stepTime) {
 			StepAsync step = new StepAsync(this);
 			step.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, stepTime);
+		}
+		
+		public Locale getLanguage() {
+			return this.currentLang;
 		}
 }
