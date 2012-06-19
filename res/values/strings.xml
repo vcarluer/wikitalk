@@ -9,4 +9,6 @@
 	<string name="language">Language</string>
 	<string name="language_not_available">Language is not available</string>
 	<string name="search_geolocate">Geolocation search</string>
+	<string name="enable_network">Enable at least network for localization</string>
+	<string name="enable_gps">Enable GPS for better localization</string>
 </resources>

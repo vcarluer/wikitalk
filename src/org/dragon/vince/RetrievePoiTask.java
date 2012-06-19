@@ -78,11 +78,14 @@ public class RetrievePoiTask extends AsyncTask<Location, Void, String> {
 
 	@Override
 	protected void onPostExecute(String result) {
+		this.mainActivity.stopSearchBar();
 		if (result != null && result != "") {
 			SearchParam search = new SearchParam();
 			search.searchWord = result;
 			search.isStrictSearch = true;
 			this.mainActivity.search(search);
+		} else {
+			this.mainActivity.setHasResult(false);
 		}
 	}
 }

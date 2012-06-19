@@ -22,6 +22,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.provider.Settings;
 import android.speech.RecognizerIntent;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.TextToSpeech.OnUtteranceCompletedListener;
@@ -76,6 +77,8 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 	private static final int VOICE_RECOGNITION_REQUEST_CODE = 1234;
 	private static final String SGS_VCR = "703A6FB6180B55E158105A7D9481857A";
 	private static final String AdMobPublisherId = "a14fdb0fed6cda1";
+	
+	private static final int ACTION_LOCATION_CODE = 1;
     
 	static final String DANY = "dany";
     private TextToSpeech mTts;    
@@ -447,8 +450,7 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
         this.noResult.setVisibility(View.GONE);
         
         this.locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-//        // LocationProvider locationProvider = this.locationManager.getProvider(LocationManager.GPS_PROVIDER);
-        this.location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+        this.refreshLocation(false);
         this.searchGeolocation = (ImageView) findViewById(R.id.main_search_geolocate);
         this.searchGeolocation.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
@@ -486,7 +488,28 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
         }
     }
     
-    private AdRequest getRequest(String keyWord) {
+    private boolean refreshLocation(boolean showOption) {
+    	if(!this.locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER ))
+    	{
+    		if(!this.locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+    			if (showOption) {
+    				Intent myIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+            	    startActivityForResult(myIntent, ACTION_LOCATION_CODE);
+            	    return true;
+    			} else {
+    				this.location = null;
+    			}
+    		} else {
+    			this.location = this.locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+    		}
+    	} else {
+    		this.location = this.locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+    	}
+    	
+    	return false;
+	}
+
+	private AdRequest getRequest(String keyWord) {
     	AdRequest adRequest = new AdRequest();
     	if (keyWord != null && keyWord.length() > 0) {
     		adRequest.addKeyword(keyWord);
@@ -803,7 +826,20 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 	}
 	
 	public void geolocation() {
-		if (this.location != null) {
+		this.geolocation(true);
+	}
+	
+	public void geolocation(boolean showOption) {
+		boolean optionShown = this.refreshLocation(showOption);
+		if(!this.locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+			Toast.makeText(this, getString(R.string.enable_network), Toast.LENGTH_LONG).show();
+		}
+		
+		if(!this.locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER )) {
+			Toast.makeText(this, getString(R.string.enable_gps), Toast.LENGTH_LONG).show();
+		}
+
+		if (!optionShown && this.location != null) {
 			this.cancelAllAsync();
 			this.pauseRead();
 			this.initData();
@@ -938,6 +974,10 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 	            	String match = capitalizeFirstLetters(matches.get(0));
 	            	this.search(match);
 	            }
+	        }
+	        
+	        if (requestCode == ACTION_LOCATION_CODE) {
+	        	this.geolocation(false);
 	        }
 
 	        super.onActivityResult(requestCode, resultCode, data);

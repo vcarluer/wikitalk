@@ -58,6 +58,8 @@ public final class R {
     }
     public static final class string {
         public static final int app_name=0x7f050000;
+        public static final int enable_gps=0x7f05000a;
+        public static final int enable_network=0x7f050009;
         public static final int imgleft=0x7f050001;
         public static final int imgright=0x7f050002;
         public static final int language=0x7f050006;
