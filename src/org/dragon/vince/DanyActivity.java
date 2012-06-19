@@ -13,6 +13,10 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.location.LocationProvider;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -64,7 +68,7 @@ import com.google.ads.AdView;
 
 public class DanyActivity extends Activity implements TextToSpeech.OnInitListener, OnUtteranceCompletedListener, ViewFactory  {
 	
-	private static boolean DEBUG = true;
+	private static boolean DEBUG = false;
     private static final String DEFAULT_LANG = "Default";
 
 	private static final String LINK_LABEL = "LinkLabel";
@@ -138,6 +142,10 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
     
     private ImageView noResult;
     
+ // Acquire a reference to the system Location Manager
+//    private LocationManager locationManager;
+//    private Location location;
+
 	public DanyActivity() {
 		this.hashAudio = new HashMap<String, String>();
 	}
@@ -435,6 +443,10 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
         
         this.noResult = (ImageView) findViewById(R.id.no_result);
         this.noResult.setVisibility(View.GONE);
+        
+//        this.locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+//        // LocationProvider locationProvider = this.locationManager.getProvider(LocationManager.GPS_PROVIDER);
+//        this.location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
         
         // Must be kept at end of method
         // Get the intent, verify the action and get the query
