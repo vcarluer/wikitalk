@@ -556,6 +556,7 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
    private void updateLangList() {
 	   if (this.submenuLang != null && this.submenuLang.size() == 0 && this.langsAvailable != null) {
     	   for(int i = 0; i < this.langsAvailable.length; i++) {
+    		   
     		   submenuLang.add(GROUP_LANG, i, Menu.NONE, this.langsAvailable[i].getDisplayName());
     	   }
        }

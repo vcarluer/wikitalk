@@ -11,26 +11,8 @@
         android:layout_height="match_parent"
         android:layout_centerInParent="true"
         >
-
-        <ImageView
-            android:id="@+id/main_search"
-            android:layout_width="75dip"
-            android:layout_height="75dip"
-            android:layout_centerInParent="true"
-            android:contentDescription="@string/search_voice"
-            android:src="@android:drawable/ic_btn_speak_now" />
-        <ImageView
-            android:id="@+id/main_search_geolocate"
-            android:layout_width="75dip"
-            android:layout_height="75dip"
-            android:layout_below="@id/main_search"
-            android:layout_centerInParent="true"
-            android:layout_marginTop="37dip"
-            android:contentDescription="@string/search_geolocate"
-            android:src="@android:drawable/ic_menu_mylocation" />
-        
-               	
-       	<LinearLayout 
+		
+         <LinearLayout 
        	    android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
@@ -57,8 +39,45 @@
        	    android:layout_centerHorizontal="true"
        	    android:layout_below="@id/main_search_layout">
        	</ImageView>"
+         
+        <LinearLayout android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_below="@id/main_search_layout">
+        <RelativeLayout 
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_weight="1"
+            android:layout_gravity="center">             
+	        <ImageView
+	            android:id="@+id/main_search"
+	            android:layout_width="75dip"
+	            android:layout_height="75dip"
+	            android:layout_centerInParent="true"
+	            android:contentDescription="@string/search_voice"
+	            android:src="@android:drawable/ic_btn_speak_now" />
+       	</RelativeLayout>
+       	<View 
+		      android:id="@+id/View01"
+		      android:layout_width="2dip"
+		      android:layout_height="fill_parent"
+		      android:background="#333333"
+		/>
+       	<RelativeLayout 
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_weight="1">
+	        <ImageView
+	            android:id="@+id/main_search_geolocate"
+	            android:layout_width="75dip"
+	            android:layout_height="75dip"
+	            android:layout_centerInParent="true"
+	            android:contentDescription="@string/search_geolocate"
+	            android:src="@android:drawable/ic_menu_mylocation" />
+	    </RelativeLayout>
+        </LinearLayout>
         
-
     </RelativeLayout>
     <RelativeLayout
         android:id="@+id/main_info"
