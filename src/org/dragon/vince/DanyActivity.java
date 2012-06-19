@@ -68,7 +68,7 @@ import com.google.ads.AdView;
 
 public class DanyActivity extends Activity implements TextToSpeech.OnInitListener, OnUtteranceCompletedListener, ViewFactory  {
 	
-	private static boolean DEBUG = false;
+	private static boolean DEBUG = true;
     private static final String DEFAULT_LANG = "Default";
 
 	private static final String LINK_LABEL = "LinkLabel";
@@ -1084,13 +1084,16 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 			int nextStep = 500;
 			if (this.page != null && this.page.splitSentence != null && this.readCursor < this.page.splitSentence.length) {	    		
 	    		this.mSeekText.setProgress(this.readCursor);
-	    			    		
+	    		
+	    		int firstListIdx = 0;
 	    		if (this.page.linksIndexed != null && this.page.linksIndexed.size() > 0) {
 	    			if (this.page.linksIndexed.containsKey(this.readCursor)) {
 	    				List<Link> currentLinks = this.page.linksIndexed.get(this.readCursor);
 		    			if (currentLinks.size() > 0) {
 		    				Link l = currentLinks.get(currentLinks.size() - 1);
-		    				this.linkTargetCursor = l.idx;		    				
+		    				this.linkTargetCursor = l.idx;
+		    				l = currentLinks.get(0);
+		    				firstListIdx = l.idx;
 		    			}
 	    			}
 	    		}
@@ -1101,7 +1104,7 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 	    				List<Link> targetLinks = this.page.linksIndexed.get(this.targetReadCursor);
 		    			if (targetLinks.size() > 0) {
 		    				Link l = targetLinks.get(0);
-		    				int firstListIdx = l.idx;		    						    			
+		    				firstListIdx = l.idx;		    						    			
 		    				if (this.linkCursor != firstListIdx) {
 		    					this.linkCursor = firstListIdx;
 		    					needSend = true;
@@ -1110,8 +1113,13 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 		    				this.resetLinkCursor = false;
 		    			}	    					    			
 	    			} else {	    				
-	    				if (this.linkCursor < this.linkTargetCursor && System.currentTimeMillis() - this.linkShown > 5000) {
-	    					this.linkCursor++;
+	    				if (this.linkCursor < this.linkTargetCursor && System.currentTimeMillis() - this.linkShown > 3000) {
+	    					if (this.linkTargetCursor - this.linkCursor > 10) {
+	    						this.linkCursor = firstListIdx;
+	    					} else {
+	    						this.linkCursor++;
+	    					}
+	    					
 	    	    			needSend = true;
 	    				}
 	    			}	    				    			
@@ -1134,6 +1142,8 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 	    				if (iis.size() > 0) {
 	    					ImageInfo ii = iis.get(iis.size() - 1);
 		    				this.imageTargetCursor = ii.idx;
+		    				ii = iis.get(0);
+		    				firstListIdx = ii.idx;
 	    				}	    						    			
 		    		}
 	    		}
@@ -1145,7 +1155,7 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 	    				List<ImageInfo> iis = this.imageRepository.imagesIndexed.get(this.targetReadCursor);
 	    				if (iis.size() > 0) {
 	    					ImageInfo ii = iis.get(0);
-		    				int firstListIdx = ii.idx;		    					    					 
+		    				firstListIdx = ii.idx;		    					    					 
 		    				if (this.imageCursor != firstListIdx) {
 		    					this.imageCursor = firstListIdx;
 		    					needShow = true;
@@ -1155,7 +1165,12 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 	    				}	    					    				
 	    			} else {
 	    				if ((this.imageCursor < this.imageTargetCursor && System.currentTimeMillis() - this.imageShown > 5000) || this.imageCursor == -1) {
-			    			this.imageCursor++;
+			    			if (this.imageTargetCursor - this.imageCursor > 10) {
+			    				this.imageCursor = firstListIdx;
+			    			} else {
+			    				this.imageCursor++;
+			    			}
+	    					
 			    			needShow = true;
 			    		}
 	    			}
