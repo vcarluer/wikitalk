@@ -1,5 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
+   <item android:id="@+id/item_langs" 
+      android:title="@string/language"
+      android:icon="@android:drawable/ic_menu_mapmode">
+ 
+	     <menu android:id="@+id/menu_langs">
+			
+	     </menu>
+	</item>
+
     <item android:id="@+id/menu_speak"
           android:icon="@android:drawable/ic_btn_speak_now"
           android:title="@string/search_voice"
@@ -7,12 +16,6 @@
     <item android:id="@+id/menu_geosearch"
           android:icon="@android:drawable/ic_menu_mylocation"
           android:title="@string/search_geolocate"
-          android:showAsAction="ifRoom">
-	    
-   	</item>
-    <item android:id="@+id/menu_lang"
-          android:icon="@android:drawable/ic_menu_preferences"
-          android:title="@string/language"
           android:showAsAction="ifRoom">
 	    
    	</item>

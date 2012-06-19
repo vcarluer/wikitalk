@@ -14,9 +14,7 @@ import android.content.res.Configuration;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
-import android.location.LocationListener;
 import android.location.LocationManager;
-import android.location.LocationProvider;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -27,15 +25,13 @@ import android.speech.RecognizerIntent;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.TextToSpeech.OnUtteranceCompletedListener;
 import android.util.Log;
-import android.view.ContextMenu;
-import android.view.ContextMenu.ContextMenuInfo;
 import android.view.GestureDetector;
 import android.view.KeyEvent;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
+import android.view.SubMenu;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
@@ -45,9 +41,6 @@ import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemSelectedListener;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageSwitcher;
@@ -55,11 +48,8 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.SearchView;
-import android.widget.SearchView.OnQueryTextListener;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
-import android.widget.Spinner;
-import android.widget.SpinnerAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ViewSwitcher.ViewFactory;
@@ -79,6 +69,8 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 	private static final String AdMobPublisherId = "a14fdb0fed6cda1";
 	
 	private static final int ACTION_LOCATION_CODE = 1;
+	
+	private static int GROUP_LANG = 1;
     
 	static final String DANY = "dany";
     private TextToSpeech mTts;    
@@ -87,7 +79,6 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
     private Button mImgPrev;
     private TextView mTitle;
     private Handler mHandler;
-    private Spinner mSupportedLanguageView;
     private ImageRepository imageRepository;
 	private int imageCursor;
 	private int imageTargetCursor;
@@ -111,7 +102,7 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 	
 	private TextView mImgInfo;	
 	private long imageShown;
-	private String langPref;
+	private Locale langPref;
 	
 	private GestureDetector gestureDetector;
     private View.OnTouchListener gestureListener;
@@ -546,32 +537,14 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
         }
    };
    
+   private SubMenu submenuLang;
    @Override
    public boolean onCreateOptionsMenu(Menu menu) {
        MenuInflater inflater = getMenuInflater();
        inflater.inflate(R.menu.menu_main, menu);
+       this.submenuLang = menu.findItem(R.id.item_langs).getSubMenu();
+       this.updateLangList();       
        
-       LayoutInflater mInflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE); 
-       View sl = mInflater.inflate(R.layout.menu_spinner, null);       
-       mSupportedLanguageView = (Spinner) sl.findViewById(R.id.supported_languages);
-       this.mSupportedLanguageView.setOnItemSelectedListener(new OnItemSelectedListener() {
-
-		public void onItemSelected(AdapterView<?> arg0, View arg1, int arg2,
-				long arg3) {
-			setCurrentLang();
-		}
-
-		public void onNothingSelected(AdapterView<?> arg0) {
-			// TODO Auto-generated method stub
-			
-		}
-    	   
-       });
-              
-       menu.findItem(R.id.menu_lang).setActionView(mSupportedLanguageView);
-       this.setSpinnerAdapter();
-//       mSupportedLanguageView = (Spinner) item.g
-
        // Get the SearchView and set the searchable configuration
        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
        SearchView searchView = (SearchView) menu.findItem(R.id.menu_search).getActionView();
@@ -580,18 +553,32 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
        return true;
    }
    
-   @Override
-   public boolean onOptionsItemSelected(MenuItem item) {
-       switch (item.getItemId()) {
-           case R.id.menu_speak:
-        	   startVoiceRecognitionActivity();
-        	   return true;
-           case R.id.menu_geosearch:
-        	   geolocation();
-        	   return true;
-           default:
-               return super.onOptionsItemSelected(item);
+   private void updateLangList() {
+	   if (this.submenuLang.size() == 0 && this.langsAvailable != null) {
+    	   for(int i = 0; i < this.langsAvailable.length; i++) {
+    		   submenuLang.add(GROUP_LANG, i, Menu.NONE, this.langsAvailable[i].getDisplayName());
+    	   }
        }
+   }
+
+@Override
+   public boolean onOptionsItemSelected(MenuItem item) {
+		if (item.getGroupId() == GROUP_LANG) {
+			this.langIdx = item.getItemId();
+			this.setCurrentLang();
+			return true;
+		} else {
+			switch (item.getItemId()) {
+	           case R.id.menu_speak:
+	        	   startVoiceRecognitionActivity();
+	        	   return true;
+	           case R.id.menu_geosearch:
+	        	   geolocation();
+	        	   return true;
+	           default:
+	               return super.onOptionsItemSelected(item);
+	       }
+		}       
    }
   
   final Handler handlerProgressImage = new Handler() {
@@ -626,8 +613,9 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
         // Specify the recognition language. This parameter has to be specified only if the
         // recognition has to be done in a specific language and not the default one (i.e., the
         // system locale). Most of the applications do not have to set this parameter.
-        if (mSupportedLanguageView != null && !getLocaleString((Locale)mSupportedLanguageView.getSelectedItem()).toUpperCase().equals(DEFAULT_LANG.toUpperCase())) {
-            String extraLang = getLocaleString((Locale) mSupportedLanguageView.getSelectedItem());
+        this.setCurrentLang();
+        if (currentLang != Locale.US) {
+            String extraLang = getLocaleString((Locale) currentLang);
         	intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE,
                     extraLang);
         	// other props
@@ -926,15 +914,17 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 	}
 
 	private void setCurrentLang() {
-		if (mSupportedLanguageView != null && mSupportedLanguageView.getSelectedItem() != null) {
-			currentLang = Locale.US;
-			String selected = getLocaleString((Locale) mSupportedLanguageView.getSelectedItem());
-			if (!selected.toUpperCase().equals(DEFAULT_LANG.toUpperCase())) {
-				currentLang = this.createLocale(selected);
-			}
-		} else {
-			if (currentLang == null) {
+		if (currentLang == null) {
+			if (langPref != null) {
 				currentLang = Locale.US;
+			} else {
+				currentLang = langPref;
+			}			
+		}		
+		
+		if (this.langIdx > -1 && this.langsAvailable != null) {			
+			if (this.langIdx < this.langsAvailable.length) {
+				currentLang = this.langsAvailable[this.langIdx];
 			}
 		}
 	}
@@ -989,20 +979,7 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 	                new SupportedLanguageBroadcastReceiver(), null, Activity.RESULT_OK, null, null);
 	    }
 
-	    private void updateSupportedLanguages(List<String> languages) {
-	        // We add "Default" at the beginning of the list to simulate default language.
-	        languages.add(0, DEFAULT_LANG);
-	        this.spinnerIdx = 0;
-	        String toSearch = null;
-	        
-	        if (currentLang != null) {
-	        	toSearch = currentLang.toString();
-	        } else {
-	        	if (this.langPref != null && this.langPref.length() > 0) {
-		        	toSearch = this.langPref;
-		        }
-	        }
-	        
+	    private void updateSupportedLanguages(List<String> languages) {	        	        
 	        // Remove Latin
 	        int rmI = -1;
 	        int j = 0;
@@ -1017,52 +994,24 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 	        	languages.remove(rmI);
 	        }
 	        
-	        java.util.Collections.sort(languages);
-	        
-	        if (toSearch != null) {
-	        	int i = 0;
-	        	for(String lang : languages) {
-	        		if (langPref.toUpperCase().equals(lang.toUpperCase())) {
-	        			this.spinnerIdx = i;
-	        			break;
-	        		}
-	        		
-	        		i++;
-	        	}
-	        }
-	        
-	        Locale[] displayLangs = new Locale[languages.size()];
+	        langsAvailable = new Locale[languages.size()];
 	        for(int k = 0; k < languages.size(); k++) {
 	        	Locale locale = null;
-	        	if (k == 0) {
-	        		locale = new Locale(languages.get(k));
-	        	} else {
-	        		locale = createLocale(languages.get(k));
-	        	}
-	        		
+	        	locale = createLocale(languages.get(k));	
 	        	if (locale != null) 
 	        	{
-	        		displayLangs[k] = locale;
+	        		langsAvailable[k] = locale;
 	        	}	        	
 	        }
 	        
-	        this.spinnerAdapter = new MySpinnerAdapter(this,
-	                android.R.layout.simple_spinner_item, displayLangs); // languages.toArray(new String[languages.size()])
-	        this.setSpinnerAdapter();	        	        
+	        this.updateLangList();
 	    }
 	    
-	    private void setSpinnerAdapter() {
-	    	if (mSupportedLanguageView != null && this.spinnerAdapter != null) {
-	        	mSupportedLanguageView.setAdapter(this.spinnerAdapter);
-		        mSupportedLanguageView.setSelection(this.spinnerIdx);
-	        }
-		}
-
-		private SpinnerAdapter spinnerAdapter;
-	    private int spinnerIdx;
+	    private Locale[] langsAvailable;
+	    private int langIdx = -1;
 
 	    private void updateLanguagePreference(String language) {
-	        this.langPref = language;
+	        this.langPref = createLocale(language);
 	    }
 
 	    /**
@@ -1384,16 +1333,12 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 			}			
 		}
 		
-		private void stepNext() {
-			this.stepNext(500);
-		}
-		
 		private void stepNext(int stepTime) {
 			StepAsync step = new StepAsync(this);
 			step.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, stepTime);
 		}
 		
 		public Locale getLanguage() {
-			return this.currentLang;
+			return currentLang;
 		}
 }

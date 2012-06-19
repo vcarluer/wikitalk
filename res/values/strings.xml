@@ -11,4 +11,6 @@
 	<string name="search_geolocate">Geolocation search</string>
 	<string name="enable_network">Enable at least network for localization</string>
 	<string name="enable_gps">Enable GPS for better localization</string>
+	<string name="red">red</string>
+	<string name="blue">blue</string>
 </resources>
