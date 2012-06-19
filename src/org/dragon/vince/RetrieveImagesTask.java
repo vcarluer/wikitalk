@@ -29,16 +29,18 @@ public class RetrieveImagesTask extends AsyncTask<String, Void, ImageRepository>
 		List<ImageInfo> images = new ArrayList<ImageInfo>();
 		String line = null;
     	String pageId = params[0];
-    	// imlimit=500 for regular users
-    	HttpGet uri = new HttpGet("http://" + this.mainActivity.getWikipediaLanguageLc() + ".wikipedia.org/w/api.php?format=xml&action=query&pageids=" + pageId + "&prop=images&imlimit=max");
+    	// imlimit=500 for regular users    	
     	// close client request?
     	DefaultHttpClient client = new DefaultHttpClient();
     	HttpResponse response = null;
 		try {
+			HttpGet uri = new HttpGet("http://" + this.mainActivity.getWikipediaLanguageLc() + ".wikipedia.org/w/api.php?format=xml&action=query&pageids=" + pageId + "&prop=images&imlimit=max");
 			response = client.execute(uri);
 		} catch (ClientProtocolException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (IllegalStateException e) {
 			e.printStackTrace();
 		}
 		

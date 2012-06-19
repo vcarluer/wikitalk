@@ -58,13 +58,16 @@ public class RetrieveImageTask extends AsyncTask<ImageInfo, Void, ImageInfo> {
 								
 				int imgFormat = width; // Always width?
 				String imageUrl = "http://" + this.mainActivity.getWikipediaLanguageLc() + ".wikipedia.org/w/api.php?action=query&titles=Image:" + title +"&prop=imageinfo&iiprop=url&iiurlwidth=" + String.valueOf(imgFormat) + "&format=xml";
-				uri = new HttpGet(imageUrl);			
-		    	response = null;
-				try {
+				response = null;
+				try
+				{
+					uri = new HttpGet(imageUrl);						    	
 					response = client.execute(uri);
 				} catch (ClientProtocolException e) {
 					e.printStackTrace();
 				} catch (IOException e) {
+					e.printStackTrace();
+				} catch (IllegalStateException e) {
 					e.printStackTrace();
 				}
 							
@@ -96,14 +99,16 @@ public class RetrieveImageTask extends AsyncTask<ImageInfo, Void, ImageInfo> {
 	    	}			
 			
 			String realUrl = imageInfo.thumbUrl;
-			if (realUrl != null) {
-				uri = new HttpGet(new URI(realUrl));		    	
+			if (realUrl != null) {						    
 		    	response = null;
 				try {
+					uri = new HttpGet(new URI(realUrl));
 					response = client.execute(uri);
 				} catch (ClientProtocolException e) {
 					e.printStackTrace();
 				} catch (IOException e) {
+					e.printStackTrace();
+				} catch (IllegalStateException e) {
 					e.printStackTrace();
 				}
 				
@@ -112,15 +117,17 @@ public class RetrieveImageTask extends AsyncTask<ImageInfo, Void, ImageInfo> {
 					StatusLine status = response.getStatusLine();
 					if (status.getStatusCode() == 302 || status.getStatusCode() == 301) {
 						realUrl = response.getFirstHeader("location").getValue();
-						
-						uri = new HttpGet(new URI(realUrl));
+												
 				    	// close client request?			    	
 				    	response = null;
 						try {
+							uri = new HttpGet(new URI(realUrl));
 							response = client.execute(uri);
 						} catch (ClientProtocolException e) {
 							e.printStackTrace();
 						} catch (IOException e) {
+							e.printStackTrace();
+						} catch (IllegalStateException e) {
 							e.printStackTrace();
 						}
 						

@@ -1,12 +1,12 @@
-[af-ZA,
- ar-EG,
- ar-IL,
- ar-JO,
- ar-KW,
- ar-LB,
- ar-QA,
- ar-SA,
- ar-AE,
+[af-ZA, Afrikaans - South Africa
+ ar-EG, Arabic - Egypt
+ ar-IL, Arabic Israël
+ ar-JO, Arabic - Jordan
+ ar-KW, Arabic - Kowait 
+ ar-LB, Arabic - Lebanon 
+ ar-QA, Arabic - Qatar 
+ ar-SA, Arabic - Saudi Arabia
+ ar-AE, Arabic - United Arab Emirates
  cmn-Hans-CN, Mandarin Chinese, Simplified script, as used in China
  cmn-Hans-HK, Hong Kong Chinese in simplified script
  cmn-Hant-TW, chinois mandarin de Taïwan, écrit en sinogrammes traditionnels.

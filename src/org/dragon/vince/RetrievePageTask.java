@@ -31,13 +31,16 @@ public class RetrievePageTask extends AsyncTask<String, Void, Page> {
     	HttpResponse response = null;
 		String search = Uri.encode(params[0]);
 		String keyword = null;
-    	// Open search and take first result, always
-		HttpGet uri = new HttpGet("http://" + this.mainActivity.getWikipediaLanguageLc() + ".wikipedia.org/w/api.php?action=opensearch&search=" + search + "&limit=1&namespace=0&format=xml");
+    	// Open search and take first result, always		
+		HttpGet uri = null;
 		try {
+			uri = new HttpGet("http://" + this.mainActivity.getWikipediaLanguageLc() + ".wikipedia.org/w/api.php?action=opensearch&search=" + search + "&limit=1&namespace=0&format=xml");
 			response = client.execute(uri);
 		} catch (ClientProtocolException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (IllegalStateException e) {
 			e.printStackTrace();
 		}
     	
@@ -75,14 +78,16 @@ public class RetrievePageTask extends AsyncTask<String, Void, Page> {
 		if (keyword != null && keyword != "")
 		{
 			// Get page text
-			text = null;
-	    	uri = new HttpGet("http://" + this.mainActivity.getWikipediaLanguageLc() + ".wikipedia.org/w/api.php?format=xml&action=query&titles=" + keyword + "&prop=revisions&rvprop=content");
+			text = null;	    	
 	    	// close client request?	    	
 			try {
+				uri = new HttpGet("http://" + this.mainActivity.getWikipediaLanguageLc() + ".wikipedia.org/w/api.php?format=xml&action=query&titles=" + keyword + "&prop=revisions&rvprop=content");
 				response = client.execute(uri);
 			} catch (ClientProtocolException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
+				e.printStackTrace();
+			} catch (IllegalStateException e) {
 				e.printStackTrace();
 			}
 			

@@ -572,8 +572,8 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
         // Specify the recognition language. This parameter has to be specified only if the
         // recognition has to be done in a specific language and not the default one (i.e., the
         // system locale). Most of the applications do not have to set this parameter.
-        if (mSupportedLanguageView != null && !mSupportedLanguageView.getSelectedItem().toString().equals(DEFAULT_LANG)) {
-            String extraLang = mSupportedLanguageView.getSelectedItem().toString();
+        if (mSupportedLanguageView != null && !getLocaleString((Locale)mSupportedLanguageView.getSelectedItem()).toUpperCase().equals(DEFAULT_LANG.toUpperCase())) {
+            String extraLang = getLocaleString((Locale) mSupportedLanguageView.getSelectedItem());
         	intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE,
                     extraLang);
         	// other props
@@ -828,20 +828,38 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 	private void setCurrentLang() {
 		if (mSupportedLanguageView != null && mSupportedLanguageView.getSelectedItem() != null) {
 			currentLang = Locale.US;
-			String selected = mSupportedLanguageView.getSelectedItem().toString();
-			if (!selected.equals(DEFAULT_LANG)) {
-				int pos = selected.indexOf("-");
-				if (pos > -1) {
-					String lang = selected.substring(0, pos);
-					String coun = selected.substring(pos + 1);
-					currentLang = new Locale(lang, coun);
-				}				
+			String selected = getLocaleString((Locale) mSupportedLanguageView.getSelectedItem());
+			if (!selected.toUpperCase().equals(DEFAULT_LANG.toUpperCase())) {
+				currentLang = this.createLocale(selected);
 			}
 		} else {
 			if (currentLang == null) {
 				currentLang = Locale.US;
 			}
 		}
+	}
+	
+	public static String getLocaleString(Locale locale)
+	{
+		if (locale == null) return null;
+		
+		if (locale.getCountry() != null && locale.getCountry() != "") {
+			return locale.getLanguage() + "-" + locale.getCountry();
+		} else {
+			return locale.getLanguage();
+		}		
+	}
+	
+	private Locale createLocale(String str) {
+		Locale locale = null;
+		int pos = str.indexOf("-");
+		if (pos > -1) {
+			String lang = str.substring(0, pos);
+			String coun = str.substring(pos + 1);
+			locale = new Locale(lang, coun);
+		}
+		
+		return locale;
 	}
 
 	// voice reco
@@ -909,9 +927,23 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 	        	}
 	        }
 	        
-	        this.spinnerAdapter = new ArrayAdapter<CharSequence>(this,
-	                android.R.layout.simple_spinner_item, languages.toArray(
-	                        new String[languages.size()]));
+	        Locale[] displayLangs = new Locale[languages.size()];
+	        for(int k = 0; k < languages.size(); k++) {
+	        	Locale locale = null;
+	        	if (k == 0) {
+	        		locale = new Locale(languages.get(k));
+	        	} else {
+	        		locale = createLocale(languages.get(k));
+	        	}
+	        		
+	        	if (locale != null) 
+	        	{
+	        		displayLangs[k] = locale;
+	        	}	        	
+	        }
+	        
+	        this.spinnerAdapter = new MySpinnerAdapter(this,
+	                android.R.layout.simple_spinner_item, displayLangs); // languages.toArray(new String[languages.size()])
 	        this.setSpinnerAdapter();	        	        
 	    }
 	    
@@ -1040,35 +1072,37 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 			int nextStep = 500;
 			if (this.page != null && this.page.splitSentence != null && this.readCursor < this.page.splitSentence.length) {	    		
 	    		this.mSeekText.setProgress(this.readCursor);
-	    		
-	    		int firstListIdx = 0;
+	    			    		
 	    		if (this.page.linksIndexed != null && this.page.linksIndexed.size() > 0) {
 	    			if (this.page.linksIndexed.containsKey(this.readCursor)) {
 	    				List<Link> currentLinks = this.page.linksIndexed.get(this.readCursor);
 		    			if (currentLinks.size() > 0) {
 		    				Link l = currentLinks.get(currentLinks.size() - 1);
-		    				this.linkTargetCursor = l.idx;
-		    				l = currentLinks.get(0);
-		    				firstListIdx = l.idx;
+		    				this.linkTargetCursor = l.idx;		    				
 		    			}
 	    			}
 	    		}
 	    			    		
 	    		if (this.page.links != null) {
 	    			boolean needSend = false;
-	    			if (this.resetLinkCursor && this.page.linksIndexed.containsKey(this.readCursor)) {
-	    				if (this.linkCursor != firstListIdx) {
-	    					this.linkCursor = firstListIdx;
-	    					needSend = true;
-	    				}
-	    				
-	    				this.resetLinkCursor = false;
-	    			} else {
+	    			if (this.resetLinkCursor && this.page.linksIndexed.containsKey(this.targetReadCursor)) {
+	    				List<Link> targetLinks = this.page.linksIndexed.get(this.targetReadCursor);
+		    			if (targetLinks.size() > 0) {
+		    				Link l = targetLinks.get(0);
+		    				int firstListIdx = l.idx;		    						    			
+		    				if (this.linkCursor != firstListIdx) {
+		    					this.linkCursor = firstListIdx;
+		    					needSend = true;
+		    				}
+		    				
+		    				this.resetLinkCursor = false;
+		    			}	    					    			
+	    			} else {	    				
 	    				if (this.linkCursor < this.linkTargetCursor && System.currentTimeMillis() - this.linkShown > 5000) {
 	    					this.linkCursor++;
 	    	    			needSend = true;
 	    				}
-	    			}
+	    			}	    				    			
 	    			
 	    			if (needSend && this.page != null && this.page.links.size() > this.linkCursor) {
 	    				this.linkShown = System.currentTimeMillis();
@@ -1080,8 +1114,7 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
         				this.handler.sendMessage(message);
 	    			}
 	    		}	
-	    		
-	    		firstListIdx = 0;
+	    			    		
 	    		if (this.imageRepository != null && this.imageRepository.imagesIndexed != null && this.imageRepository.imagesIndexed.size() > 0) {
 	    			if (this.imageRepository.imagesIndexed.containsKey(this.readCursor)) {
 		    			// only first one
@@ -1089,8 +1122,6 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 	    				if (iis.size() > 0) {
 	    					ImageInfo ii = iis.get(iis.size() - 1);
 		    				this.imageTargetCursor = ii.idx;
-		    				ii = iis.get(0);
-		    				firstListIdx = ii.idx;
 	    				}	    						    			
 		    		}
 	    		}
@@ -1098,20 +1129,25 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 	    		if (this.retrieveImageTask == null && this.imageRepository != null && 
 	    				this.imageRepository.images != null && this.imageRepository.images.size() > 0) {
 	    			boolean needShow = false;
-	    			if (this.resetImageCursor && this.imageRepository.imagesIndexed.containsKey(this.readCursor)) {
-	    				if (this.imageCursor != firstListIdx) {
-	    					this.imageCursor = firstListIdx;
-	    					needShow = true;
-	    				}
-	    				
-	    				this.resetImageCursor = false;
+	    			if (this.resetImageCursor && this.imageRepository.imagesIndexed.containsKey(this.targetReadCursor)) {
+	    				List<ImageInfo> iis = this.imageRepository.imagesIndexed.get(this.targetReadCursor);
+	    				if (iis.size() > 0) {
+	    					ImageInfo ii = iis.get(0);
+		    				int firstListIdx = ii.idx;		    					    					 
+		    				if (this.imageCursor != firstListIdx) {
+		    					this.imageCursor = firstListIdx;
+		    					needShow = true;
+		    				}
+		    				
+		    				this.resetImageCursor = false;
+	    				}	    					    				
 	    			} else {
 	    				if ((this.imageCursor < this.imageTargetCursor && System.currentTimeMillis() - this.imageShown > 5000) || this.imageCursor == -1) {
 			    			this.imageCursor++;
 			    			needShow = true;
 			    		}
 	    			}
-	    			
+	    				    			
 	    			if (needShow) {
 	    				this.showImage();
 	    			}
