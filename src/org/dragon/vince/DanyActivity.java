@@ -1,6 +1,7 @@
 package org.dragon.vince;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -164,6 +165,7 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
         	mTts = new TextToSpeech(this,
                     this  //TextToSpeech.OnInitListener
                     );
+			this.setLangPref(mTts.getLanguage());
         }
 
         this.mImage = (ImageSwitcher) findViewById(R.id.wikiImage);                
@@ -570,10 +572,16 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
    }
    
    private void updateLangList() {
-	   if (this.submenuLang != null && this.submenuLang.size() == 0 && this.langsAvailable != null) {
-    	   for(int i = 0; i < this.langsAvailable.length; i++) {
-    		   
-    		   submenuLang.add(GROUP_LANG, i, Menu.NONE, this.langsAvailable[i].getDisplayName());
+	   if (this.submenuLang != null && this.submenuLang.size() == 0 && this.filteredLanguages != null) {
+		   List<String> labels = new ArrayList<String>();
+		   for(Locale locale : this.filteredLanguages) {
+			   labels.add(locale.getDisplayName());
+		   }
+		   
+		   Collections.sort(labels);
+		   
+    	   for(int i = 0; i < labels.size(); i++) {
+    		   submenuLang.add(GROUP_LANG, i, Menu.NONE, labels.get(i));
     	   }
        }
    }
@@ -929,7 +937,13 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 		this.retrieveImageTask = new RetrieveImageTask(this);
 		return this.retrieveImageTask;
 	}
-
+	
+	private void setLangPref(Locale lang) {
+		if (langPref == null && lang != null) {
+			langPref = lang;
+		}
+	}
+	
 	private void setCurrentLang() {
 		if (currentLang == null) {
 			if (langPref == null) {
@@ -939,9 +953,9 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 			}			
 		}		
 		
-		if (this.langIdx > -1 && this.langsAvailable != null) {			
-			if (this.langIdx < this.langsAvailable.length) {
-				currentLang = this.langsAvailable[this.langIdx];
+		if (this.langIdx > -1 && this.filteredLanguages != null) {			
+			if (this.langIdx < this.filteredLanguages.size()) {
+				currentLang = this.filteredLanguages.get(this.langIdx);
 			}
 		}
 	}
@@ -997,38 +1011,29 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 	    }
 
 	    private void updateSupportedLanguages(List<String> languages) {	        	        
-	        // Remove Latin
-	        int rmI = -1;
-	        int j = 0;
-	        for(String lang : languages) {
-	        	if (lang.toUpperCase().equals("LATIN")) {
-	        		rmI = j;	        				
-	        		break;
-	        	}	        	
-	        	j++;
+	        this.setCurrentLang();
+			// Remove unsupported tts languages	        
+			filteredLanguages = new ArrayList<Locale>();
+	        for(String lang : languages) {				
+	        	if (this.mTts != null) {
+					Locale locale = this.createLocale(lang);
+					if (locale != null) {
+						int langSupported = this.mTts.isLanguageAvailable(locale);
+						if (langSupported != TextToSpeech.LANG_MISSING_DATA && langSupported != TextToSpeech.LANG_NOT_SUPPORTED) {
+							filteredLanguages.add(locale);
+						}
+					}					
+				}
 	        }
-	        if (rmI > -1) {
-	        	languages.remove(rmI);
-	        }
-	        
-	        langsAvailable = new Locale[languages.size()];
-	        for(int k = 0; k < languages.size(); k++) {
-	        	Locale locale = null;
-	        	locale = createLocale(languages.get(k));	
-	        	if (locale != null) 
-	        	{
-	        		langsAvailable[k] = locale;
-	        	}	        	
-	        }
-	        
+
 	        this.updateLangList();
 	    }
 	    
-	    private Locale[] langsAvailable;
+	    private List<Locale> filteredLanguages;
 	    private int langIdx = -1;
 
 	    private void updateLanguagePreference(String language) {
-	         this.langPref = createLocale(language);
+	         this.setLangPref(createLocale(language));
 	    }
 
 	    /**
