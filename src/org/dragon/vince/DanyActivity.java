@@ -61,7 +61,7 @@ import com.google.ads.AdView;
 
 public class DanyActivity extends Activity implements TextToSpeech.OnInitListener, OnUtteranceCompletedListener, ViewFactory  {
 	
-	private static boolean DEBUG = true;
+	private static boolean DEBUG = false;
 
 	private static final String LINK_LABEL = "LinkLabel";
 
