@@ -448,6 +448,7 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
         locationListener = new LocationListener() {
             public void onLocationChanged(Location location) {
               newLocation(location);
+              tryStopLocation();
             }
 
             public void onStatusChanged(String provider, int status, Bundle extras) {}
