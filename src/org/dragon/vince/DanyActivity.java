@@ -1435,6 +1435,8 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
             }
 		}
 		
+		private int tryBestLocation;
+		
 		private boolean requestLocationGpsStarted;
 		private boolean requestLocationNetwordStarted;
 		private long requestLocationTime;
@@ -1463,6 +1465,8 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 			if (this.isRequestLocationStarted()) {
 				this.locationManager.removeUpdates(this.locationListener);
 				this.requestLocationTime = System.currentTimeMillis();
+				this.requestLocationGpsStarted = false;
+				this.requestLocationNetwordStarted = false;
 			}
 		}
 		
