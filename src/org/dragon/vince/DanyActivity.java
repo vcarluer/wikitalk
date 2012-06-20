@@ -712,7 +712,7 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
     		this.initLanguage();
     		this.mSeekText.setVisibility(View.VISIBLE);
     		if (this.page.splitSentence != null) {
-    			this.mSeekText.setMax(this.page.splitSentence.length);
+    			this.mSeekText.setMax(this.page.splitSentence.length - 1);
     		} else {
     			this.mSeekText.setMax(0);
     		}
