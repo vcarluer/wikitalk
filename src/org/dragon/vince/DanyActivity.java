@@ -14,6 +14,7 @@ import android.content.res.Configuration;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
+import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -59,7 +60,7 @@ import com.google.ads.AdView;
 
 public class DanyActivity extends Activity implements TextToSpeech.OnInitListener, OnUtteranceCompletedListener, ViewFactory  {
 	
-	private static boolean DEBUG = false;
+	private static boolean DEBUG = true;
 
 	private static final String LINK_LABEL = "LinkLabel";
 
@@ -138,8 +139,9 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
     
  // Acquire a reference to the system Location Manager
     private LocationManager locationManager;
-    private Location location;
+    private Location userLocation;
     private ImageView searchGeolocation;
+    private LocationListener locationListener;
 
 	public DanyActivity() {
 		this.hashAudio = new HashMap<String, String>();
@@ -440,6 +442,19 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
         this.noResult.setVisibility(View.GONE);
         
         this.locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+     // Define a listener that responds to location updates
+        locationListener = new LocationListener() {
+            public void onLocationChanged(Location location) {
+              newLocation(location);
+            }
+
+            public void onStatusChanged(String provider, int status, Bundle extras) {}
+
+            public void onProviderEnabled(String provider) {}
+
+            public void onProviderDisabled(String provider) {}
+          };
+        
         this.refreshLocation(false);
         this.searchGeolocation = (ImageView) findViewById(R.id.main_search_geolocate);
         this.searchGeolocation.setOnClickListener(new OnClickListener() {
@@ -479,6 +494,8 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
     }
     
     private boolean refreshLocation(boolean showOption) {
+    	this.startRequestLocation();
+    	
     	if(!this.locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER ))
     	{
     		if(!this.locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
@@ -487,13 +504,13 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
             	    startActivityForResult(myIntent, ACTION_LOCATION_CODE);
             	    return true;
     			} else {
-    				this.location = null;
+    				this.userLocation = null;
     			}
     		} else {
-    			this.location = this.locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+    			this.newLocation(this.locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER));
     		}
     	} else {
-    		this.location = this.locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+    		this.newLocation(this.locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER));
     	}
     	
     	return false;
@@ -827,7 +844,7 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 			Toast.makeText(this, getString(R.string.enable_gps), Toast.LENGTH_LONG).show();
 		}
 
-		if (!optionShown && this.location != null) {
+		if (!optionShown && this.userLocation != null) {
 			this.cancelAllAsync();
 			this.pauseRead();
 			this.initData();
@@ -840,7 +857,7 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 	        this.main_noInfo.setVisibility(View.VISIBLE);
 			
 			this.retrievePoiTask = new RetrievePoiTask(this);
-			this.retrievePoiTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, this.location);
+			this.retrievePoiTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, this.userLocation);
 		}
 	}
 	
@@ -1291,12 +1308,14 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 		
 		@Override
 		protected void onPause() {
+			this.stopRequestLocation();
 			this.pauseRead();
 			super.onPause();
 		}
 
 		@Override
 		protected void onResume() {
+			this.startRequestLocation();
 			super.onResume();
 		}
 
@@ -1330,7 +1349,10 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 		public void step() {
 			if (this.reading) {
 				this.readAtPosition();				
-			}			
+			}
+			
+			this.tryStopLocation();
+			this.tryStartLocation();			
 		}
 		
 		private void stepNext(int stepTime) {
@@ -1344,5 +1366,121 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 			}
 			
 			return currentLang;
+		}
+		
+		private static final int TWO_MINUTES = 1000 * 60 * 2;
+
+		/** Determines whether one Location reading is better than the current Location fix
+		  * @param location  The new Location that you want to evaluate
+		  * @param currentBestLocation  The current Location fix, to which you want to compare the new one
+		  */
+		protected boolean isBetterLocation(Location location, Location currentBestLocation) {
+		    if (currentBestLocation == null) {
+		        // A new location is always better than no location
+		        return true;
+		    }
+
+		    // Check whether the new location fix is newer or older
+		    long timeDelta = location.getTime() - currentBestLocation.getTime();
+		    boolean isSignificantlyNewer = timeDelta > TWO_MINUTES;
+		    boolean isSignificantlyOlder = timeDelta < -TWO_MINUTES;
+		    boolean isNewer = timeDelta > 0;
+
+		    // If it's been more than two minutes since the current location, use the new location
+		    // because the user has likely moved
+		    if (isSignificantlyNewer) {
+		        return true;
+		    // If the new location is more than two minutes older, it must be worse
+		    } else if (isSignificantlyOlder) {
+		        return false;
+		    }
+
+		    // Check whether the new location fix is more or less accurate
+		    int accuracyDelta = (int) (location.getAccuracy() - currentBestLocation.getAccuracy());
+		    boolean isLessAccurate = accuracyDelta > 0;
+		    boolean isMoreAccurate = accuracyDelta < 0;
+		    boolean isSignificantlyLessAccurate = accuracyDelta > 200;
+
+		    // Check if the old and new location are from the same provider
+		    boolean isFromSameProvider = isSameProvider(location.getProvider(),
+		            currentBestLocation.getProvider());
+
+		    // Determine location quality using a combination of timeliness and accuracy
+		    if (isMoreAccurate) {
+		        return true;
+		    } else if (isNewer && !isLessAccurate) {
+		        return true;
+		    } else if (isNewer && !isSignificantlyLessAccurate && isFromSameProvider) {
+		        return true;
+		    }
+		    return false;
+		}
+
+		/** Checks whether two providers are the same */
+		private boolean isSameProvider(String provider1, String provider2) {
+		    if (provider1 == null) {
+		      return provider2 == null;
+		    }
+		    return provider1.equals(provider2);
+		}
+		
+		private void newLocation(Location newLocation) {
+			if (isBetterLocation(newLocation, userLocation)) {
+          	  userLocation = newLocation;
+            }
+		}
+		
+		private boolean requestLocationGpsStarted;
+		private boolean requestLocationNetwordStarted;
+		private long requestLocationTime;
+		private void startRequestLocation()	 {			
+			if (!this.requestLocationGpsStarted) {
+				if(this.locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER )) {
+		    		this.locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this.locationListener);
+		    		this.requestLocationGpsStarted = true;		    		
+		    	}				
+			}			
+			
+	    	if (!this.requestLocationNetwordStarted) {
+	    		if(this.locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+		    		// Register the listener with the Location Manager to receive location updates
+		    		this.locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, this.locationListener);
+		    		this.requestLocationNetwordStarted = true;
+		    	}
+	    	}	    	
+	    	
+	    	if (this.isRequestLocationStarted()) {
+	    		this.requestLocationTime = System.currentTimeMillis();
+	    	}
+		}
+		
+		private void stopRequestLocation() {
+			if (this.isRequestLocationStarted()) {
+				this.locationManager.removeUpdates(this.locationListener);
+				this.requestLocationTime = System.currentTimeMillis();
+			}
+		}
+		
+		private boolean isRequestLocationStarted() {
+			return this.requestLocationGpsStarted || this.requestLocationNetwordStarted;
+		}
+		
+		private static long requestTimerOn = 60000; // Request location on for 1 minute
+		private static long requestTimerOff = 5 * 60000; // Request location off for 5 minutes
+		
+		private void tryStartLocation() {
+			if (!this.isRequestLocationStarted()) {
+				if (System.currentTimeMillis() - this.requestLocationTime > requestTimerOff) {
+					this.startRequestLocation();
+				}
+			}			
+		}
+		
+		private void tryStopLocation() {
+			if (this.isRequestLocationStarted()) {
+				if (System.currentTimeMillis() - this.requestLocationTime > requestTimerOn) {
+					this.stopRequestLocation();
+				}
+			}
 		}
 }
