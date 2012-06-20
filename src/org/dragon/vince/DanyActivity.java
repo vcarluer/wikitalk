@@ -1140,7 +1140,12 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 		private void readAtPosition() {
 			// todo: last test can remove last links and images...
 			int nextStep = 500;
-			if (this.page != null && this.page.splitSentence != null && this.readCursor < this.page.splitSentence.length) {	    		
+			if (this.page != null && this.page.splitSentence != null && this.readCursor < this.page.splitSentence.length) {
+				// Start request 7 sentences before end
+				if (this.page.splitSentence.length - this.readCursor < 7) {
+					this.startRequestLocation();
+				}
+				
 	    		this.mSeekText.setProgress(this.readCursor);
 	    		
 	    		int firstListIdx = 0;
