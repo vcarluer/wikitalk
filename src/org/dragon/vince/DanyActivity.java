@@ -59,8 +59,7 @@ import com.google.ads.AdView;
 
 public class DanyActivity extends Activity implements TextToSpeech.OnInitListener, OnUtteranceCompletedListener, ViewFactory  {
 	
-	private static boolean DEBUG = true;
-    private static final String DEFAULT_LANG = "Default";
+	private static boolean DEBUG = false;
 
 	private static final String LINK_LABEL = "LinkLabel";
 
@@ -916,7 +915,7 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 
 	private void setCurrentLang() {
 		if (currentLang == null) {
-			if (langPref != null) {
+			if (langPref == null) {
 				currentLang = Locale.US;
 			} else {
 				currentLang = langPref;
@@ -1012,7 +1011,7 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 	    private int langIdx = -1;
 
 	    private void updateLanguagePreference(String language) {
-	        this.langPref = createLocale(language);
+	         this.langPref = createLocale(language);
 	    }
 
 	    /**

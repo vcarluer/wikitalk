@@ -16,6 +16,7 @@ import org.w3c.dom.NodeList;
 import android.location.Location;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.util.Log;
 
 public class RetrievePoiTask extends AsyncTask<Location, Void, String> {
 	private DanyActivity mainActivity;
@@ -41,6 +42,20 @@ public class RetrievePoiTask extends AsyncTask<Location, Void, String> {
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (IllegalStateException e) {
+			e.printStackTrace();
+		} catch (NullPointerException e) {
+			if (location == null) {
+				DanyActivity.Loge(DanyActivity.DANY, "Location is null");
+			} else {
+				DanyActivity.Loge(DanyActivity.DANY, "location: " + location.toString());
+			}
+			
+			if (this.mainActivity.getLanguage() == null) {
+				DanyActivity.Loge(DanyActivity.DANY, "Language is null");
+			} else {
+				DanyActivity.Loge(DanyActivity.DANY, "Language: " + this.mainActivity.getLanguage().getLanguage().toString());
+			}
+			
 			e.printStackTrace();
 		}
     	
