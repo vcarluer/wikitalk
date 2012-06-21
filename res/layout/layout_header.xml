@@ -27,5 +27,14 @@
 	    android:layout_height="wrap_content"
 	    android:layout_below="@id/txtTitle"
 	    android:visibility="gone" />
+	<ImageView 
+	    android:id="@+id/imgChangeInfo"
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+	    android:layout_alignParentRight="true"
+	    android:visibility="gone"
+	    android:src="@android:drawable/ic_menu_sort_by_size">
+	    
+	</ImageView>
 
 </RelativeLayout>

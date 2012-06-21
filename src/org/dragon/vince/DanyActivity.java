@@ -18,6 +18,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
+import android.opengl.Visibility;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -43,10 +44,12 @@ import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageSwitcher;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.SearchView;
@@ -145,7 +148,12 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
     private LocationListener locationListener;
     
     private List<String> poiList;
-
+    private RelativeLayout layoutInfoList;
+    private ListView infoListView;
+    private ImageView changeInfoView;
+    private boolean showInfoList;
+    private boolean mainInfoVisible;
+    
 	public DanyActivity() {
 		this.hashAudio = new HashMap<String, String>();		
 	}
@@ -363,8 +371,8 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 			}
 		});
         
-        this.main_info.setVisibility(View.GONE);
-        this.main_noInfo.setVisibility(View.VISIBLE);        
+        this.mainInfoVisible = false;
+        this.showInfoList = false;
         
         this.mSeekText = (SeekBar) findViewById(R.id.txtSeekBar);
         this.mSeekText.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
@@ -475,6 +483,28 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 			}
 		});
         
+        View.OnLongClickListener longListener = new OnLongClickListener() {
+			public boolean onLongClick(View v) {
+				startVoiceRecognitionActivity();
+				return true;
+			}
+		};
+		
+        this.layoutInfoList = (RelativeLayout) findViewById(R.id.main_info_list);
+        this.layoutInfoList.setOnLongClickListener(longListener);
+        this.layoutInfoList.setVisibility(View.GONE);
+        this.infoListView = (ListView) findViewById(R.id.info_list);
+        this.infoListView.setOnLongClickListener(longListener);
+        this.changeInfoView = (ImageView) findViewById(R.id.imgChangeInfo);
+        this.changeInfoView.setOnLongClickListener(longListener);
+        this.changeInfoView.setOnClickListener(new OnClickListener() {			
+			public void onClick(View v) {
+				changeInfo();
+			}
+		});
+        
+        
+        this.handleInfoListState();
         // Must be kept at end of method
         // Get the intent, verify the action and get the query
         Intent intent = getIntent();
@@ -695,6 +725,8 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
     	this.retrievePageTask = null;
     	this.page = null;
     	this.poiList = null;
+    	this.showInfoList = false;
+    	this.mainInfoVisible = false;
     }
 	
 	private void initWidgets() {		
@@ -708,6 +740,12 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 		this.mImgNext.setVisibility(View.GONE);
 		this.mSeekText.setVisibility(View.GONE);
 		this.mMediaInfo.setVisibility(View.GONE);
+		this.layoutInfoList.setVisibility(View.GONE);
+		this.mSearchBar.setVisibility(View.VISIBLE);
+		this.main_info.setVisibility(View.GONE);
+        this.main_noInfo.setVisibility(View.VISIBLE);
+        this.layoutInfoList.setVisibility(View.GONE);
+        this.changeInfoView.setVisibility(View.GONE);
 	}
 	
 	public static void Logd(String tag, String msg) {
@@ -734,8 +772,8 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 	}
 	
 	public void readText(Page page) {
-		this.main_info.setVisibility(View.VISIBLE);
-        this.main_noInfo.setVisibility(View.GONE);
+		this.mainInfoVisible = true;
+		this.handleInfoListState();
         if (page != null)  {
         	this.page = page;
     		this.initLanguage();
@@ -864,10 +902,6 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 			this.mTitle.setText("Geolocation search");
 			this.setCurrentLang();
 			
-			this.mSearchBar.setVisibility(View.VISIBLE);
-			this.main_info.setVisibility(View.GONE);
-	        this.main_noInfo.setVisibility(View.VISIBLE);
-			
 			this.retrievePoiTask = new RetrievePoiTask(this);
 			this.retrievePoiTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, this.userLocation);
 		}
@@ -892,9 +926,7 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 			this.setCurrentLang();
 			
 			this.retrievePageTask = new RetrievePageTask(this);			
-			this.mSearchBar.setVisibility(View.VISIBLE);
-			this.main_info.setVisibility(View.GONE);
-	        this.main_noInfo.setVisibility(View.VISIBLE);
+			
 
 			this.retrievePageTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, toSearch);
 		}
@@ -1502,7 +1534,42 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 			}
 		}
 
-		public void setPois(List<String> result) {
+		public void setPois(List<String> result) {			
 			this.poiList = result;
+			this.setInfoList(result);			
+		}
+		
+		public void setInfoList(List<String> result) {
+			this.infoListView.setAdapter(new ArrayAdapter<String>(this, R.layout.list_item, this.poiList));
+			if (result != null && result.size() > 0) {							
+				this.changeInfoView.setVisibility(View.VISIBLE);
+			}
+		}
+		
+		public void changeInfo() {
+			this.showInfoList = !this.showInfoList;
+			this.handleInfoListState();
+		}	
+		
+		private void handleInfoListState() {
+			if (this.showInfoList) {
+				this.layoutInfoList.setVisibility(View.VISIBLE);
+				this.main_noInfo.setVisibility(View.GONE);
+				this.main_info.setVisibility(View.GONE);
+			} else {
+				this.layoutInfoList.setVisibility(View.GONE);			
+				if (this.mainInfoVisible) {
+					this.main_info.setVisibility(View.VISIBLE);
+					this.main_noInfo.setVisibility(View.GONE);
+				} else {
+					this.main_info.setVisibility(View.GONE);
+					this.main_noInfo.setVisibility(View.VISIBLE);
+				}
+			}
+		}
+		
+		public void showInfo() {
+			this.showInfoList = true;
+			this.handleInfoListState();
 		}
 }
