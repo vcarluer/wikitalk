@@ -143,9 +143,11 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
     private Location userLocation;
     private ImageView searchGeolocation;
     private LocationListener locationListener;
+    
+    private List<String> poiList;
 
 	public DanyActivity() {
-		this.hashAudio = new HashMap<String, String>();
+		this.hashAudio = new HashMap<String, String>();		
 	}
 	
 	/** Called when the activity is first created. */
@@ -692,6 +694,7 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
     	this.retrieveImageTask = null;
     	this.retrievePageTask = null;
     	this.page = null;
+    	this.poiList = null;
     }
 	
 	private void initWidgets() {		
@@ -1497,5 +1500,9 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 					this.stopRequestLocation();
 				}
 			}
+		}
+
+		public void setPois(List<String> result) {
+			this.poiList = result;
 		}
 }

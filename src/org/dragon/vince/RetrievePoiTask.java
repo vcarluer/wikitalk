@@ -1,6 +1,8 @@
 package org.dragon.vince;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -18,7 +20,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
 
-public class RetrievePoiTask extends AsyncTask<Location, Void, String> {
+public class RetrievePoiTask extends AsyncTask<Location, Void, List<String>> {
 	private DanyActivity mainActivity;
 	
 	public RetrievePoiTask(DanyActivity activity) {
@@ -26,12 +28,12 @@ public class RetrievePoiTask extends AsyncTask<Location, Void, String> {
 	}
 	
 	@Override
-	protected String doInBackground(Location... params) {
+	protected List<String> doInBackground(Location... params) {
 		String text = null;
 		DefaultHttpClient client = new DefaultHttpClient();
     	HttpResponse response = null;
 		Location location = params[0];
-		String keyword = null;
+		List<String> keywords = new ArrayList<String>();
     	// Open search and take first result, always		
 		HttpGet uri = null;
 		try {
@@ -79,26 +81,26 @@ public class RetrievePoiTask extends AsyncTask<Location, Void, String> {
 			Document doc = XmlHelper.xmlfromString(text);
 			NodeList nodes = doc.getElementsByTagName("title");			
 			for (int i = 0; i < nodes.getLength(); i++) {
-				keyword = nodes.item(i).getTextContent();
-				// Handle here multiple results (take first or propose)
+				String keyword = nodes.item(i).getTextContent();
 				if(keyword != null) {					
-					 // Only first one for now
-					 break;
+					 keywords.add(keyword);
 				}								
 			}
 		}
 		
-		return keyword;
+		return keywords;
 	}
 
 	@Override
-	protected void onPostExecute(String result) {
+	protected void onPostExecute(List<String> result) {
 		this.mainActivity.stopSearchBar();
-		if (result != null && result != "") {
+		if (result != null && result.size() > 0) {
+			String keyword = result.get(0);
 			SearchParam search = new SearchParam();
-			search.searchWord = result;
+			search.searchWord = keyword;
 			search.isStrictSearch = true;
 			this.mainActivity.search(search);
+			this.mainActivity.setPois(result);
 		} else {
 			this.mainActivity.setHasResult(false);
 		}
