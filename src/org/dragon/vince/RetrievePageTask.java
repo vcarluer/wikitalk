@@ -1,6 +1,7 @@
 package org.dragon.vince;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -189,6 +190,10 @@ public class RetrievePageTask extends AsyncTask<SearchParam, Void, Page> {
 					this.mainActivity.setCurrentTitle(result.title);
 				}
 				
+				if (result.sortedLinks != null && result.sortedLinks.size() > 0) {
+					this.mainActivity.setArticleLinks(result.sortedLinks);
+				}
+				
 				this.mainActivity.readText(result);				
 				this.mainActivity.setHasResult(true);
 			}
@@ -199,5 +204,5 @@ public class RetrievePageTask extends AsyncTask<SearchParam, Void, Page> {
 		}						
 		 						
 		super.onPostExecute(result);
-	}
+	}	
 }

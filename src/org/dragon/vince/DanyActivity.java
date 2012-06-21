@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import android.app.Activity;
 import android.app.SearchManager;
@@ -51,6 +52,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageSwitcher;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
@@ -66,7 +68,7 @@ import com.google.ads.AdView;
 
 public class DanyActivity extends Activity implements TextToSpeech.OnInitListener, OnUtteranceCompletedListener, ViewFactory  {
 	
-	private static boolean DEBUG = false;
+	private static boolean DEBUG = true;
 
 	private static final String LINK_LABEL = "LinkLabel";
 
@@ -77,6 +79,8 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 	private static final int ACTION_LOCATION_CODE = 1;
 	
 	private static int GROUP_LANG = 1;
+	private static int maxLinksInfo = 20;
+	private static int maxLinksInfoGeo = 10;
     
 	static final String DANY = "dany";
     private TextToSpeech mTts;    
@@ -155,9 +159,14 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
     private ImageView changeInfoView;
     private boolean showInfoList;
     private boolean mainInfoVisible;
+	
+	private List<String> infoList;	
+	
+	private LinearLayout bottomLayout;
     
 	public DanyActivity() {
-		this.hashAudio = new HashMap<String, String>();		
+		this.hashAudio = new HashMap<String, String>();
+		this.infoList = new ArrayList<String>();
 	}
 	
 	/** Called when the activity is first created. */
@@ -496,7 +505,7 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
         this.layoutInfoList.setOnLongClickListener(longListener);
         this.layoutInfoList.setVisibility(View.GONE);
         this.infoListView = (ListView) findViewById(R.id.info_list);
-        this.infoListView.setOnLongClickListener(longListener);
+        this.infoListView.setOnLongClickListener(longListener); // does not work... Add for item
         this.infoListView.setOnItemClickListener(new OnItemClickListener() {
 			public void onItemClick(AdapterView<?> parent, View view, int position,
 					long id) {
@@ -511,6 +520,8 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 			}
 		});
         
+        this.bottomLayout = (LinearLayout) findViewById(R.id.bottom_footer);
+        this.bottomLayout.setOnLongClickListener(longListener);
         
         this.handleInfoListState();
         // Must be kept at end of method
@@ -730,6 +741,7 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
     	this.poiList = null;
     	this.showInfoList = false;
     	this.mainInfoVisible = false;
+		this.infoList.clear();
     }
 	
 	private void initWidgets() {		
@@ -1025,7 +1037,8 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 	// voice reco
 	 @Override
 	    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-	        if (requestCode == VOICE_RECOGNITION_REQUEST_CODE && resultCode == RESULT_OK) {
+		 super.onActivityResult(requestCode, resultCode, data);   
+		 if (requestCode == VOICE_RECOGNITION_REQUEST_CODE && resultCode == RESULT_OK) {
 	            // Fill the list view with the strings the recognizer thought it could have heard
 	            ArrayList<String> matches = data.getStringArrayListExtra(
 	                    RecognizerIntent.EXTRA_RESULTS);
@@ -1039,8 +1052,6 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 	        if (requestCode == ACTION_LOCATION_CODE) {
 	        	this.geolocation(false);
 	        }
-
-	        super.onActivityResult(requestCode, resultCode, data);
 	    }
 
 	    private void refreshVoiceSettings() {
@@ -1233,6 +1244,8 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 		    			}	    				    			
 		    			
 		    			if (needSend && this.page != null && this.page.links.size() > this.linkCursor) {
+		    				this.mLinkImage.setVisibility(View.VISIBLE);
+		    				this.mLinkInfo.setVisibility(View.VISIBLE);
 		    				this.linkShown = System.currentTimeMillis();
 	    	    			this.currentLink = this.page.links.get(this.linkCursor);
 	    	    			Bundle bundle = new Bundle();
@@ -1302,12 +1315,14 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 				    		nextStep = 0;
 				    	}
 		    		}
+					
+					this.stepNext(nextStep);
 		    	} else {
-		    		
+		    		this.mLinkImage.setVisibility(View.GONE);
+    				this.mLinkInfo.setVisibility(View.GONE);
+		    		this.showInfo();
 		    	}
-			}
-	    	
-	    	this.stepNext(nextStep);
+			}	    		    	
 	    }
 	    
 	    public void readNext() {
@@ -1545,14 +1560,38 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 			this.poiList = result;
 			this.setInfoList(result);			
 		}
-		
+		 
 		public void setInfoList(List<String> result) {
-			this.infoListView.setAdapter(new ArrayAdapter<String>(this, R.layout.list_item, this.poiList));
-			if (result != null && result.size() > 0) {							
+			if (result != null) {
+				for(String info : result) {
+					if (!this.addInfoList(info)) {
+						break;
+					}
+				}
+				
+				this.refreshInfoList();
+			}						
+		}
+		
+		public boolean addInfoList(String link) {
+			if (link != null && link.length() > 0) {
+				if (this.infoList.size() < maxLinksInfo) {
+					this.infoList.add(link);					
+					return true;
+				}				
+			}
+			
+			return false;
+		}
+		
+		private void refreshInfoList() {
+			this.infoListView.setAdapter(new ArrayAdapter<String>(this, R.layout.list_item, this.infoList));
+			
+			if (this.infoList != null && this.infoList.size() > 0) {							
 				this.changeInfoView.setVisibility(View.VISIBLE);
 			}
 		}
-		
+
 		public void changeInfo() {
 			this.showInfoList = !this.showInfoList;
 			this.handleInfoListState();
@@ -1576,7 +1615,24 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 		}
 		
 		public void showInfo() {
-			this.showInfoList = true;
-			this.handleInfoListState();
+			if (this.infoList != null && this.infoList.size() > 0) {
+				this.showInfoList = true;
+				this.handleInfoListState();
+			}
+		}
+
+		public void setArticleLinks(List<LinkInfo> sortedLinks) {			
+			if (sortedLinks != null) {
+				int cpt = 0;
+				for(LinkInfo info : sortedLinks) {
+					if (!this.addInfoList(info.link.link) || cpt > maxLinksInfoGeo) {
+						break;
+					}
+					
+					cpt++;
+				}
+				
+				this.refreshInfoList();
+			}			
 		}
 }

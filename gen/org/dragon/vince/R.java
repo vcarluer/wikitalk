@@ -16,9 +16,9 @@ public final class R {
     }
     public static final class id {
         public static final int View01=0x7f07000e;
-        public static final int adView=0x7f070002;
+        public static final int adView=0x7f070003;
         public static final int bottom_footer=0x7f07001b;
-        public static final int imgChangeInfo=0x7f070006;
+        public static final int imgChangeInfo=0x7f070002;
         public static final int imgNext=0x7f070017;
         public static final int imgPrevious=0x7f070016;
         public static final int imgText=0x7f070011;
@@ -43,10 +43,10 @@ public final class R {
         public static final int no_result=0x7f07000c;
         public static final int progressImage=0x7f070013;
         public static final int progressLoadImage=0x7f070012;
-        public static final int searchProgress=0x7f070003;
+        public static final int searchProgress=0x7f070004;
         public static final int top_header=0x7f07001a;
-        public static final int txtSeekBar=0x7f070005;
-        public static final int txtTitle=0x7f070004;
+        public static final int txtSeekBar=0x7f070006;
+        public static final int txtTitle=0x7f070005;
         public static final int wikiImage=0x7f070014;
     }
     public static final class layout {

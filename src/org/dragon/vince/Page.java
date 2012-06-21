@@ -1,13 +1,14 @@
 package org.dragon.vince;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class Page {
+public class Page {		
 	public String id;
 	public String originalText;
 	public String workedText;
@@ -16,7 +17,8 @@ public class Page {
 	public String[] splitSentence;
 	public Map<Integer, String> sentences;
 	public List<Link> links;
-	public Map<Integer, List<Link>> linksIndexed;
+	public Map<Integer, List<Link>> linksIndexed;	
+	public List<LinkInfo> sortedLinks;
 	
 	private String currentSentence;
 	
@@ -28,7 +30,8 @@ public class Page {
 	public Page() {
 		this.sentences = new HashMap<Integer, String>();
 		this.linksIndexed = new HashMap<Integer, List<Link>>(); 
-		this.links = new ArrayList<Link>();
+		this.links = new ArrayList<Link>();		
+		this.sortedLinks = new ArrayList<LinkInfo>();
 	}
 	
 	public static String removeRef(String text) {			
@@ -129,11 +132,35 @@ public class Page {
 								
 					idx++;
 				}
+				
+				this.countLinks();
 			}
-		}
-
+		}		
 	}
 	
+	private void countLinks() {
+		if (this.links != null && this.links.size() > 0) {
+			Map<String, LinkInfo> linkInfos = new HashMap<String, LinkInfo>();			
+			for(Link link : this.links) {
+				if (link != null && link.link != null && link.link != "") {
+					LinkInfo info = null;
+					if (!linkInfos.containsKey(link.link)) {
+						info = new LinkInfo();
+						info.link = link;
+						linkInfos.put(info.link.link, info);
+						this.sortedLinks.add(info);
+					} else {
+						info = linkInfos.get(link.link);
+					}
+					
+					info.count++;
+				}				
+			}
+			
+			Collections.sort(this.sortedLinks, Collections.reverseOrder(new LinkInfoComparer()));
+		}
+	}
+
 	private void parseBoldAndOthers(int idx) {
 		// http://fr.wikipedia.org/wiki/Aide:Syntaxe
 		// bold italic

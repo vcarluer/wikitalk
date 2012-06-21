@@ -7,21 +7,32 @@
 	 android:layout_height="wrap_content"
 	 android:gravity="center"
 	 android:orientation="vertical">
-	  <LinearLayout
+	  <RelativeLayout
 	   android:layout_width="fill_parent"
-	   android:layout_height="wrap_content"
-	   android:gravity="left"
-	   android:orientation="horizontal">
+	   android:layout_height="wrap_content">
 	      <ImageView android:id="@+id/linkImage" 
 		      android:layout_width="wrap_content"
 		      android:layout_height="wrap_content"
+		      android:layout_alignParentLeft = "true"
 		      android:src="@android:drawable/ic_menu_directions"/>
+	      
 		  <TextView android:id="@+id/linkInfo"
-		      android:layout_width="wrap_content"
+		      android:layout_width="fill_parent"
 		      android:layout_height="wrap_content"
+		      android:layout_toLeftOf = "@+id/imgChangeInfo"
+     		  android:layout_toRightOf = "@id/linkImage"
 		      android:textAppearance="?android:attr/textAppearanceLarge"
 		      />
-	 </LinearLayout>
+		 <ImageView 
+		    android:id="@id/imgChangeInfo"
+		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content"		    		   
+		    android:visibility="gone"
+		    android:layout_alignParentRight = "true"
+		    android:src="@android:drawable/ic_menu_sort_by_size">
+		    
+		</ImageView>
+	 </RelativeLayout>
 	
 	 <com.google.ads.AdView android:id="@+id/adView"
 	         android:layout_width="wrap_content"
