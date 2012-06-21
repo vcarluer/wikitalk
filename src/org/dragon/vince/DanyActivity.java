@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 import android.app.Activity;
 import android.app.SearchManager;
@@ -19,7 +18,6 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
-import android.opengl.Visibility;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -68,7 +66,7 @@ import com.google.ads.AdView;
 
 public class DanyActivity extends Activity implements TextToSpeech.OnInitListener, OnUtteranceCompletedListener, ViewFactory  {
 	
-	private static boolean DEBUG = true;
+	private static boolean DEBUG = false;
 
 	private static final String LINK_LABEL = "LinkLabel";
 
