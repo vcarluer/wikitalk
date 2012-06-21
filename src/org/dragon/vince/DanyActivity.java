@@ -574,15 +574,15 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
    
    private void updateLangList() {
 	   if (this.submenuLang != null && this.submenuLang.size() == 0 && this.filteredLanguages != null) {
-		   List<String> labels = new ArrayList<String>();
-		   for(Locale locale : this.filteredLanguages) {
-			   labels.add(locale.getDisplayName());
-		   }
+//		   List<String> labels = new ArrayList<String>();
+//		   for(Locale locale : this.filteredLanguages) {
+//			   labels.add(locale.getDisplayName());
+//		   }
+//		   
+//		   Collections.sort(labels);
 		   
-		   Collections.sort(labels);
-		   
-    	   for(int i = 0; i < labels.size(); i++) {
-    		   submenuLang.add(GROUP_LANG, i, Menu.NONE, labels.get(i));
+    	   for(int i = 0; i < this.filteredLanguages.size(); i++) {
+    		   submenuLang.add(GROUP_LANG, i, Menu.NONE, this.filteredLanguages.get(i).getDisplayName());
     	   }
        }
    }
