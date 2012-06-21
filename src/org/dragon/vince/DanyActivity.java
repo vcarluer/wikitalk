@@ -44,6 +44,8 @@ import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -495,6 +497,12 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
         this.layoutInfoList.setVisibility(View.GONE);
         this.infoListView = (ListView) findViewById(R.id.info_list);
         this.infoListView.setOnLongClickListener(longListener);
+        this.infoListView.setOnItemClickListener(new OnItemClickListener() {
+			public void onItemClick(AdapterView<?> parent, View view, int position,
+					long id) {
+				 search(((TextView) view).getText().toString());
+			}
+		});
         this.changeInfoView = (ImageView) findViewById(R.id.imgChangeInfo);
         this.changeInfoView.setOnLongClickListener(longListener);
         this.changeInfoView.setOnClickListener(new OnClickListener() {			
@@ -606,12 +614,7 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
    
    private void updateLangList() {
 	   if (this.submenuLang != null && this.submenuLang.size() == 0 && this.filteredLanguages != null) {
-//		   List<String> labels = new ArrayList<String>();
-//		   for(Locale locale : this.filteredLanguages) {
-//			   labels.add(locale.getDisplayName());
-//		   }
-//		   
-//		   Collections.sort(labels);
+		   Collections.sort(this.filteredLanguages, new LocaleComparer());
 		   
     	   for(int i = 0; i < this.filteredLanguages.size(); i++) {
     		   submenuLang.add(GROUP_LANG, i, Menu.NONE, this.filteredLanguages.get(i).getDisplayName());
@@ -1181,124 +1184,128 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 		private void readAtPosition() {
 			// todo: last test can remove last links and images...
 			int nextStep = 500;
-			if (this.page != null && this.page.splitSentence != null && this.readCursor < this.page.splitSentence.length) {
-				// Start request 7 sentences before end
-				if (this.page.splitSentence.length - this.readCursor < 7) {
-					this.startRequestLocation();
-				}
-				
-	    		this.mSeekText.setProgress(this.readCursor);
-	    		
-	    		int firstListIdx = 0;
-	    		if (this.page.linksIndexed != null && this.page.linksIndexed.size() > 0) {
-	    			if (this.page.linksIndexed.containsKey(this.readCursor)) {
-	    				List<Link> currentLinks = this.page.linksIndexed.get(this.readCursor);
-		    			if (currentLinks.size() > 0) {
-		    				Link l = currentLinks.get(currentLinks.size() - 1);
-		    				this.linkTargetCursor = l.idx;
-		    				l = currentLinks.get(0);
-		    				firstListIdx = l.idx;
-		    			}
-	    			}
-	    		}
-	    			    		
-	    		if (this.page.links != null) {
-	    			boolean needSend = false;
-	    			if (this.resetLinkCursor && this.page.linksIndexed.containsKey(this.targetReadCursor)) {
-	    				List<Link> targetLinks = this.page.linksIndexed.get(this.targetReadCursor);
-		    			if (targetLinks.size() > 0) {
-		    				Link l = targetLinks.get(0);
-		    				firstListIdx = l.idx;		    						    			
-		    				if (this.linkCursor != firstListIdx) {
-		    					this.linkCursor = firstListIdx;
-		    					needSend = true;
-		    				}
-		    				
-		    				this.resetLinkCursor = false;
-		    			}	    					    			
-	    			} else {	    				
-	    				if (this.linkCursor < this.linkTargetCursor && System.currentTimeMillis() - this.linkShown > 3000) {
-	    					if (this.linkTargetCursor - this.linkCursor > 10) {
-	    						this.linkCursor = firstListIdx;
-	    					} else {
-	    						this.linkCursor++;
-	    					}
-	    					
-	    	    			needSend = true;
-	    				}
-	    			}	    				    			
-	    			
-	    			if (needSend && this.page != null && this.page.links.size() > this.linkCursor) {
-	    				this.linkShown = System.currentTimeMillis();
-    	    			this.currentLink = this.page.links.get(this.linkCursor);
-    	    			Bundle bundle = new Bundle();
-        				bundle.putString(LINK_LABEL, this.currentLink.label);
-        				Message message = new Message();
-        				message.setData(bundle);
-        				this.handler.sendMessage(message);
-	    			}
-	    		}	
-	    			    		
-	    		if (this.imageRepository != null && this.imageRepository.imagesIndexed != null && this.imageRepository.imagesIndexed.size() > 0) {
-	    			if (this.imageRepository.imagesIndexed.containsKey(this.readCursor)) {
-		    			// only first one
-	    				List<ImageInfo> iis = this.imageRepository.imagesIndexed.get(this.readCursor);
-	    				if (iis.size() > 0) {
-	    					ImageInfo ii = iis.get(iis.size() - 1);
-		    				this.imageTargetCursor = ii.idx;
-		    				ii = iis.get(0);
-		    				firstListIdx = ii.idx;
-	    				}	    						    			
-		    		}
-	    		}
-	    		
-	    		if (this.retrieveImageTask == null && this.imageRepository != null && 
-	    				this.imageRepository.images != null && this.imageRepository.images.size() > 0) {
-	    			boolean needShow = false;
-	    			if (this.resetImageCursor && this.imageRepository.imagesIndexed.containsKey(this.targetReadCursor)) {
-	    				List<ImageInfo> iis = this.imageRepository.imagesIndexed.get(this.targetReadCursor);
-	    				if (iis.size() > 0) {
-	    					ImageInfo ii = iis.get(0);
-		    				firstListIdx = ii.idx;		    					    					 
-		    				if (this.imageCursor != firstListIdx) {
-		    					this.imageCursor = firstListIdx;
-		    					needShow = true;
-		    				}
-		    				
-		    				this.resetImageCursor = false;
-	    				}	    					    				
-	    			} else {
-	    				if ((this.imageCursor < this.imageTargetCursor && System.currentTimeMillis() - this.imageShown > 5000) || this.imageCursor == -1) {
-			    			if (this.imageTargetCursor - this.imageCursor > 10) {
-			    				this.imageCursor = firstListIdx;
-			    			} else {
-			    				this.imageCursor++;
+			if (this.page != null && this.page.splitSentence != null) {
+				if (this.readCursor < this.page.splitSentence.length) {									
+					// Start request 7 sentences before end
+					if (this.page.splitSentence.length - this.readCursor < 7) {
+						this.startRequestLocation();
+					}
+					
+		    		this.mSeekText.setProgress(this.readCursor);
+		    		
+		    		int firstListIdx = 0;
+		    		if (this.page.linksIndexed != null && this.page.linksIndexed.size() > 0) {
+		    			if (this.page.linksIndexed.containsKey(this.readCursor)) {
+		    				List<Link> currentLinks = this.page.linksIndexed.get(this.readCursor);
+			    			if (currentLinks.size() > 0) {
+			    				Link l = currentLinks.get(currentLinks.size() - 1);
+			    				this.linkTargetCursor = l.idx;
+			    				l = currentLinks.get(0);
+			    				firstListIdx = l.idx;
 			    			}
-	    					
-			    			needShow = true;
+		    			}
+		    		}
+		    			    		
+		    		if (this.page.links != null) {
+		    			boolean needSend = false;
+		    			if (this.resetLinkCursor && this.page.linksIndexed.containsKey(this.targetReadCursor)) {
+		    				List<Link> targetLinks = this.page.linksIndexed.get(this.targetReadCursor);
+			    			if (targetLinks.size() > 0) {
+			    				Link l = targetLinks.get(0);
+			    				firstListIdx = l.idx;		    						    			
+			    				if (this.linkCursor != firstListIdx) {
+			    					this.linkCursor = firstListIdx;
+			    					needSend = true;
+			    				}
+			    				
+			    				this.resetLinkCursor = false;
+			    			}	    					    			
+		    			} else {	    				
+		    				if (this.linkCursor < this.linkTargetCursor && System.currentTimeMillis() - this.linkShown > 3000) {
+		    					if (this.linkTargetCursor - this.linkCursor > 10) {
+		    						this.linkCursor = firstListIdx;
+		    					} else {
+		    						this.linkCursor++;
+		    					}
+		    					
+		    	    			needSend = true;
+		    				}
+		    			}	    				    			
+		    			
+		    			if (needSend && this.page != null && this.page.links.size() > this.linkCursor) {
+		    				this.linkShown = System.currentTimeMillis();
+	    	    			this.currentLink = this.page.links.get(this.linkCursor);
+	    	    			Bundle bundle = new Bundle();
+	        				bundle.putString(LINK_LABEL, this.currentLink.label);
+	        				Message message = new Message();
+	        				message.setData(bundle);
+	        				this.handler.sendMessage(message);
+		    			}
+		    		}	
+		    			    		
+		    		if (this.imageRepository != null && this.imageRepository.imagesIndexed != null && this.imageRepository.imagesIndexed.size() > 0) {
+		    			if (this.imageRepository.imagesIndexed.containsKey(this.readCursor)) {
+			    			// only first one
+		    				List<ImageInfo> iis = this.imageRepository.imagesIndexed.get(this.readCursor);
+		    				if (iis.size() > 0) {
+		    					ImageInfo ii = iis.get(iis.size() - 1);
+			    				this.imageTargetCursor = ii.idx;
+			    				ii = iis.get(0);
+			    				firstListIdx = ii.idx;
+		    				}	    						    			
 			    		}
-	    			}
-	    				    			
-	    			if (needShow) {
-	    				this.showImage();
-	    			}
-	    		}
-	    		
-	    		if (this.readCursor < this.targetReadCursor)
-	    		{
-	    			this.readCursor = this.targetReadCursor;
-	    			if (this.page.sentences.containsKey(this.readCursor)) {
-			    		String sentence = this.page.sentences.get(this.readCursor);		    	
-				    	this.reading = true;
-			    		mTts.speak(sentence,
-					            TextToSpeech.QUEUE_ADD,  // Drop allpending entries in the playback queue.
-					            this.hashAudio);
-			    	} else {
-			    		this.readNext();
-			    		nextStep = 0;
-			    	}
-	    		}
-	    	}
+		    		}
+		    		
+		    		if (this.retrieveImageTask == null && this.imageRepository != null && 
+		    				this.imageRepository.images != null && this.imageRepository.images.size() > 0) {
+		    			boolean needShow = false;
+		    			if (this.resetImageCursor && this.imageRepository.imagesIndexed.containsKey(this.targetReadCursor)) {
+		    				List<ImageInfo> iis = this.imageRepository.imagesIndexed.get(this.targetReadCursor);
+		    				if (iis.size() > 0) {
+		    					ImageInfo ii = iis.get(0);
+			    				firstListIdx = ii.idx;		    					    					 
+			    				if (this.imageCursor != firstListIdx) {
+			    					this.imageCursor = firstListIdx;
+			    					needShow = true;
+			    				}
+			    				
+			    				this.resetImageCursor = false;
+		    				}	    					    				
+		    			} else {
+		    				if ((this.imageCursor < this.imageTargetCursor && System.currentTimeMillis() - this.imageShown > 5000) || this.imageCursor == -1) {
+				    			if (this.imageTargetCursor - this.imageCursor > 10) {
+				    				this.imageCursor = firstListIdx;
+				    			} else {
+				    				this.imageCursor++;
+				    			}
+		    					
+				    			needShow = true;
+				    		}
+		    			}
+		    				    			
+		    			if (needShow) {
+		    				this.showImage();
+		    			}
+		    		}
+		    		
+		    		if (this.readCursor < this.targetReadCursor)
+		    		{
+		    			this.readCursor = this.targetReadCursor;
+		    			if (this.page.sentences.containsKey(this.readCursor)) {
+				    		String sentence = this.page.sentences.get(this.readCursor);		    	
+					    	this.reading = true;
+				    		mTts.speak(sentence,
+						            TextToSpeech.QUEUE_ADD,  // Drop allpending entries in the playback queue.
+						            this.hashAudio);
+				    	} else {
+				    		this.readNext();
+				    		nextStep = 0;
+				    	}
+		    		}
+		    	} else {
+		    		
+		    	}
+			}
 	    	
 	    	this.stepNext(nextStep);
 	    }
