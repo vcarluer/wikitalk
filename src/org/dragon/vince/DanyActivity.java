@@ -37,7 +37,6 @@ import android.view.MotionEvent;
 import android.view.SubMenu;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.View.OnLongClickListener;
 import android.view.ViewGroup.LayoutParams;
 import android.view.WindowManager;
 import android.view.animation.AlphaAnimation;
@@ -213,12 +212,12 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 			}
 		});
         
-        this.mImage.setOnLongClickListener(new OnLongClickListener() {
-			public boolean onLongClick(View v) {
-				startVoiceRecognitionActivity();
-				return true;
-			}
-		});
+//        this.mImage.setOnLongClickListener(new OnLongClickListener() {
+//			public boolean onLongClick(View v) {
+//				startVoiceRecognitionActivity();
+//				return true;
+//			}
+//		});
         
         this.mProgressLoadImage = (ProgressBar) findViewById(R.id.progressLoadImage);
         
@@ -250,12 +249,12 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 			}
 		});
         
-        this.mImgPrev.setOnLongClickListener(new OnLongClickListener() {
-			public boolean onLongClick(View v) {
-				startVoiceRecognitionActivity();
-				return true;
-			}
-		});
+//        this.mImgPrev.setOnLongClickListener(new OnLongClickListener() {
+//			public boolean onLongClick(View v) {
+//				startVoiceRecognitionActivity();
+//				return true;
+//			}
+//		});
         
         this.mImgNext = (Button) findViewById(R.id.imgNext);
         this.mImgNext.setOnClickListener(new View.OnClickListener() {
@@ -265,21 +264,21 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 			}
 		});  
         
-        this.mImgNext.setOnLongClickListener(new OnLongClickListener() {
-			public boolean onLongClick(View v) {
-				startVoiceRecognitionActivity();
-				return true;
-			}
-		});
+//        this.mImgNext.setOnLongClickListener(new OnLongClickListener() {
+//			public boolean onLongClick(View v) {
+//				startVoiceRecognitionActivity();
+//				return true;
+//			}
+//		});
         
         this.mTitle = (TextView) findViewById(R.id.txtTitle); 
-        this.mTitle.setOnLongClickListener(new OnLongClickListener() {
-			
-			public boolean onLongClick(View v) {
-				startVoiceRecognitionActivity();
-				return true;
-			}
-		});
+//        this.mTitle.setOnLongClickListener(new OnLongClickListener() {
+//			
+//			public boolean onLongClick(View v) {
+//				startVoiceRecognitionActivity();
+//				return true;
+//			}
+//		});
         
         mHandler = new Handler();
      // Check to see if a recognition activity is present
@@ -308,12 +307,12 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 			}
 		});
         
-        this.mLinkInfo.setOnLongClickListener(new OnLongClickListener() {			
-			public boolean onLongClick(View v) {
-				startVoiceRecognitionActivity();
-				return true;
-			}
-		});
+//        this.mLinkInfo.setOnLongClickListener(new OnLongClickListener() {			
+//			public boolean onLongClick(View v) {
+//				startVoiceRecognitionActivity();
+//				return true;
+//			}
+//		});
         
         this.mLinkImage = (ImageView) findViewById(R.id.linkImage);
         this.mLinkImage.setVisibility(View.GONE);
@@ -326,12 +325,12 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 			}
 		});
         
-        this.mLinkImage.setOnLongClickListener(new OnLongClickListener() {			
-			public boolean onLongClick(View v) {
-				startVoiceRecognitionActivity();
-				return true;
-			}
-		});
+//        this.mLinkImage.setOnLongClickListener(new OnLongClickListener() {			
+//			public boolean onLongClick(View v) {
+//				startVoiceRecognitionActivity();
+//				return true;
+//			}
+//		});
         
      // Gesture detection
         gestureDetector = new GestureDetector(new MyGestureDetector(this));
@@ -351,18 +350,18 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
         
         this.main_info = (RelativeLayout) findViewById(R.id.main_info);
         this.main_noInfo = (RelativeLayout) findViewById(R.id.main_noinfo);
-        this.main_info.setOnLongClickListener(new OnLongClickListener() {			
-			public boolean onLongClick(View v) {
-				startVoiceRecognitionActivity();
-				return true;
-			}
-		});
-        this.main_noInfo.setOnLongClickListener(new OnLongClickListener() {			
-			public boolean onLongClick(View v) {
-				startVoiceRecognitionActivity();
-				return true;
-			}
-		});
+//        this.main_info.setOnLongClickListener(new OnLongClickListener() {			
+//			public boolean onLongClick(View v) {
+//				startVoiceRecognitionActivity();
+//				return true;
+//			}
+//		});
+//        this.main_noInfo.setOnLongClickListener(new OnLongClickListener() {			
+//			public boolean onLongClick(View v) {
+//				startVoiceRecognitionActivity();
+//				return true;
+//			}
+//		});
         
         this.main_Search = (ImageView) findViewById(R.id.main_search);
         this.main_Search.setOnClickListener(new OnClickListener() {
@@ -372,12 +371,12 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 			}
 		});
         
-        this.main_Search.setOnLongClickListener(new OnLongClickListener() {			
-			public boolean onLongClick(View v) {
-				startVoiceRecognitionActivity();
-				return true;
-			}
-		});
+//        this.main_Search.setOnLongClickListener(new OnLongClickListener() {			
+//			public boolean onLongClick(View v) {
+//				startVoiceRecognitionActivity();
+//				return true;
+//			}
+//		});
         
         this.mainInfoVisible = false;
         this.showInfoList = false;
@@ -406,12 +405,12 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 			}
 		});
         
-        this.mSeekText.setOnLongClickListener(new OnLongClickListener() {			
-			public boolean onLongClick(View v) {
-				startVoiceRecognitionActivity();
-				return true;
-			}
-		});
+//        this.mSeekText.setOnLongClickListener(new OnLongClickListener() {			
+//			public boolean onLongClick(View v) {
+//				startVoiceRecognitionActivity();
+//				return true;
+//			}
+//		});
         
         this.mMediaInfo = (ImageView) findViewById(R.id.media_readInfo);
         
@@ -435,28 +434,28 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 			}
 		});
         
-        this.mSearchText.setOnLongClickListener(new OnLongClickListener() {			
-			public boolean onLongClick(View v) {
-				startVoiceRecognitionActivity();
-				return true;
-			}
-		});
+//        this.mSearchText.setOnLongClickListener(new OnLongClickListener() {			
+//			public boolean onLongClick(View v) {
+//				startVoiceRecognitionActivity();
+//				return true;
+//			}
+//		});
         
         this.mSearchImage = (ImageView) findViewById(R.id.main_img_search);
-        this.mSearchImage.setOnLongClickListener(new OnLongClickListener() {			
-			public boolean onLongClick(View v) {
-				startVoiceRecognitionActivity();
-				return true;
-			}
-		});
+//        this.mSearchImage.setOnLongClickListener(new OnLongClickListener() {			
+//			public boolean onLongClick(View v) {
+//				startVoiceRecognitionActivity();
+//				return true;
+//			}
+//		});
       
         this.adView = (AdView) findViewById(R.id.adView);
-        this.adView.setOnLongClickListener(new OnLongClickListener() {			
-			public boolean onLongClick(View v) {
-				startVoiceRecognitionActivity();
-				return true;
-			}			
-		});
+//        this.adView.setOnLongClickListener(new OnLongClickListener() {			
+//			public boolean onLongClick(View v) {
+//				startVoiceRecognitionActivity();
+//				return true;
+//			}			
+//		});
         
         this.noResult = (ImageView) findViewById(R.id.no_result);
         this.noResult.setVisibility(View.GONE);
@@ -483,26 +482,26 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 				geolocation();
 			}
 		});
-        
-        this.searchGeolocation.setOnLongClickListener(new OnLongClickListener() {
-			public boolean onLongClick(View v) {
-				startVoiceRecognitionActivity();
-				return true;
-			}
-		});
-        
-        View.OnLongClickListener longListener = new OnLongClickListener() {
-			public boolean onLongClick(View v) {
-				startVoiceRecognitionActivity();
-				return true;
-			}
-		};
+//        
+//        this.searchGeolocation.setOnLongClickListener(new OnLongClickListener() {
+//			public boolean onLongClick(View v) {
+//				startVoiceRecognitionActivity();
+//				return true;
+//			}
+//		});
+//        
+//        View.OnLongClickListener longListener = new OnLongClickListener() {
+//			public boolean onLongClick(View v) {
+//				startVoiceRecognitionActivity();
+//				return true;
+//			}
+//		};
 		
         this.layoutInfoList = (RelativeLayout) findViewById(R.id.main_info_list);
-        this.layoutInfoList.setOnLongClickListener(longListener);
+//        this.layoutInfoList.setOnLongClickListener(longListener);
         this.layoutInfoList.setVisibility(View.GONE);
         this.infoListView = (ListView) findViewById(R.id.info_list);
-        this.infoListView.setOnLongClickListener(longListener); // does not work... Add for item
+//        this.infoListView.setOnLongClickListener(longListener); // does not work... Add for item
         this.infoListView.setOnItemClickListener(new OnItemClickListener() {
 			public void onItemClick(AdapterView<?> parent, View view, int position,
 					long id) {
@@ -510,7 +509,7 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 			}
 		});
         this.changeInfoView = (ImageView) findViewById(R.id.imgChangeInfo);
-        this.changeInfoView.setOnLongClickListener(longListener);
+//        this.changeInfoView.setOnLongClickListener(longListener);
         this.changeInfoView.setOnClickListener(new OnClickListener() {			
 			public void onClick(View v) {
 				changeInfo();
@@ -518,7 +517,7 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 		});
         
         this.bottomLayout = (LinearLayout) findViewById(R.id.bottom_footer);
-        this.bottomLayout.setOnLongClickListener(longListener);
+//        this.bottomLayout.setOnLongClickListener(longListener);
         
         this.handleInfoListState();
         // Must be kept at end of method
