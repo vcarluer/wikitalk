@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import android.app.Activity;
 import android.app.SearchManager;
@@ -82,6 +83,7 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
     
 	static final String DANY = "dany";
     private TextToSpeech mTts;    
+    private boolean mTtsInited;
     private ImageSwitcher mImage;
     private Button mImgNext;
     private Button mImgPrev;
@@ -178,13 +180,15 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
         }
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         
+        this.initCountryCodeMapping();
+        this.initLanguageCodeMapping();
+        
      // Initialize text-to-speech. This is an asynchronous operation.
         // The OnInitListener (second argument) is called after initialization completes.
         if (this.mTts == null) {
         	mTts = new TextToSpeech(this,
                     this  //TextToSpeech.OnInitListener
-                    );
-			this.setLangPref(mTts.getLanguage());
+                    );			
         }
 
         this.mImage = (ImageSwitcher) findViewById(R.id.wikiImage);                
@@ -292,12 +296,7 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 //        } else {
 //            this.mTitle.setEnabled(false);
 //            this.mTitle.setText("Recognizer not present");
-//        }
-        
-     // Most of the applications do not have to handle the voice settings. If the application
-        // does not require a recognition in a specific language (i.e., different from the system
-        // locale), the application does not need to read the voice settings.
-        refreshVoiceSettings();
+//        }        
         
         this.mLinkInfo = (TextView)	findViewById(R.id.linkInfo);
         this.mLinkInfo.setOnClickListener(new OnClickListener() {
@@ -633,6 +632,11 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 
 @Override
    public boolean onOptionsItemSelected(MenuItem item) {
+		if (!this.mTtsInited) {
+			Toast.makeText(this, getString(R.string.waitinit), Toast.LENGTH_SHORT).show();
+			return true;
+		}	
+		
 		if (item.getGroupId() == GROUP_LANG) {
 			this.langIdx = item.getItemId();
 			this.setCurrentLang();
@@ -661,6 +665,11 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
      * Fire an intent to start the speech recognition activity.
      */
     private void startVoiceRecognitionActivity() {
+    	if (!this.mTtsInited) {
+			Toast.makeText(this, getString(R.string.waitinit), Toast.LENGTH_SHORT).show();
+			return;
+		}
+    	
     	pauseRead();
     	this.cancelGeolocation();
     	
@@ -701,10 +710,52 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 		// TODO Auto-generated method stub
 		super.onConfigurationChanged(newConfig);
 	}
+	
+	private Map<String, Locale> localeCountryMap;
+
+	private void initCountryCodeMapping() {
+		String[] countries = Locale.getISOCountries();
+		localeCountryMap = new HashMap<String, Locale>(countries.length);
+		for (String country : countries) {
+			Locale locale = new Locale("", country);
+			localeCountryMap.put(locale.getISO3Country().toUpperCase(), locale);
+		}
+	}
+	
+	private String iso3CountryCodeToIso2CountryCode(String iso3CountryCode) {
+		return localeCountryMap.get(iso3CountryCode).getCountry();
+	}
+	
+	private String iso2CountryCodeToIso3CountryCode(String iso2CountryCode){
+		Locale locale = new Locale("", iso2CountryCode);
+		return locale.getISO3Country();
+	}
+	
+	private Map<String, Locale> localeLanguageMap;
+
+	private void initLanguageCodeMapping() {
+		String[] languages = Locale.getISOLanguages();
+		localeLanguageMap = new HashMap<String, Locale>(languages.length);
+		for (String language : languages) {
+		    Locale locale = new Locale(language);
+		    localeLanguageMap.put(locale.getISO3Language(), locale);
+		}
+	}
+	
+	private String iso3LanguageCodeToIso2LanguageCode(String iso3LanguageCode) {
+		return localeLanguageMap.get(iso3LanguageCode).getLanguage();
+	}
+	
+	private String iso2LanguageCodeToIso3LanguageCode(String iso2LanguageCode){
+		Locale locale = new Locale("", iso2LanguageCode);
+		return locale.getISO3Language();
+	}
 
 	public void onInit(int status) {
 		// status can be either TextToSpeech.SUCCESS or TextToSpeech.ERROR.
-        if (status == TextToSpeech.SUCCESS) {                    	
+        if (status == TextToSpeech.SUCCESS) {                    
+        	mTtsInited = true;
+        	this.setLangPref(mTts.getLanguage());
            // Language set at search
             
             // Check the documentation for other possible result codes.
@@ -715,7 +766,13 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
             // Greet the user.            	
         	this.mTts.setOnUtteranceCompletedListener(this);
         	this.hashAudio.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, DANY);
+        	
+            // Most of the applications do not have to handle the voice settings. If the application
+            // does not require a recognition in a specific language (i.e., different from the system
+            // locale), the application does not need to read the voice settings.
+            refreshVoiceSettings();
         } else {
+        	mTtsInited = false;
             // Initialization failed.
             Loge(DANY, "Could not initialize TextToSpeech.");
         }
@@ -898,6 +955,11 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 	}
 	
 	public void geolocation(boolean showOption) {
+		if (!this.mTtsInited) {
+			Toast.makeText(this, getString(R.string.waitinit), Toast.LENGTH_SHORT).show();
+			return;
+		}
+		
 		boolean optionShown = this.refreshLocation(showOption);
 		if(!this.locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
 			Toast.makeText(this, getString(R.string.enable_network), Toast.LENGTH_LONG).show();
@@ -912,11 +974,11 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 			this.pauseRead();
 			this.initData();
 			this.initWidgets();
-			this.mTitle.setText("Geolocation search");
+			this.mTitle.setText(getString(R.string.search_geolocate));
 			this.setCurrentLang();
-			
+						
 			this.retrievePoiTask = new RetrievePoiTask(this);
-			this.retrievePoiTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, this.userLocation);
+			this.retrievePoiTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, this.userLocation);					
 		}
 	}
 	
@@ -928,6 +990,11 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 	}
 	
 	public void search(SearchParam toSearch) {
+		if (!this.mTtsInited) {
+			Toast.makeText(this, getString(R.string.waitinit), Toast.LENGTH_SHORT).show();
+			return;
+		}
+		
 		if (toSearch != null) {
 			this.cancelAllAsync();
 			
@@ -1006,6 +1073,23 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 			if (this.langIdx < this.filteredLanguages.size()) {
 				currentLang = this.filteredLanguages.get(this.langIdx);
 			}
+		}
+		
+		String country = currentLang.getCountry();
+		String language = currentLang.getLanguage();
+		boolean recreate = false;
+		if (country.length() > 2) {
+			country = this.iso3CountryCodeToIso2CountryCode(country);
+			recreate = true;
+		}
+		
+		if (language.length() > 2) {
+			language = this.iso3LanguageCodeToIso2LanguageCode(language);
+			recreate = true;
+		}
+		
+		if (recreate) {
+			currentLang = new Locale(language, country);
 		}
 	}
 	
@@ -1340,6 +1424,10 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 				
 		public String getWikipediaLanguageLc() {
 			String lg = currentLang.getLanguage().toLowerCase();
+//			if (lg.length() > 2) {
+//				lg = this.iso3LanguageCodeToIso2LanguageCode(lg);
+//			}
+			
 			// Chinese
 			if (lg.equals("cmn") || lg.equals("yue")) {
 				lg = "zh";
@@ -1414,6 +1502,7 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 				this.noResult.setVisibility(View.GONE);
 			} else {
 				this.noResult.setVisibility(View.VISIBLE);
+				this.mTitle.setText(getString(R.string.noresult));
 			}
 		}
 

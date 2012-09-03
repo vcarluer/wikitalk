@@ -13,4 +13,6 @@
 	<string name="enable_gps">Enable GPS for better localization</string>
 	<string name="red">red</string>
 	<string name="blue">blue</string>
+	<string name="waitinit">Please wait while initializing text to speech</string>	
+	<string name="noresult">No result</string>
 </resources>

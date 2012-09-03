@@ -21,7 +21,7 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 public class RetrievePoiTask extends AsyncTask<Location, Void, List<String>> {
-	private DanyActivity mainActivity;
+	private DanyActivity mainActivity;	 
 	
 	public RetrievePoiTask(DanyActivity activity) {
 		this.mainActivity = activity;
