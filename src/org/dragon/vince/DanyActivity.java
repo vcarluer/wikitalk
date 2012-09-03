@@ -559,10 +559,10 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
     				this.userLocation = null;
     			}
     		} else {
-    			this.newLocation(this.locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER));
+    			// this.newLocation(this.locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER));
     		}
     	} else {
-    		this.newLocation(this.locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER));
+    		// this.newLocation(this.locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER));
     	}
     	
     	return false;
@@ -1054,7 +1054,10 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 
 	    private void refreshVoiceSettings() {
 	        Logi(DANY, "Sending broadcast");
-	        sendOrderedBroadcast(RecognizerIntent.getVoiceDetailsIntent(this), null,
+	        Intent detailsIntent =  new Intent(RecognizerIntent.ACTION_GET_LANGUAGE_DETAILS);
+//	        sendOrderedBroadcast(RecognizerIntent.getVoiceDetailsIntent(this), null,
+//	                new SupportedLanguageBroadcastReceiver(), null, Activity.RESULT_OK, null, null);
+	        sendOrderedBroadcast(detailsIntent, null,
 	                new SupportedLanguageBroadcastReceiver(), null, Activity.RESULT_OK, null, null);
 	    }
 
@@ -1111,6 +1114,8 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 	                        // showToast("No extra");
 	                    }
 	                });
+	                
+	                return;
 	            }
 	            
 	            if (extra.containsKey(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE)) {
@@ -1444,6 +1449,10 @@ public class DanyActivity extends Activity implements TextToSpeech.OnInitListene
 		    if (currentBestLocation == null) {
 		        // A new location is always better than no location
 		        return true;
+		    }
+		    
+		    if (location == null) {
+		    	return false;
 		    }
 
 		    // Check whether the new location fix is newer or older
