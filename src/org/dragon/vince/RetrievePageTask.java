@@ -88,7 +88,8 @@ public class RetrievePageTask extends AsyncTask<SearchParam, Void, Page> {
 			HttpGet uri = null;
 	    	// close client request?	    	
 			try {
-				uri = new HttpGet("http://" + this.mainActivity.getWikipediaLanguageLc() + ".wikipedia.org/w/api.php?format=xml&action=query&titles=" + keyword + "&prop=revisions&rvprop=content");
+				// uri = new HttpGet("http://" + this.mainActivity.getWikipediaLanguageLc() + ".wikipedia.org/w/api.php?format=xml&action=query&titles=" + keyword + "&prop=revisions&rvprop=content");
+				uri = new HttpGet("https://ja.wikipedia.org/w/api.php?format=xml&action=query&titles=%E3%83%8D%E3%82%B3&prop=revisions&rvprop=content");
 				response = client.execute(uri);
 			} catch (ClientProtocolException e) {
 				e.printStackTrace();

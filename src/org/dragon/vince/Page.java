@@ -102,7 +102,7 @@ public class Page {
 		if (this.redirect == null && this.workedText != null) {
 			// for now external reference must be remove before split with . because of long ref
 			this.workedText = parseRef(this.workedText);
-			this.splitSentence = this.workedText.split("\\. ");
+			this.splitSentence = this.workedText.split("。|\\. ");
 			int idx = 0;
 			// special language
 			if (this.splitSentence.length == 0) {
